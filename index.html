@@ -893,7 +893,12 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .member-list:empty { display: none; }
 .member-list li { display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line-soft); }
 .member-list li .m-av { flex: none; }
-@media (max-width: 560px) { .member-list li { padding: 12px 14px; } .m-role { width: 96px !important; } }
+@media (max-width: 560px) {
+  .member-list li { padding: 12px 14px; flex-wrap: wrap; row-gap: 10px; }
+  /* Small screens: the name gets the whole first row, the controls go under it */
+  .member-list li .m-info { flex: 1 1 calc(100% - 52px); }
+  .member-list li .m-role { flex: 1 1 auto; width: auto !important; margin-left: 48px; }
+}
 #m-add { background: var(--teal); color: var(--on-teal); }
 #m-add:hover { background: var(--teal-hover); }
 .m-info { display: grid; gap: 2px; flex: 1 1 0; min-width: 0; }
@@ -5074,7 +5079,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     if (!name) return fail('Add your name.', 'au-name');
     if (pass.length < 6) return fail('The password needs at least 6 characters.', 'au-pass');
     if (authMode === 'signup') {
-      m.name = name; m.joined = true;
+      m.name = name; m.joined = true; m.joinedAt = new Date().toISOString();
       writeMember(m);
     }
     var newPass = authMode === 'signin' && m.reset;
@@ -5166,6 +5171,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     if (m.reset) body.reset = true;
     if (m.uid) body.uid = m.uid;
     if (m.v) body.v = m.v;
+    if (m.joinedAt) body.joinedAt = m.joinedAt;
     memberWrites = memberWrites.then(function () { return membersDb.collection('members').doc(m.id).set(body); }).catch(cloudError);
   }
   function removeMember(id) {
@@ -5187,6 +5193,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   document.querySelectorAll('[data-mfilter]').forEach(function (b) {
     b.addEventListener('click', function () { memberFilter = b.dataset.mfilter; renderMembers(); });
   });
+  // When a member created their account, e.g. "26 Oct 2026, 7:05 am"
+  function joinedText(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var h = d.getHours(), mm = String(d.getMinutes()).padStart(2, '0');
+    return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() + ', ' + ((h % 12) || 12) + ':' + mm + (h < 12 ? ' am' : ' pm');
+  }
   function renderMembers() {
     var list = document.getElementById('m-list');
     list.textContent = '';
@@ -5219,7 +5232,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
         m.name = v; writeMember(m); toast('Saved name for ' + m.id);
       });
       info.appendChild(nm);
-      info.appendChild(el('small', m.joined ? 'm-joined' : null, m.joined ? 'Joined' : 'Pending'));
+      info.appendChild(el('small', m.joined ? 'm-joined' : null, m.joined ? 'Joined' + (m.joinedAt ? ' · ' + joinedText(m.joinedAt) : '') : 'Pending'));
       if (m.resetAsked) info.appendChild(el('small', 'm-ask', 'Wants a new password'));
       else if (m.reset) info.appendChild(el('small', 'm-ask done', 'Password reset'));
       li.appendChild(info);
@@ -5479,7 +5492,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
         return fbLogin(fbEmail(id, 0), pass, true).then(function (cred) {
           var uid = cred.user.uid, b = fb.db.batch();
           b.set(fb.db.doc('site/owner'), { uid: uid, id: id });
-          b.set(fb.db.collection('members').doc(id), { id: id, role: 'admin', name: typedName, joined: true, uid: uid });
+          b.set(fb.db.collection('members').doc(id), { id: id, role: 'admin', name: typedName, joined: true, uid: uid, joinedAt: new Date().toISOString() });
           b.set(fb.db.collection('uids').doc(uid), { id: id });
           return b.commit();
         }).then(function () { fb.ownerMissing = false; return 'owner'; });
@@ -5496,11 +5509,20 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
         return fbLogin(email, pass, true).then(function (cred) {
           var del = firebase.firestore.FieldValue.delete(), b = fb.db.batch();
           var upd = { uid: cred.user.uid, joined: true, name: name };
+          if (!m.joinedAt) upd.joinedAt = new Date().toISOString(); // a password reset keeps the first date
           if (m.reset) upd.reset = del;
           if (m.resetAsked) upd.resetAsked = del;
           b.update(fb.db.collection('members').doc(id), upd);
           b.set(fb.db.collection('uids').doc(cred.user.uid), { id: id });
-          return b.commit();
+          return b.commit().catch(function (e) {
+            // Older database rules don't know the join date yet: save without it
+            if (!(e && e.code === 'permission-denied' && upd.joinedAt)) throw e;
+            delete upd.joinedAt;
+            var b2 = fb.db.batch();
+            b2.update(fb.db.collection('members').doc(id), upd);
+            b2.set(fb.db.collection('uids').doc(cred.user.uid), { id: id });
+            return b2.commit();
+          });
         }).then(function () { delete fb.looked[id]; return m.reset ? 'reset' : 'new'; });
       });
     }).then(function (how) {
