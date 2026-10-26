@@ -123,7 +123,11 @@ body {
   font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.5;
+  /* The footer sits at the bottom of the screen even when the page is short */
+  margin: 0; min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column;
 }
+body > main { flex: 1 0 auto; }
 body::before {
   content: ""; position: fixed; inset: 0 0 auto;
   height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg-raised);
@@ -385,9 +389,10 @@ section.block { padding-block: 48px 8px; }
 .detail-sub { margin: 0 0 6px; color: var(--fg-muted); font-size: 18px; font-variant-numeric: tabular-nums; }
 .detail-desc { margin: 0 0 6px; color: var(--fg-muted); max-width: 60ch; }
 #detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
-.hi-bar { position: relative; height: 0; }
+.hi-bar { position: relative; }
 .hi-bar[hidden] { display: none; }
-.hi-bar .wrap { position: absolute; top: 14px; left: 0; right: 0; z-index: 1; }
+.hi-bar .wrap { padding-top: 20px; }
+body:has(#brand-hi:not([hidden])) #tournaments { padding-top: 32px; }
 .brand-hi { margin: 0; font-size: 16px; color: var(--fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brand-hi[hidden] { display: none; }
 .brand-hi b { font-weight: 700; color: var(--fg); }
@@ -1228,7 +1233,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
 .social { display: flex; gap: 10px; margin-top: 22px; }
 .social a { width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--fg-muted); }
 .social a:hover { color: var(--fg); border-color: var(--teal); }
-.legal { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; padding-block: 22px 26px; color: var(--fg-dim); font-size: 14px; }
+.legal { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; padding-block: 22px calc(26px + env(safe-area-inset-bottom, 0px)); color: var(--fg-dim); font-size: 14px; }
 .legal a:hover { color: var(--fg); }
 @media (max-width: 720px) { .foot { grid-template-columns: 1fr; } }
 
