@@ -387,7 +387,8 @@ section.block { padding-block: 48px 8px; }
 @media (prefers-reduced-motion: reduce) { .pred-btn, .pred-btn::after, .pred-btn svg.i, .pred-btn[aria-pressed="true"] svg.i { animation: none !important; transition: none; } .pred-btn::after { display: none; } }
 .detail-title { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(40px, 8vw, 60px); line-height: .92; margin: 12px 0 10px; text-wrap: balance; }
 .detail-sub { margin: 0 0 6px; color: var(--fg-muted); font-size: 18px; font-variant-numeric: tabular-nums; }
-.detail-desc { margin: 0 0 6px; color: var(--fg-muted); max-width: 60ch; }
+.detail-desc { margin: 4px 0 24px; color: var(--fg-muted); max-width: 60ch; }
+.detail-kick { margin-bottom: 18px; }
 #detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
 .hi-bar { position: relative; }
 .hi-bar[hidden] { display: none; }
@@ -434,10 +435,6 @@ body:has(#brand-hi:not([hidden])) #tournaments { padding-top: 32px; }
 .detail-tabs.quiz-tabs { grid-template-columns: repeat(3, 1fr); }
 :root.role-visitor .detail-tabs.quiz-tabs { grid-template-columns: repeat(2, 1fr); }
 .q-desc { color: var(--fg); margin-top: 10px; }
-.testbox { display: grid; gap: 12px; justify-items: start; margin-top: 16px; padding: 16px 18px; border: 1.5px dashed var(--line); border-radius: 14px; background: var(--chip); color: var(--fg-muted); }
-.testbox p { margin: 0; }
-.testbox b { color: var(--amber-fg); letter-spacing: .1em; margin-right: 6px; }
-.testbox.on { border-color: var(--amber-fg); background: var(--amber-bg); }
 .test-ctrl { display: flex; align-items: center; gap: 12px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
 .test-ctrl .btn-sm { padding: 7px 9px; }
 .qcard { display: grid; gap: 14px; margin-top: 16px; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); }
@@ -563,6 +560,9 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .qanswers legend small { font-weight: 500; color: var(--fg-dim); }
 .qans { display: flex; align-items: center; gap: 10px; }
 .qans input[type="radio"] { width: 20px; height: 20px; min-height: 0; padding: 0; flex: none; accent-color: var(--teal); appearance: auto; -webkit-appearance: radio; }
+.qtimes { display: grid; gap: 12px; }
+.qtimes .field span small { font-weight: 500; color: var(--fg-dim); }
+.qlist .qwhen { display: block; margin-top: 4px; color: var(--fg-muted); font-size: 13px; font-weight: 500; text-transform: none; letter-spacing: 0; }
 .qform-actions { display: flex; justify-content: flex-end; gap: 10px; }
 #q-add { margin-top: 16px; }
 
@@ -747,6 +747,7 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .goal-chips span { display: inline-flex; align-items: center; gap: 4px; padding: 4px 4px 4px 10px; border-radius: 999px; background: var(--chip); font-size: 14px; font-weight: 600; }
 .goal-chips button { width: 24px; height: 24px; border: 0; border-radius: 50%; background: none; color: var(--fg-dim); cursor: pointer; font-size: 16px; line-height: 1; }
 .goal-chips button:hover { color: var(--live); }
+.goal-chips .goal-count { min-width: 20px; height: 20px; padding: 0 6px; margin-left: 2px; border-radius: 999px; background: var(--teal); color: var(--on-teal); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .score-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 10px; }
 .score-row > span { padding-bottom: 14px; font-weight: 700; color: var(--fg-dim); }
 .score-row .field span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1121,6 +1122,9 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .aw-label { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--amber-fg); }
 .aw-gold .aw-label::before { content: "★ "; color: #e3b53c; }
 .aw-silver .aw-label::before { content: "⚽ "; }
+.aw-champ { border-color: #e3b53c; background-image: linear-gradient(120deg, color-mix(in srgb, #e3b53c 18%, transparent), color-mix(in srgb, var(--tc, var(--teal)) 10%, transparent) 60%, transparent); }
+.aw-champ .aw-label::before { content: "🏆 "; }
+.aw-champ .crest { width: 58px; height: 58px; font-size: 24px; border-width: 3px; flex: none; }
 .aw-body { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .aw-body > b { font: 700 19px/1.2 var(--font-body); }
 .aw-txt { display: grid; gap: 4px; min-width: 0; flex: 1; }
@@ -1353,8 +1357,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       <div class="card-top detail-badges"><span class="tag" id="d-tag"></span><span class="status" id="d-status"></span><button class="pred-btn" type="button" id="d-pred"><svg class="i"><use href="#ic-target"/></svg>Predictions</button></div>
       <h1 class="detail-title" id="d-name"></h1>
       <p class="detail-sub" id="d-sub"></p>
-      <div class="next-kick detail-kick" id="d-kick" hidden></div>
       <p class="detail-desc" id="d-desc" hidden></p>
+      <div class="next-kick detail-kick" id="d-kick" hidden></div>
       <p class="lock-note" id="d-lock" hidden><svg class="i"><use href="#ic-lock"/></svg>This tournament is finished, so it's locked. Only the owner or an admin can change it.</p>
 
       <div class="awards" id="d-awards">
@@ -1517,15 +1521,6 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
 
       <!-- Today -->
       <div id="q-today">
-        <div class="testbox" data-admin>
-          <p><b>TEST MODE</b> <span id="q-test-text">Jump between question days to try everything out.</span></p>
-          <div class="test-ctrl" id="q-test-ctrl" hidden>
-            <button class="btn btn-ghost btn-sm" type="button" id="q-prev" aria-label="Previous day"><svg class="i"><use href="#ic-left"/></svg></button>
-            <span id="q-test-day"></span>
-            <button class="btn btn-ghost btn-sm" type="button" id="q-next" aria-label="Next day"><svg class="i"><use href="#ic-right"/></svg></button>
-          </div>
-          <button class="btn btn-ghost btn-sm" type="button" id="q-test">Start test mode</button>
-        </div>
         <div class="qscore" id="q-score" hidden><div><small>Your score</small><b id="q-score-pts"></b></div><div><small>Right</small><b id="q-score-right"></b></div><div><small>Rank</small><b id="q-score-rank"></b></div></div>
         <div class="panel" id="q-today-empty"><strong id="q-today-title"></strong><p id="q-today-text"></p></div>
         <div class="qcard" id="q-today-card" hidden>
@@ -1557,6 +1552,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
             <label class="qans"><input type="radio" name="q-correct" value="2"><input type="text" data-qopt dir="auto" maxlength="80" placeholder="Answer C (optional)" aria-label="Answer C"></label>
             <label class="qans"><input type="radio" name="q-correct" value="3"><input type="text" data-qopt dir="auto" maxlength="80" placeholder="Answer D (optional)" aria-label="Answer D"></label>
           </fieldset>
+          <div class="qtimes">
+            <label class="field"><span>Show question at <small>(optional)</small></span><input id="q-show-at" type="datetime-local"></label>
+            <label class="field"><span>Reveal answer at <small>(optional)</small></span><input id="q-reveal-at" type="datetime-local"></label>
+            <small class="hint">Leave these empty to show the question and reveal the answer yourself. With no reveal time, the answer shows the day after the question opens.</small>
+            <em class="err" id="q-time-err" hidden>The answer has to be revealed after the question is shown.</em>
+          </div>
           <div class="qform-actions">
             <button class="btn btn-ghost" type="button" id="q-cancel">Cancel</button>
             <button class="btn" type="submit" id="q-save">Save question</button>
@@ -2262,7 +2263,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       for (var i = 0; i < tournaments.length; i++) if (tournaments[i].id === box.dataset.kick) t = tournaments[i];
       if (t) fillNextKick(box, t);
     });
+    // Re-draw once a question's set show or reveal time passes
+    var sig = tournaments.map(function (t) {
+      return (t.questions || []).map(function (q, i) { return (q.showAt || q.revealAt) ? (qShown(t, i) ? 1 : 0) + '' + (qRevealed(t, i) ? 1 : 0) : ''; }).join('');
+    }).join('|');
+    if (timeSig !== null && sig !== timeSig) { render(); if (!quizSection.hidden) renderQuiz(); }
+    timeSig = sig;
   }, 1000);
+  var timeSig = null;
 
   var view = { tab: 'current', type: 'all' };
   function isArchived(t) { return statusOf(t) === 'completed'; }
@@ -2645,6 +2653,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       box.appendChild(body);
       list.appendChild(box);
     }
+    // The champion team comes from the results, so it shows without being entered
+    var champ = championOf(t);
+    if (champ) {
+      var cb = el('div', 'aw-tile aw-champ');
+      cb.style.setProperty('--tc', champ.c1 || 'var(--teal)');
+      cb.appendChild(el('small', 'aw-label', 'Champion'));
+      var cbody = el('div', 'aw-body'); cbody.appendChild(crest(champ));
+      var ctxt = el('div', 'aw-txt'); ctxt.appendChild(el('b', null, champ.name));
+      ctxt.appendChild(el('span', 'aw-team', t.format === 'league' ? 'League winners' : 'Won the final'));
+      cbody.appendChild(ctxt); cb.appendChild(cbody); list.appendChild(cb);
+    }
     if (prize.player) tile('Best player', prize.player, 'aw-gold');
     if (prize.scorer) {
       var goals = (scorerRows(t).filter(function (x) { return sameName(x.player, prize.scorer); })[0] || {}).goals;
@@ -2672,11 +2691,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       var body = el('div', 'aw-body'); body.appendChild(avatar({ name: x[1], number: '' }, null));
       body.appendChild(el('b', null, x[1])); b.appendChild(body); list.appendChild(b);
     });
-    document.getElementById('d-award-head').hidden = rows.length === 0;
-    document.getElementById('d-awards').classList.toggle('aw-on', rows.length > 0);
-    list.hidden = rows.length === 0;
+    var shownAwards = rows.length + (champ ? 1 : 0);
+    document.getElementById('d-awards-empty').hidden = shownAwards > 0;
+    document.getElementById('d-award-head').hidden = shownAwards === 0;
+    document.getElementById('d-awards').classList.toggle('aw-on', shownAwards > 0);
+    list.hidden = shownAwards === 0;
     document.getElementById('d-award-add').textContent = rows.length ? 'Edit awards' : 'Add awards';
-    if (!canEdit() && !rows.length) document.getElementById('d-awards').hidden = true;
+    if (!canEdit() && !shownAwards) document.getElementById('d-awards').hidden = true;
 
     Array.prototype.forEach.call(dTabs.children, function (b) {
       b.setAttribute('aria-selected', b.textContent === detail.tab ? 'true' : 'false');
@@ -4060,11 +4081,21 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       box.querySelector('.goal-add').hidden = !typing;
       var chips = box.querySelector('[data-goal-chips]');
       chips.textContent = '';
-      matchState.goals.forEach(function (g, i) {
-        if (!team || g.team !== team.id) return;
+      // One chip per scorer with a goal count; the cross removes one goal at a time
+      var seen = {};
+      matchState.goals.forEach(function (g) {
+        if (!team || g.team !== team.id || seen[g.player]) return;
+        var n = matchState.goals.filter(function (x) { return x.team === g.team && x.player === g.player; }).length;
+        seen[g.player] = true;
         var chip = el('span', null, g.player), x = el('button', null, '×');
-        x.type = 'button'; x.setAttribute('aria-label', 'Remove goal by ' + g.player);
-        x.addEventListener('click', function () { matchState.goals.splice(i, 1); syncMatch(); });
+        if (n > 1) chip.appendChild(el('b', 'goal-count', String(n)));
+        x.type = 'button'; x.setAttribute('aria-label', n > 1 ? 'Remove one goal by ' + g.player : 'Remove goal by ' + g.player);
+        x.addEventListener('click', function () {
+          for (var i = matchState.goals.length - 1; i >= 0; i--) {
+            if (matchState.goals[i].team === g.team && matchState.goals[i].player === g.player) { matchState.goals.splice(i, 1); break; }
+          }
+          syncMatch();
+        });
         chip.appendChild(x); chips.appendChild(chip);
       });
     });
@@ -4264,10 +4295,21 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   // A day's answer shows once the manager reveals it, or automatically the next day
   // Members see a question only after a manager shows it. Its answer shows when the
   // manager reveals it, or automatically the day after it was shown.
-  function qShown(t, i) { var q = (t.questions || [])[i]; return !!q && !!q.shown; }
+  // A question can also have a set time to open and a set time to reveal its answer.
+  function timeHit(v) { var d = v ? new Date(v) : null; return !!d && !isNaN(d) && d <= new Date(); }
+  function qShown(t, i) { var q = (t.questions || [])[i]; return !!q && (!!q.shown || timeHit(q.showAt)); }
   function qRevealed(t, day) {
     var q = (t.questions || [])[day];
-    return !!q && !!q.shown && (!!q.revealed || (!!q.shownOn && q.shownOn < todayISO()));
+    if (!qShown(t, day)) return false;
+    if (q.revealed || timeHit(q.revealAt)) return true;
+    var on = q.shownOn || (q.showAt ? String(q.showAt).slice(0, 10) : '');
+    return !q.revealAt && !!on && on < todayISO();
+  }
+  function whenText(v) {
+    var d = new Date(v);
+    if (isNaN(d)) return '';
+    var h = d.getHours(), mm = String(d.getMinutes()).padStart(2, '0');
+    return d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + ((h % 12) || 12) + ':' + mm + (h < 12 ? ' am' : ' pm');
   }
   // The question on the Today tab: the first open one this member has not answered, else the newest open one
   function quizOpen(t) {
@@ -4282,7 +4324,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   }
   function showQuestion(t, i, on) {
     var q = t.questions[i];
-    if (on) { q.shown = true; q.shownOn = todayISO(); } else { delete q.shown; delete q.shownOn; delete q.revealed; }
+    if (on) { q.shown = true; q.shownOn = todayISO(); } else { delete q.shown; delete q.shownOn; delete q.revealed; delete q.showAt; }
     save(tournaments); render(); renderQuiz();
     toast(on ? 'Question ' + (i + 1) + ' is now open for members' : 'Question ' + (i + 1) + ' hidden from members');
   }
@@ -4326,18 +4368,6 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     var testing = quiz.testDay !== null && qs.length > 0;
     if (quiz.testDay !== null && quiz.testDay >= qs.length) quiz.testDay = Math.max(0, qs.length - 1);
     var day = testing ? quiz.testDay : quizOpen(t);
-    var box = document.querySelector('.testbox');
-    box.classList.toggle('on', testing);
-    document.getElementById('q-test-text').textContent = testing
-      ? 'You are previewing the quiz. Players never see this.'
-      : 'Jump between question days to try everything out.';
-    document.getElementById('q-test').textContent = testing ? 'Exit test mode' : 'Start test mode';
-    document.getElementById('q-test-ctrl').hidden = !testing;
-    if (testing) {
-      document.getElementById('q-test-day').textContent = 'Question ' + (day + 1) + ' of ' + qs.length;
-      document.getElementById('q-prev').disabled = day <= 0;
-      document.getElementById('q-next').disabled = day >= qs.length - 1;
-    }
     var q = day >= 0 && day < qs.length ? qs[day] : null;
     document.getElementById('q-today-card').hidden = !q;
     document.getElementById('q-today-empty').hidden = !!q;
@@ -4532,10 +4562,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     list.textContent = '';
     qs.forEach(function (item, i) {
       var li = el('li');
-      var tagTxt = !item.shown ? 'Hidden' : qRevealed(t, i) ? 'Revealed' : 'Open';
+      var isShown = qShown(t, i);
+      var tagTxt = !isShown ? (item.showAt ? 'Scheduled' : 'Hidden') : qRevealed(t, i) ? 'Revealed' : 'Open';
       var qh = el('span', 'qday', 'Question ' + (i + 1) + ' · ');
-      qh.appendChild(el('em', 'qstate q-' + tagTxt.toLowerCase(), tagTxt + (item.shown && !qRevealed(t, i) ? ' · ' + (t.answers || []).filter(function (a) { return a.day === i; }).length + ' answered' : '')));
+      qh.appendChild(el('em', 'qstate q-' + tagTxt.toLowerCase(), tagTxt + (isShown && !qRevealed(t, i) ? ' · ' + (t.answers || []).filter(function (a) { return a.day === i; }).length + ' answered' : '')));
       li.appendChild(qh);
+      var when = [];
+      if (item.showAt && !isShown) when.push('Shows ' + whenText(item.showAt));
+      if (item.revealAt && !qRevealed(t, i)) when.push('Answer at ' + whenText(item.revealAt));
+      if (when.length) qh.appendChild(el('small', 'qwhen', when.join(' · ')));
       li.appendChild(textDir(el('strong', null, item.q), item.q));
       var ans = el('small', null, 'Answer: ');
       ans.appendChild(el('b', null, item.options[item.answer]));
@@ -4551,8 +4586,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       rm.setAttribute('aria-label', 'Remove day ' + (i + 1) + ' question');
       rm.addEventListener('click', function () { t.questions.splice(i, 1); quiz.editing = null; qForm.hidden = true; save(tournaments); render(); renderQuiz(); });
       var answered = (t.answers || []).filter(function (a) { return a.day === i; }).length;
-      if (!item.shown) {
-        var sh = el('button', 'q-show', 'Show question');
+      if (!isShown) {
+        var sh = el('button', 'q-show', item.showAt ? 'Show now' : 'Show question');
         sh.type = 'button';
         sh.addEventListener('click', function () { showQuestion(t, i, true); });
         btns.appendChild(sh);
@@ -4583,15 +4618,6 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   document.querySelectorAll('[data-qtab]').forEach(function (b) {
     b.addEventListener('click', function () { quiz.tab = b.dataset.qtab; quiz.choice = null; renderQuiz(); });
   });
-  document.getElementById('q-test').addEventListener('click', function () {
-    var t = current();
-    if (!(t.questions || []).length && quiz.testDay === null) { toast('Add a question first to try test mode'); return; }
-    quiz.testDay = quiz.testDay === null ? 0 : null;
-    quiz.picked = null;
-    renderQuiz();
-  });
-  document.getElementById('q-prev').addEventListener('click', function () { quiz.testDay--; quiz.picked = null; renderQuiz(); });
-  document.getElementById('q-next').addEventListener('click', function () { quiz.testDay++; quiz.picked = null; renderQuiz(); });
   document.getElementById('q-edit').addEventListener('click', function (e) {
     var t = current();
     if (t) openSettings(t, e.currentTarget);
@@ -4604,6 +4630,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     document.getElementById('q-text').value = item.q;
     qOpts.forEach(function (input, k) { input.value = item.options[k] || ''; });
     qForm.querySelector('[name="q-correct"][value="' + item.answer + '"]').checked = true;
+    document.getElementById('q-show-at').value = item.showAt || '';
+    document.getElementById('q-reveal-at').value = item.revealAt || '';
+    document.getElementById('q-time-err').hidden = true;
     document.getElementById('q-save').textContent = 'Save changes';
     qForm.hidden = false;
     renderQuiz();
@@ -4615,10 +4644,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     document.getElementById('q-save').textContent = 'Save question';
     qForm.reset();
     document.getElementById('q-err').hidden = true;
+    document.getElementById('q-time-err').hidden = true;
     qForm.hidden = false;
     renderQuiz();
     document.getElementById('q-text').focus();
   });
+  ['q-show-at', 'q-reveal-at'].forEach(function (id) { document.getElementById(id).addEventListener('input', function () { document.getElementById('q-time-err').hidden = true; }); });
   document.getElementById('q-cancel').addEventListener('click', function () { qForm.hidden = true; quiz.editing = null; renderQuiz(); });
   qForm.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -4632,21 +4663,28 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       options.push(v);
     });
     if (!text || options.length < 2 || answer < 0) { document.getElementById('q-err').hidden = false; return; }
+    var showAt = document.getElementById('q-show-at').value, revealAt = document.getElementById('q-reveal-at').value;
+    var timeErr = document.getElementById('q-time-err');
+    timeErr.hidden = !(showAt && revealAt && new Date(revealAt) <= new Date(showAt));
+    if (!timeErr.hidden) return;
     var t = current(), editing = quiz.editing;
+    var fresh = { q: text, options: options, answer: answer };
+    if (showAt) fresh.showAt = showAt;
+    if (revealAt) fresh.revealAt = revealAt;
     if (editing !== null && t.questions[editing]) {
-      var old = t.questions[editing], fresh = { q: text, options: options, answer: answer };
-      if (old.revealed) fresh.revealed = true;
+      var old = t.questions[editing];
+      ['shown', 'shownOn', 'revealed'].forEach(function (k) { if (old[k]) fresh[k] = old[k]; });
       t.questions[editing] = fresh;
     } else {
       editing = null;
-      t.questions = (t.questions || []).concat({ q: text, options: options, answer: answer });
+      t.questions = (t.questions || []).concat(fresh);
     }
     save(tournaments);
     qForm.hidden = true;
     quiz.editing = null;
     render();
     renderQuiz();
-    toast(editing !== null ? 'Question ' + (editing + 1) + ' updated' : 'Added question ' + t.questions.length + '. Tap Show question when members should see it.');
+    toast(editing !== null ? 'Question ' + (editing + 1) + ' updated' : 'Added question ' + t.questions.length + (showAt ? '. It opens ' + whenText(showAt) + '.' : '. Tap Show question when members should see it.'));
   });
 
   // Site settings page
@@ -5084,6 +5122,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     }
     var newPass = authMode === 'signin' && m.reset;
     if (newPass) { delete m.reset; delete m.resetAsked; writeMember(m); }
+    m.lastSeen = new Date().toISOString(); writeMember(m);
     var found = { id: m.id, name: m.name };
     auth.account = found;
     saveAccount();
@@ -5172,6 +5211,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     if (m.uid) body.uid = m.uid;
     if (m.v) body.v = m.v;
     if (m.joinedAt) body.joinedAt = m.joinedAt;
+    if (m.lastSeen) body.lastSeen = m.lastSeen;
     memberWrites = memberWrites.then(function () { return membersDb.collection('members').doc(m.id).set(body); }).catch(cloudError);
   }
   function removeMember(id) {
@@ -5204,7 +5244,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     var list = document.getElementById('m-list');
     list.textContent = '';
     var q = memberSearch.toLowerCase();
-    var shown = members.slice().sort(function (a, b) { return (b.resetAsked ? 1 : 0) - (a.resetAsked ? 1 : 0) || a.id.localeCompare(b.id, undefined, { numeric: true }); })
+    // Password requests on top, then admins, managers and members, each A to Z by name
+    var rank = { admin: 0, manager: 1 };
+    function rankOf(m) { return m.role in rank ? rank[m.role] : 2; }
+    var shown = members.slice().sort(function (a, b) {
+      return (b.resetAsked ? 1 : 0) - (a.resetAsked ? 1 : 0) || rankOf(a) - rankOf(b)
+        || (a.name || a.id).localeCompare(b.name || b.id, undefined, { sensitivity: 'base', numeric: true })
+        || a.id.localeCompare(b.id, undefined, { numeric: true });
+    })
       .filter(function (m) { return !q || m.id.toLowerCase().indexOf(q) !== -1 || (m.name || '').toLowerCase().indexOf(q) !== -1; })
       .filter(function (m) {
         return memberFilter === 'all' || (memberFilter === 'joined' && m.joined) || (memberFilter === 'waiting' && !m.joined) || (memberFilter === 'staff' && (m.role === 'admin' || m.role === 'manager'));
@@ -5233,6 +5280,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       });
       info.appendChild(nm);
       info.appendChild(el('small', m.joined ? 'm-joined' : null, m.joined ? 'Joined' + (m.joinedAt ? ' · ' + joinedText(m.joinedAt) : '') : 'Pending'));
+      if (m.joined) info.appendChild(el('small', null, m.lastSeen ? 'Last seen · ' + joinedText(m.lastSeen) : 'Not seen yet'));
       if (m.resetAsked) info.appendChild(el('small', 'm-ask', 'Wants a new password'));
       else if (m.reset) info.appendChild(el('small', 'm-ask done', 'Password reset'));
       li.appendChild(info);
@@ -5555,8 +5603,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
         throw { msg: 'This login is not linked to a member ID any more. Ask the site admin.' };
       }
       fbSetAccount(m);
+      fbSeen(m);
       return m;
     });
+  }
+  // "Last seen": stamped when a signed-in member opens the site, at most every 10 minutes
+  function fbSeen(m) {
+    var last = Date.parse(m.lastSeen || '') || 0;
+    if (Date.now() - last < 10 * 60 * 1000) return;
+    fb.db.collection('members').doc(m.id).update({ lastSeen: new Date().toISOString() }).catch(function () {});
   }
   function fbFollowAll(on) {
     if (on && !fb.unsubAll) {
