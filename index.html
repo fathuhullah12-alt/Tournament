@@ -386,7 +386,10 @@ section.block { padding-block: 48px 8px; }
 @keyframes pred-pop { 0% { transform: scale(.9); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) { .pred-btn, .pred-btn::after, .pred-btn svg.i, .pred-btn[aria-pressed="true"] svg.i { animation: none !important; transition: none; } .pred-btn::after { display: none; } }
 .detail-title { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(40px, 8vw, 60px); line-height: .92; margin: 12px 0 10px; text-wrap: balance; }
-.detail-sub { margin: 0 0 6px; color: var(--fg-muted); font-size: 18px; font-variant-numeric: tabular-nums; }
+.detail-sub { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 10px; color: var(--fg-muted); font-size: 15px; font-variant-numeric: tabular-nums; }
+.meta-pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px 6px 10px; border-radius: 999px; background: var(--chip); border: 1px solid var(--line-soft); color: var(--fg); font-weight: 500; line-height: 1.2; min-width: 0; }
+.meta-pill .i { width: 16px; height: 16px; flex: none; color: var(--teal-hover); }
+.meta-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail-desc { margin: 4px 0 24px; color: var(--fg-muted); max-width: 60ch; }
 .detail-kick { margin-bottom: 18px; }
 #detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
@@ -2612,10 +2615,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     var status = document.getElementById('d-status');
     status.className = 'status ' + STATUSES[st].cls; status.textContent = STATUSES[st].label;
     document.getElementById('d-name').textContent = t.name;
-    var sub = [formatDate(t.date)];
-    if (t.location) sub.push(t.location);
-    sub.push((t.squads || []).length + ' of ' + t.teams + ' teams');
-    document.getElementById('d-sub').textContent = sub.join(' · ');
+    var sub = [['calendar', formatDate(t.date)]];
+    if (t.location) sub.push(['pin', t.location]);
+    sub.push(['users', (t.squads || []).length + ' of ' + t.teams + ' teams']);
+    metaPills(document.getElementById('d-sub'), sub);
     var dk = document.getElementById('d-kick');
     dk.dataset.kick = t.id; fillNextKick(dk, t);
     var desc = document.getElementById('d-desc');
@@ -4352,8 +4355,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     var status = document.getElementById('q-status');
     status.className = 'status ' + STATUSES[st].cls; status.textContent = STATUSES[st].label;
     document.getElementById('q-name').textContent = t.name;
-    document.getElementById('q-sub').textContent = 'Starts ' + formatDate(t.date) + ' · ' + qs.length +
-      (qs.length === 1 ? ' question' : ' questions') + ' · ' + quizBoard(t).length + (quizBoard(t).length === 1 ? ' player' : ' players');
+    var players = quizBoard(t).length;
+    metaPills(document.getElementById('q-sub'), [['calendar', 'Starts ' + formatDate(t.date)],
+      ['quiz', qs.length + (qs.length === 1 ? ' question' : ' questions')], ['users', players + (players === 1 ? ' player' : ' players')]]);
     var desc = document.getElementById('q-desc');
     desc.textContent = t.description || ''; desc.hidden = !t.description;
 
@@ -5234,6 +5238,16 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     b.addEventListener('click', function () { memberFilter = b.dataset.mfilter; renderMembers(); });
   });
   // When a member created their account, e.g. "26 Oct 2026, 7:05 am"
+  // Date, place and counts under a tournament name, as small icon pills
+  function metaPills(node, items) {
+    node.textContent = '';
+    items.forEach(function (x) {
+      var pill = el('span', 'meta-pill');
+      pill.insertAdjacentHTML('beforeend', '<svg class="i" aria-hidden="true"><use href="#ic-' + x[0] + '"/></svg>');
+      pill.appendChild(el('span', null, x[1]));
+      node.appendChild(pill);
+    });
+  }
   function joinedText(iso) {
     var d = new Date(iso);
     if (isNaN(d)) return '';
