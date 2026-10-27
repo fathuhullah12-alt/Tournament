@@ -1844,9 +1844,34 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
         <button class="switch" type="button" role="switch" id="ac-visitor" aria-checked="false" aria-label="View as visitor"><span></span></button>
       </div>
       <button class="btn btn-ghost" type="button" id="ac-signin" hidden>Sign in as a member</button>
+      <button class="btn btn-ghost" type="button" id="ac-pass" hidden><svg class="i"><use href="#ic-key"/></svg>Change password</button>
       <button class="btn btn-ghost danger-text" type="button" id="ac-signout" hidden>Sign out</button>
     </div>
   </div>
+</div>
+
+<div class="modal" id="pass-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <form class="sheet" id="pass-form" novalidate aria-labelledby="pw-title">
+    <div class="sheet-head">
+      <div>
+        <h2 id="pw-title">Change password</h2>
+        <p class="sheet-sub">Type your current password, then choose a new one.</p>
+      </div>
+      <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <input type="text" id="pw-user" autocomplete="username" hidden>
+      <label class="field"><span>Current password</span><input id="pw-old" type="password" maxlength="64" autocomplete="current-password"></label>
+      <label class="field"><span>New password</span><input id="pw-new" type="password" maxlength="64" autocomplete="new-password" placeholder="At least 6 characters"></label>
+      <label class="field"><span>New password again</span><input id="pw-new2" type="password" maxlength="64" autocomplete="new-password"></label>
+      <em class="err" id="pw-err" hidden></em>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+      <button class="btn" type="submit" id="pw-save">Save password</button>
+    </div>
+  </form>
 </div>
 
 <div class="modal" id="confirm-modal" hidden>
@@ -5160,6 +5185,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     document.getElementById('ac-visitor').setAttribute('aria-checked', auth.viewAsVisitor ? 'true' : 'false');
     document.getElementById('ac-signin').hidden = !!auth.account;
     document.getElementById('ac-signout').hidden = !auth.account;
+    document.getElementById('ac-pass').hidden = !auth.account;
     accountModal.hidden = false;
   }
   function setViewAsVisitor(on) {
@@ -5175,6 +5201,45 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   document.getElementById('ac-visitor').addEventListener('click', function () { setViewAsVisitor(!auth.viewAsVisitor); });
   document.getElementById('visitor-exit').addEventListener('click', function () { setViewAsVisitor(false); toast('Back to admin view'); });
   document.getElementById('ac-signin').addEventListener('click', function () { accountModal.hidden = true; openAuth(null, null, document.getElementById('account-btn')); });
+  // A signed-in member changes their own password
+  var passModal = document.getElementById('pass-modal');
+  document.getElementById('ac-pass').addEventListener('click', function (e) {
+    document.getElementById('pass-form').reset();
+    document.getElementById('pw-user').value = auth.account ? auth.account.id : '';
+    document.getElementById('pw-err').hidden = true;
+    accountModal.hidden = true;
+    passModal.returnFocus = document.getElementById('account-btn');
+    passModal.hidden = false;
+    setTimeout(function () { document.getElementById('pw-old').focus(); }, 0);
+  });
+  document.getElementById('pass-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = document.getElementById('pw-err'), btn = document.getElementById('pw-save');
+    function fail(msg, id) { err.textContent = msg; err.hidden = false; if (id) document.getElementById(id).focus(); }
+    var old = document.getElementById('pw-old').value, next = document.getElementById('pw-new').value;
+    if (!old) return fail('Type your current password.', 'pw-old');
+    if (next.length < 6) return fail('The new password needs at least 6 characters.', 'pw-new');
+    if (next !== document.getElementById('pw-new2').value) return fail('The two new passwords are not the same.', 'pw-new2');
+    if (next === old) return fail('The new password is the same as the current one.', 'pw-new');
+    err.hidden = true;
+    function done() { btn.disabled = false; closeModal(passModal); toast('Password changed'); }
+    if (!FB_MODE) return done();
+    var user = fb.auth && fb.auth.currentUser;
+    if (!user) return fail('Sign in again, then try once more.');
+    btn.disabled = true;
+    user.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(user.email, old))
+      .then(function () { return user.updatePassword(next); })
+      .then(done)
+      .catch(function (e) {
+        btn.disabled = false;
+        var code = e && e.code;
+        if (code === 'auth/wrong-password' || code === 'auth/invalid-credential' || code === 'auth/invalid-login-credentials') return fail('The current password is wrong.', 'pw-old');
+        if (code === 'auth/weak-password') return fail('That password is too weak. Try a longer one.', 'pw-new');
+        if (code === 'auth/too-many-requests') return fail('Too many tries. Wait a few minutes and try again.');
+        if (code === 'auth/network-request-failed') return fail('No connection. Check your internet and try again.');
+        fail('Something went wrong (' + (code || 'unknown') + '). Try again.');
+      });
+  });
   document.getElementById('ac-signout').addEventListener('click', function () {
     if (FB_MODE && fb.auth) fb.auth.signOut();
     auth.account = null; saveAccount();
