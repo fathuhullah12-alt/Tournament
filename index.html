@@ -595,7 +595,15 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 #q-add { margin-top: 16px; }
 
 /* Teams */
-.team-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+.team-btns { display: flex; gap: 8px; flex: none; }
+.team-btns .btn { white-space: nowrap; }
+.team-btns .btn.is-full { opacity: .5; }
+.full-ic { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--amber-bg); color: var(--amber-fg); margin-bottom: 6px; }
+.full-ic svg.i { width: 26px; height: 26px; }
+.roster-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.bulk-box { display: grid; gap: 8px; margin-top: 10px; padding: 14px; border-radius: 14px; border: 1px dashed var(--line); background: color-mix(in srgb, var(--chip) 40%, transparent); }
+.bulk-box .btn { justify-self: start; }
+.team-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; color: var(--fg-muted); font-variant-numeric: tabular-nums; }
 .crest {
   --c1: #346b4a; --c2: #ffffff;
   width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
@@ -1446,7 +1454,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <div class="detail-tabs" role="tablist" aria-label="Tournament sections" id="d-tabs"></div>
       <div class="team-bar" id="d-teambar" hidden>
         <span id="d-team-count"></span>
-        <button class="btn" type="button" data-admin id="d-add-team"><svg class="i"><use href="#ic-plus"/></svg>Add team</button>
+        <span class="team-btns">
+          <button class="btn btn-ghost" type="button" data-admin id="d-bulk-team">Add many</button>
+          <button class="btn" type="button" data-admin id="d-add-team"><svg class="i"><use href="#ic-plus"/></svg>Add team</button>
+        </span>
       </div>
       <div id="d-content"></div>
       <div class="panel" id="d-panel" role="tabpanel">
@@ -1802,13 +1813,50 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <div class="field">
         <span id="tm-players-label">Players</span>
         <ul class="roster" id="tm-roster" aria-labelledby="tm-players-label"></ul>
-        <button class="btn btn-ghost btn-sm roster-add" type="button" id="tm-add-player"><svg class="i"><use href="#ic-plus"/></svg>Add player</button>
+        <div class="roster-btns">
+          <button class="btn btn-ghost btn-sm roster-add" type="button" id="tm-add-player"><svg class="i"><use href="#ic-plus"/></svg>Add player</button>
+          <button class="btn btn-ghost btn-sm" type="button" id="tm-bulk-toggle" aria-expanded="false" aria-controls="tm-bulk">Paste many players</button>
+        </div>
+        <div class="bulk-box" id="tm-bulk" hidden>
+          <label class="field">
+            <span>One player per line: number, name, position</span>
+            <textarea id="tm-bulk-text" rows="5" maxlength="20000" placeholder="1, Hassan Ali, Goalkeeper&#10;10, Ali Hassan, Forward&#10;Musa Ibrahim"></textarea>
+          </label>
+          <small class="hint">Number and position are optional. You can also copy rows from Excel and paste them here.</small>
+          <em class="err" id="tm-bulk-err" hidden></em>
+          <button class="btn btn-sm" type="button" id="tm-bulk-add"><svg class="i"><use href="#ic-plus"/></svg>Add these players</button>
+        </div>
       </div>
       <button class="btn btn-ghost danger-text" type="button" id="tm-delete" hidden>Remove team</button>
     </div>
     <div class="sheet-actions">
       <button class="btn btn-ghost" type="button" data-close>Cancel</button>
       <button class="btn" type="submit">Save</button>
+    </div>
+  </form>
+</div>
+
+<div class="modal" id="bulk-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <form class="sheet" id="bulk-form" novalidate aria-labelledby="bk-title">
+    <div class="sheet-head">
+      <div>
+        <h2 id="bk-title">Add many teams</h2>
+        <p class="sheet-sub" id="bk-sub"></p>
+      </div>
+      <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <label class="field">
+        <span>One team name per line</span>
+        <textarea id="bk-text" rows="6" maxlength="8000" placeholder="Island Strikers&#10;Manadhoo FC&#10;Blue Waves"></textarea>
+      </label>
+      <small class="hint" id="bk-hint">Each team gets its own colours. Tap a team later to add a logo, change colours or add players.</small>
+      <em class="err" id="bk-err" hidden></em>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+      <button class="btn" type="submit">Add teams</button>
     </div>
   </form>
 </div>
@@ -1966,6 +2014,21 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <div class="sheet-actions">
       <button class="btn btn-ghost" type="button" id="cf-no" data-close>Keep</button>
       <button class="btn btn-danger" type="button" id="cf-yes">Remove</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="full-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="sheet confirm-sheet" role="alertdialog" aria-modal="true" aria-labelledby="fl-title" aria-describedby="fl-text">
+    <div class="sheet-body">
+      <span class="full-ic"><svg class="i"><use href="#ic-users"/></svg></span>
+      <h2 id="fl-title">Teams are full</h2>
+      <p id="fl-text"></p>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" type="button" data-close>OK</button>
+      <button class="btn" type="button" id="fl-edit">Change number of teams</button>
     </div>
   </div>
 </div>
@@ -2850,8 +2913,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var full = teams.length >= t.teams;
     document.getElementById('d-team-count').textContent = teams.length + ' of ' + t.teams + ' teams' + (full ? ' · full' : '');
     var addBtn = document.getElementById('d-add-team');
-    addBtn.disabled = full;
-    addBtn.title = full ? 'This tournament has its maximum number of teams. Raise it in Edit details.' : '';
+    // When full the buttons stay tappable and explain why nothing can be added
+    addBtn.classList.toggle('is-full', full);
+    document.getElementById('d-bulk-team').classList.toggle('is-full', full);
 
     var content = document.getElementById('d-content');
     content.textContent = '';
@@ -3066,6 +3130,46 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   document.getElementById('tm-add-player').addEventListener('click', function (e) {
     openPlayer(draftTeam(), teamState.players, null, e.currentTarget, renderRoster);
   });
+  // Many players at once: "10, Ali Hassan, Forward" per line; number and position are optional
+  function bulkOpen(on) {
+    document.getElementById('tm-bulk').hidden = !on;
+    document.getElementById('tm-bulk-toggle').setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (on) setTimeout(function () { document.getElementById('tm-bulk-text').focus(); }, 0);
+  }
+  document.getElementById('tm-bulk-toggle').addEventListener('click', function () { bulkOpen(document.getElementById('tm-bulk').hidden); });
+  var POS_WORDS = [['Goalkeeper', /^(gk|goal ?keeper|keeper|goalie)$/i], ['Defender', /^(def|defender|defence|defense|back)$/i], ['Midfielder', /^(mid|midfield|midfielder)$/i], ['Forward', /^(fw|fwd|forward|striker|attacker|st)$/i]];
+  function posOf(w) { for (var i = 0; i < POS_WORDS.length; i++) if (POS_WORDS[i][1].test(w.trim())) return POS_WORDS[i][0]; return null; }
+  document.getElementById('tm-bulk-add').addEventListener('click', function () {
+    var box = document.getElementById('tm-bulk-text'), err = document.getElementById('tm-bulk-err');
+    var list = teamState.players, added = 0, skipped = [], noNumber = 0;
+    box.value.split(/\n+/).forEach(function (line) {
+      var parts = line.split(/\t|,|;/).map(function (x) { return x.trim(); }).filter(Boolean);
+      if (!parts.length) return;
+      // Any cell that is a number or a position is used as such; the rest is the name
+      var number = '', pos = '', rest = [];
+      parts.forEach(function (x) {
+        if (number === '' && /^#?\d{1,2}$/.test(x)) number = String(+x.replace('#', ''));
+        else if (!pos && parts.length > 1 && posOf(x)) pos = posOf(x);
+        else rest.push(x);
+      });
+      var name = rest.join(' ').replace(/\s+/g, ' ').slice(0, 40);
+      if (!name) return;
+      if (list.some(function (x) { return x.name.toLowerCase() === name.toLowerCase(); })) { skipped.push(name); return; }
+      if (number !== '' && list.some(function (x) { return x.number === number; })) { number = ''; noNumber++; }
+      list.push({ id: uid(), name: name, number: number, pos: pos, photo: null, stars: 0 });
+      added++;
+    });
+    if (!added) {
+      err.textContent = skipped.length ? 'Those players are already in this team.' : 'Type at least one player, one per line.';
+      err.hidden = false; return;
+    }
+    err.hidden = true; box.value = '';
+    renderRoster(); bulkOpen(false);
+    var msg = 'Added ' + added + (added === 1 ? ' player' : ' players');
+    if (skipped.length) msg += ', ' + skipped.length + ' already in the team';
+    if (noNumber) msg += '. ' + noNumber + ' number' + (noNumber === 1 ? ' was' : 's were') + ' taken, so left empty';
+    toast(msg + '. Tap Save to keep them.');
+  });
   document.getElementById('tm-logo').addEventListener('change', function (e) {
     var file = e.target.files[0];
     e.target.value = '';
@@ -3101,14 +3205,77 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     tm.c1.value = team ? team.c1 : '#346b4a';
     tm.c2.value = team ? team.c2 : '#ffffff';
     renderRoster();
+    bulkOpen(false); document.getElementById('tm-bulk-text').value = ''; document.getElementById('tm-bulk-err').hidden = true;
     document.getElementById('tm-delete').hidden = !team;
     syncCrest();
     teamModal.hidden = false;
     setTimeout(function () { tm.name.focus(); }, 0);
   }
+  var fullModal = document.getElementById('full-modal');
+  function teamsFull(t, trigger) {
+    if ((t.squads || []).length < t.teams) return false;
+    document.getElementById('fl-text').textContent = 'All ' + t.teams + ' team places in ' + t.name + ' are taken. To add more teams, raise the number of teams first.';
+    fullModal.returnFocus = trigger || null;
+    fullModal.hidden = false;
+    setTimeout(function () { document.getElementById('fl-edit').focus(); }, 0);
+    return true;
+  }
+  document.getElementById('fl-edit').addEventListener('click', function () {
+    fullModal.hidden = true;
+    var t = current();
+    if (t) openForm(document.getElementById('d-add-team'), t);
+  });
   document.getElementById('d-add-team').addEventListener('click', function (e) {
     var t = current();
-    if (t) openTeam(t, null, e.currentTarget);
+    if (t && !teamsFull(t, e.currentTarget)) openTeam(t, null, e.currentTarget);
+  });
+  // Many teams at once: one name per line, each with its own colours
+  var bulkModal = document.getElementById('bulk-modal');
+  document.getElementById('d-bulk-team').addEventListener('click', function (e) {
+    var t = current();
+    if (!t || teamsFull(t, e.currentTarget)) return;
+    var room = t.teams - (t.squads || []).length;
+    document.getElementById('bk-sub').textContent = 'Room for ' + room + (room === 1 ? ' more team.' : ' more teams.');
+    document.getElementById('bk-text').value = '';
+    document.getElementById('bk-err').hidden = true;
+    bulkModal.returnFocus = e.currentTarget;
+    bulkModal.hidden = false;
+    setTimeout(function () { document.getElementById('bk-text').focus(); }, 0);
+  });
+  document.getElementById('bulk-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var t = current(), err = document.getElementById('bk-err');
+    if (!t) return;
+    var have = t.squads || [];
+    var names = document.getElementById('bk-text').value.split(/\n+/).map(function (l) {
+      // A pasted spreadsheet row keeps only its first cell
+      return l.split('\t')[0].replace(/^\s*\d+[.)]\s+/, '').trim().slice(0, 40);
+    }).filter(Boolean);
+    if (!names.length) { err.textContent = 'Type at least one team name.'; err.hidden = false; return; }
+    var seen = {}, dupes = 0;
+    have.forEach(function (x) { seen[x.name.toLowerCase()] = true; });
+    names = names.filter(function (n) { var k = n.toLowerCase(); if (seen[k]) { dupes++; return false; } seen[k] = true; return true; });
+    var room = Math.max(0, t.teams - have.length), extra = Math.max(0, names.length - room);
+    names = names.slice(0, room);
+    if (!names.length) {
+      err.textContent = dupes && !extra ? 'Those teams are already in this tournament.' : 'No room for more teams. Raise the number of teams in Edit details.';
+      err.hidden = false; return;
+    }
+    var used = have.map(function (x) { return (x.c1 || '').toLowerCase(); });
+    var colours = SWATCHES.filter(function (c) { return used.indexOf(c) === -1; });
+    if (!colours.length) colours = SWATCHES.slice();
+    var made = names.map(function (n, i) {
+      var c1 = colours[i % colours.length];
+      return { id: Date.now().toString(36) + i, name: n, group: '', c1: c1, c2: c1 === '#f2f2f2' ? '#141414' : '#ffffff', logo: null, players: [] };
+    });
+    t.squads = have.concat(made);
+    save(tournaments);
+    bulkModal.hidden = true;
+    renderDetail();
+    var msg = 'Added ' + made.length + (made.length === 1 ? ' team' : ' teams');
+    if (dupes) msg += ', ' + dupes + ' already added';
+    if (extra) msg += '. ' + extra + ' did not fit: raise the number of teams in Edit details';
+    toast(msg);
   });
   document.getElementById('team-form').addEventListener('submit', function (e) {
     e.preventDefault();
