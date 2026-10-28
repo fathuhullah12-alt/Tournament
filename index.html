@@ -318,6 +318,19 @@ section.block { padding-block: 48px 8px; }
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   background: var(--amber-bg); border-radius: 14px; padding: 14px 20px;
 }
+.year-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 14px; margin: 10px 0 -4px; font: 800 26px/1 var(--font-display); letter-spacing: .04em; color: var(--fg-muted); }
+.year-head:first-child { margin-top: 0; }
+.year-head::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.fx-add-ko { display: flex; align-items: center; gap: 14px; width: 100%; margin-top: 12px; padding: 16px 18px; border: 1.5px dashed var(--line); border-radius: var(--radius); background: none; color: var(--fg); text-align: left; font: inherit; cursor: pointer; }
+.fx-add-ko:hover { border-color: var(--teal); }
+.fx-quick { border-style: solid; border-color: color-mix(in srgb, var(--amber-fg) 45%, var(--line)); background: color-mix(in srgb, var(--amber-bg) 45%, transparent); }
+.fx-quick > svg.i { background: var(--amber-fg) !important; color: var(--bg) !important; }
+.fx-add-ko > svg.i { flex: none; width: 34px; height: 34px; padding: 7px; border-radius: 50%; background: var(--teal); color: var(--on-teal); }
+.fx-add-ko span { display: grid; gap: 2px; }
+.fx-add-ko b { font-size: 16px; }
+.fx-add-ko small { color: var(--fg-muted); font-size: 13px; line-height: 1.4; }
+.quiz-ended { display: flex; align-items: center; gap: 10px; padding: 12px 0 0; border-top: 1px solid color-mix(in srgb, var(--amber-fg) 22%, transparent); color: var(--fg-muted); font: 500 14px var(--font-body); }
+.quiz-ended::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--amber-fg); }
 .today span:first-child { color: var(--amber-fg); font-weight: 700; letter-spacing: .1em; font-size: 15px; }
 .today span:last-child { font-family: var(--font-display); font-weight: 700; font-size: 24px; }
 .card-champ { position: relative; z-index: 1; pointer-events: none; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px;
@@ -904,13 +917,39 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .member-tools input { flex: 1 1 200px; max-width: 320px; min-height: 42px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--field); color: var(--fg); font: 15px var(--font-body); }
 .member-list { list-style: none; margin: 0; padding: 0; }
 .member-list:empty { display: none; }
-.member-list li { display: flex; align-items: center; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line-soft); }
-.member-list li .m-av { flex: none; }
+.member-list li { border-top: 1px solid var(--line-soft); }
+.m-head { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 18px; border: 0; background: none; color: inherit; text-align: left; font: inherit; cursor: pointer; }
+.m-head:hover { background: var(--chip); }
+.m-head > svg.i { flex: none; width: 18px; height: 18px; color: var(--fg-dim); transition: transform .2s; }
+.m-item.open .m-head > svg.i { transform: rotate(180deg); }
+.m-item.open { background: color-mix(in srgb, var(--chip) 50%, transparent); }
+.m-head .m-av { flex: none; }
+.m-top { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.m-top .m-id { flex: none; font-variant-numeric: tabular-nums; }
+.m-nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
+.m-head small { font-size: 13px; color: var(--fg-muted); }
+.m-tag { flex: none; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--amber-bg); color: var(--amber-fg); }
+.m-tag.manager { background: color-mix(in srgb, #4a6cc4 16%, transparent); color: #4a6cc4; }
+.m-body { display: grid; gap: 10px; padding: 0 18px 14px 70px; }
+.m-facts { display: grid; gap: 2px; font-size: 13px; color: var(--fg-muted); }
+.m-facts small.m-ask { color: var(--amber-fg); font-weight: 700; }
+.m-facts small.m-ask.done { color: var(--fg-muted); font-weight: 600; }
+.m-ctrls { display: flex; align-items: center; gap: 8px; }
+.m-ctrls .m-role { flex: 1 1 auto; min-width: 0; width: auto; max-width: 220px; }
+.m-body .m-name { margin-left: 0; min-height: 42px; padding: 8px 12px; border-color: var(--line); background: var(--field); max-width: 320px; }
+.m-toggle { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 18px; border: 0; border-top: 1px solid var(--line-soft); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.m-toggle[hidden] { display: none; }
+.m-toggle:hover { background: var(--chip); }
+.m-tlabel { font-weight: 700; font-size: 16px; }
+.m-asks { padding: 3px 9px; border-radius: 999px; background: var(--amber-bg); color: var(--amber-fg); font-size: 12px; font-weight: 700; }
+.m-toggle .m-total { margin-left: auto; padding: 3px 10px; border-radius: 999px; background: var(--chip); font-size: 13px; font-weight: 700; color: var(--fg-muted); }
+.m-toggle svg.i { flex: none; width: 20px; height: 20px; color: var(--fg-dim); transition: transform .2s; }
+.m-toggle[aria-expanded="true"] svg.i { transform: rotate(180deg); }
+/* The list scrolls inside its own box so the page stays short */
+#m-box .member-list { max-height: min(60vh, 520px); overflow-y: auto; overscroll-behavior: contain; }
 @media (max-width: 560px) {
-  .member-list li { padding: 12px 14px; flex-wrap: wrap; row-gap: 10px; }
-  /* Small screens: the name gets the whole first row, the controls go under it */
-  .member-list li .m-info { flex: 1 1 calc(100% - 52px); }
-  .member-list li .m-role { flex: 1 1 auto; width: auto !important; margin-left: 48px; }
+  .m-head { padding: 10px 14px; }
+  .m-body { padding: 0 14px 14px 66px; }
 }
 #m-add { background: var(--teal); color: var(--on-teal); }
 #m-add:hover { background: var(--teal-hover); }
@@ -1508,7 +1547,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
           <input id="m-search" type="search" placeholder="Search ID or name" aria-label="Search members">
         </div>
         <p class="m-empty" id="m-count"></p>
-        <ul class="member-list" id="m-list"></ul>
+        <ul class="member-list" id="m-staff"></ul>
+        <button class="m-toggle" type="button" id="m-toggle" aria-expanded="false" aria-controls="m-box">
+          <span class="m-tlabel">Members</span><span class="m-asks" id="m-asks" hidden></span><span class="m-total" id="m-total"></span><svg class="i"><use href="#ic-down"/></svg>
+        </button>
+        <div id="m-box" hidden>
+          <ul class="member-list" id="m-list"></ul>
+        </div>
       </div>
     </div>
   </section>
@@ -2202,6 +2247,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     return countLine(parts);
   }
 
+  // Month a quiz ended: its last question day, or its start date when none are dated
+  function quizEndMonth(t) {
+    var last = t.date || '';
+    (t.questions || []).forEach(function (q) {
+      [q.shownOn, q.showAt, q.revealAt].forEach(function (v) { if (v && v.slice(0, 10) > last) last = v.slice(0, 10); });
+    });
+    var p = last.split('-');
+    if (p.length < 2) return '';
+    return new Date(+p[0], +p[1] - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  }
+
   function cardFor(t) {
     var type = typeOf(t.category);
     var card = el('article', 'card');
@@ -2224,7 +2280,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     if (!type.quiz && t.location) meta.appendChild(metaRow('ic-pin', t.location));
     card.appendChild(meta);
 
-    if (type.quiz) {
+    if (type.quiz && st === 'completed') {
+      // Finished quiz: a quiet summary line instead of today's question
+      var qn = (t.questions || []).length;
+      var done = el('div', 'quiz-ended');
+      done.appendChild(el('span', null, qn + (qn === 1 ? ' question' : ' questions') + ' · ended ' + quizEndMonth(t)));
+      card.appendChild(done);
+    } else if (type.quiz) {
       var today = el('div', 'today');
       var qd = quizOpen(t), qs = t.questions || [];
       var left = qs.filter(function (x, i) { return !qShown(t, i); }).length;
@@ -2258,7 +2320,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   function nextKick(t) {
     var now = Date.now(), best = null;
     (t.matches || []).forEach(function (m) {
-      if (played(m) || !m.home || !m.away || !m.date) return;
+      if (played(m) || (!m.home && !m.homeSlot) || (!m.away && !m.awaySlot) || !m.date) return;
       var at = new Date(m.date).getTime();
       if (isNaN(at) || at + PLAYING_FOR < now) return;
       if (!best || at < best.at) best = { m: m, at: at };
@@ -2281,8 +2343,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     head.appendChild(el('span', 'nk-stage', 'Match ' + ((t.matches || []).indexOf(nk.m) + 1) + ' · ' + nk.m.stage));
     box.appendChild(head);
     var vs = el('div', 'nk-vs');
-    var hs = el('span', 'nk-team'); if (h) hs.appendChild(crest(h, 'sm')); hs.appendChild(el('b', null, h ? h.name : 'TBD'));
-    var as = el('span', 'nk-team nk-away'); as.appendChild(el('b', null, a ? a.name : 'TBD')); if (a) as.appendChild(crest(a, 'sm'));
+    function tbd(side) { var sl = nk.m[side + 'Slot']; return sl ? slotLabel(t, sl) : 'TBD'; }
+    var hs = el('span', 'nk-team'); if (h) hs.appendChild(crest(h, 'sm')); hs.appendChild(el('b', null, h ? h.name : tbd('home')));
+    var as = el('span', 'nk-team nk-away'); as.appendChild(el('b', null, a ? a.name : tbd('away'))); if (a) as.appendChild(crest(a, 'sm'));
     vs.appendChild(hs); vs.appendChild(el('i', null, 'vs')); vs.appendChild(as);
     box.appendChild(vs);
     if (!live) {
@@ -2338,10 +2401,22 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     // Live tournaments first, then upcoming ones by date (soonest first)
     var RANK = { live: 0, upcoming: 1, completed: 2 };
     shown = shown.map(function (t, i) { return { t: t, i: i, r: RANK[statusOf(t)], d: t.date || '' }; })
-      .sort(function (a, b) { return a.r - b.r || (a.r === 1 && a.d !== b.d ? (a.d < b.d ? -1 : 1) : 0) || a.i - b.i; })
+      .sort(function (a, b) {
+        return a.r - b.r || (a.r === 1 && a.d !== b.d ? (a.d < b.d ? -1 : 1) : 0)
+          // Finished ones: newest first
+          || (a.r === 2 && a.d !== b.d ? (a.d > b.d ? -1 : 1) : 0) || a.i - b.i;
+      })
       .map(function (x) { return x.t; });
     grid.textContent = '';
-    shown.forEach(function (t) { grid.appendChild(cardFor(t)); });
+    var lastYear = null;
+    shown.forEach(function (t) {
+      // Archive is split into years, newest year on top
+      if (view.tab === 'archive') {
+        var y = (t.date || '').slice(0, 4);
+        if (y && y !== lastYear) { grid.appendChild(el('h3', 'year-head', y)); lastYear = y; }
+      }
+      grid.appendChild(cardFor(t));
+    });
     empty.hidden = shown.length > 0;
     var kind = view.type === 'all' ? 'tournaments' : view.type.toLowerCase() + ' tournaments';
     if (view.tab === 'archive') {
@@ -2700,7 +2775,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       cb.appendChild(el('small', 'aw-label', 'Champion'));
       var cbody = el('div', 'aw-body'); cbody.appendChild(crest(champ));
       var ctxt = el('div', 'aw-txt'); ctxt.appendChild(el('b', null, champ.name));
-      ctxt.appendChild(el('span', 'aw-team', t.format === 'league' ? 'League winners' : 'Won the final'));
+      ctxt.appendChild(el('span', 'aw-team', t.format === 'league' && !(t.matches || []).some(function (m) { return m.ko && m.stage === 'Final'; }) ? 'League winners' : 'Won the final'));
       cbody.appendChild(ctxt); cb.appendChild(cbody); list.appendChild(cb);
     }
     if (prize.player) tile('Best player', prize.player, 'aw-gold');
@@ -3344,6 +3419,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   }
   function resolveSlot(t, slot) {
     if (!slot) return null;
+    if (slot.pos && !slot.g) {
+      // League table place, known once every league match is played
+      var lm = (t.matches || []).filter(function (m) { return !m.ko; });
+      if (!lm.length || lm.some(function (m) { return !played(m); })) return null;
+      var lr = tableFor(t, t.squads || [])[slot.pos - 1];
+      return lr ? lr.team.id : null;
+    }
+    if (slot.l) {
+      var lsrc = (t.matches || []).filter(function (m) { return m.id === slot.l; })[0];
+      var lw = lsrc ? winnerOf(lsrc) : null;
+      return lw && lsrc.away ? (lw === lsrc.home ? lsrc.away : lsrc.home) : null;
+    }
     if (slot.g) {
       var gm = (t.matches || []).filter(function (m) { return !m.ko && m.stage === slot.g; });
       if (!gm.length || gm.some(function (m) { return !played(m); })) return null;
@@ -3366,11 +3453,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     });
     return changed;
   }
+  function ordinal(n) { return n + (n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th'); }
   function slotLabel(t, slot) {
     if (slot.g) return (slot.pos === 1 ? 'Winner ' : 'Runner-up ') + slot.g;
-    var i = -1;
-    (t.matches || []).forEach(function (m, j) { if (m.id === slot.w) i = j; });
-    return 'Winner of match ' + (i + 1);
+    if (slot.pos) return ordinal(slot.pos) + ' in table';
+    var i = -1, id = slot.w || slot.l;
+    (t.matches || []).forEach(function (m, j) { if (m.id === id) i = j; });
+    return (slot.l ? 'Loser of match ' : 'Winner of match ') + (i + 1);
   }
   function generateFixtures(t) {
     var teams = t.squads || [], ids = teams.map(function (x) { return x.id; });
@@ -3463,7 +3552,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   function championOf(t) {
     var ms = t.matches || [];
     if (!ms.length) return null;
-    if (t.format === 'league') {
+    var hasFinal = ms.some(function (m) { return m.ko && m.stage === 'Final'; });
+    if (t.format === 'league' && !hasFinal) {
       if (ms.some(function (m) { return !played(m); })) return null;
       var top = tableFor(t, t.squads || [])[0];
       return top ? top.team : null;
@@ -3618,6 +3708,32 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       li.appendChild(row); ul.appendChild(li);
     });
     sec.appendChild(ul); root.appendChild(sec);
+    if (t.format === 'league' && teams.length >= 2) {
+      // Leagues can finish with playoffs, semi-finals or a final
+      var hasKo = ms.some(function (m) { return m.ko; }), hasFinal = ms.some(function (m) { return m.ko && m.stage === 'Final'; });
+      var addKo = el('button', 'fx-add-ko'); addKo.type = 'button'; addKo.setAttribute('data-admin', '');
+      addKo.appendChild(icon('ic-plus'));
+      var at = el('span'); at.appendChild(el('b', null, hasFinal ? 'Add another knockout match' : 'Add knockout match'));
+      at.appendChild(el('small', null, 'Playoff, semi-final, 3rd place or final. Pick teams now, or a table place like 2nd vs 3rd.'));
+      addKo.appendChild(at);
+      addKo.addEventListener('click', function () { openMatch(t, null, addKo, hasFinal ? 'Third place' : hasKo ? 'Final' : 'Semi-finals'); });
+      if (!hasKo && teams.length >= 3) {
+        // One tap: 2nd plays 3rd, and the winner meets the table leader in the final
+        var quick = el('button', 'fx-add-ko fx-quick'); quick.type = 'button'; quick.setAttribute('data-admin', '');
+        quick.appendChild(icon('ic-trophy'));
+        var qt = el('span'); qt.appendChild(el('b', null, 'Add playoff and final'));
+        qt.appendChild(el('small', null, '2nd plays 3rd. The winner plays the 1st place team in the final.'));
+        quick.appendChild(qt);
+        quick.addEventListener('click', function () {
+          var po = newMatch(null, null, 'Playoff', true); po.homeSlot = { pos: 2 }; po.awaySlot = { pos: 3 };
+          var fi = newMatch(null, null, 'Final', true); fi.homeSlot = { pos: 1 }; fi.awaySlot = { w: po.id };
+          t.matches = ms.concat([po, fi]); resolveBracket(t); save(tournaments); renderDetail();
+          toast('Added the playoff and the final. Tap each one to set its date.');
+        });
+        root.appendChild(quick);
+      }
+      root.appendChild(addKo);
+    }
     return true;
   }
 
@@ -4073,7 +4189,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   };
   var matchState = { t: null, m: null, goals: [] };
   var goalBoxes = Array.prototype.slice.call(matchModal.querySelectorAll('.goal-box'));
-  function sideTeam(side) { return teamById(matchState.t, side === 'home' ? mf.home.value : mf.away.value); }
+  // A team picker value is a team id, or "slot:" + a place still to be decided
+  function pickOf(t, v) {
+    if (v && v.indexOf('slot:') === 0) { var sl = JSON.parse(v.slice(5)); return { id: resolveSlot(t, sl), slot: sl }; }
+    return { id: v || null, slot: null };
+  }
+  function sideTeam(side) { return teamById(matchState.t, pickOf(matchState.t, side === 'home' ? mf.home.value : mf.away.value).id); }
   function syncMatch() {
     var t = matchState.t, h = sideTeam('home'), a = sideTeam('away');
     document.getElementById('mf-hs-label').textContent = (h ? h.name : 'Home') + ' goals';
@@ -4171,7 +4292,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
   });
   [mf.home, mf.away, mf.stage, mf.hs, mf.as].forEach(function (i) { i.addEventListener('input', syncMatch); });
 
-  function openMatch(t, m, trigger) {
+  function openMatch(t, m, trigger, presetStage) {
     goalBoxes.forEach(function (box) { box.dataset.other = ''; });
     matchState = { t: t, m: m || null, goals: m ? (m.goals || []).map(function (g) { return { team: g.team, player: g.player }; }) : [] };
     matchModal.returnFocus = trigger || null;
@@ -4185,19 +4306,37 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     var dl = document.getElementById('mf-stages');
     dl.textContent = '';
     var names = t.format === 'knockout' ? [] : t.format === 'groups' ? groupNames(t) : ['League'];
-    names.concat(['Quarter-finals', 'Semi-finals', 'Third place', 'Final']).forEach(function (s) { var o = el('option'); o.value = s; dl.appendChild(o); });
+    names.concat(['Playoff', 'Quarter-finals', 'Semi-finals', 'Third place', 'Final']).forEach(function (s) { var o = el('option'); o.value = s; dl.appendChild(o); });
     var teams = t.squads || [];
-    // Sides still waiting on a group or earlier match get a placeholder option
-    [['home', 'homeSlot'], ['away', 'awaySlot']].forEach(function (k) {
-      if (m && !m[k[0]] && m[k[1]]) {
-        var o = el('option', null, slotLabel(t, m[k[1]]) + ' (to be decided)'); o.value = '';
-        mf[k[0]].insertBefore(o, mf[k[0]].firstChild);
-      }
+    // Places still to be decided: league table spots, and winners or losers of knockout matches
+    var slots = [];
+    if (t.format === 'league') for (var pi = 1; pi <= Math.min(teams.length, 8); pi++) slots.push({ pos: pi });
+    (t.matches || []).forEach(function (x) {
+      if (!x.ko || x === m || isBye(x)) return;
+      slots.push({ w: x.id }); slots.push({ l: x.id });
     });
-    mf.home.value = m ? m.home || '' : teams[0].id;
-    mf.away.value = m ? (m.away || (isBye(m) ? (teams[1] || teams[0]).id : '')) : (teams[1] || teams[0]).id;
+    [['home', 'homeSlot'], ['away', 'awaySlot']].forEach(function (k) {
+      var own = m && m[k[1]];
+      var list = slots.slice();
+      if (own && !list.some(function (x) { return JSON.stringify(x) === JSON.stringify(own); })) list.unshift(own);
+      if (!list.length) return;
+      var og = el('optgroup'); og.label = 'To be decided';
+      list.forEach(function (sl) {
+        var known = teamById(t, resolveSlot(t, sl));
+        var o = el('option', null, slotLabel(t, sl) + (known ? ' · ' + known.name : '')); o.value = 'slot:' + JSON.stringify(sl);
+        og.appendChild(o);
+      });
+      mf[k[0]].appendChild(og);
+    });
+    function cur(side) {
+      var sl = m && m[side + 'Slot'];
+      return sl ? 'slot:' + JSON.stringify(sl) : m[side] || '';
+    }
+    var lg = t.format === 'league' && presetStage;
+    mf.home.value = m ? cur('home') : lg ? 'slot:' + JSON.stringify({ pos: 1 }) : teams[0].id;
+    mf.away.value = m ? (m.away || m.awaySlot ? cur('away') : isBye(m) ? (teams[1] || teams[0]).id : '') : lg ? 'slot:' + JSON.stringify({ pos: 2 }) : (teams[1] || teams[0]).id;
     mf.away.disabled = !!(m && isBye(m));
-    mf.stage.value = m ? m.stage : names[0] || roundName(teams.length);
+    mf.stage.value = m ? m.stage : presetStage || names[0] || roundName(teams.length);
     var count = (t.matches || []).length;
     mf.no.max = m ? count : count + 1;
     mf.no.value = m ? t.matches.indexOf(m) + 1 : count + 1;
@@ -4218,7 +4357,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     var t = matchState.t, m = matchState.m;
     var bye = !!(m && isBye(m));
     function fail(msg) { mf.err.textContent = msg; mf.err.hidden = false; }
-    var home = mf.home.value || null, away = bye ? null : mf.away.value || null;
+    if (!bye && mf.home.value && mf.home.value === mf.away.value) return fail('Pick two different teams.');
+    var hp = pickOf(t, mf.home.value), ap = bye ? { id: null, slot: null } : pickOf(t, mf.away.value);
+    var home = hp.id, away = ap.id;
     if (!bye && home && away && home === away) return fail('Pick two different teams.');
     var stage = mf.stage.value.trim();
     if (!stage) return fail('Give the match a stage, like Group A or Final.');
@@ -4236,11 +4377,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     var pv = document.getElementById('mf-potm').value, cut = pv.indexOf('|');
     var potm = hs != null && pv && (pv.slice(0, cut) === home || pv.slice(0, cut) === away) ? { team: pv.slice(0, cut), player: pv.slice(cut + 1) } : null;
     var data = { home: home, away: away, stage: stage, ko: ko, date: mf.date.value, hs: hs, as: as, pens: pens, goals: goals, potm: potm };
+    if (hp.slot) data.homeSlot = hp.slot;
+    if (ap.slot) data.awaySlot = ap.slot;
     if (m) {
       Object.assign(m, data);
       // Picking a team by hand replaces the placeholder
-      if (home) delete m.homeSlot;
-      if (away) delete m.awaySlot;
+      if (!hp.slot) delete m.homeSlot;
+      if (!ap.slot) delete m.awaySlot;
     } else { data.id = uid(); m = data; t.matches = (t.matches || []).concat(data); }
     // Move the match to the number given
     var want = Math.floor(+mf.no.value);
@@ -5321,7 +5464,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     }
   }
 
-  var memberSearch = '', memberFilter = 'all';
+  var memberSearch = '', memberFilter = 'all', openMember = null, membersOpen = false;
   document.querySelectorAll('[data-mfilter]').forEach(function (b) {
     b.addEventListener('click', function () { memberFilter = b.dataset.mfilter; renderMembers(); });
   });
@@ -5343,8 +5486,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() + ', ' + ((h % 12) || 12) + ':' + mm + (h < 12 ? ' am' : ' pm');
   }
   function renderMembers() {
-    var list = document.getElementById('m-list');
-    list.textContent = '';
+    var list = document.getElementById('m-list'), staffList = document.getElementById('m-staff');
+    list.textContent = ''; staffList.textContent = '';
+    function isStaff(m) { return m.role === 'admin' || m.role === 'manager'; }
     var q = memberSearch.toLowerCase();
     // Password requests on top, then admins, managers and members, each A to Z by name
     var rank = { admin: 0, manager: 1 };
@@ -5367,25 +5511,57 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     document.getElementById('m-count').textContent = !members.length ? 'No member IDs yet. Add them above.'
       : !shown.length ? 'No members match.' : '';
     document.querySelectorAll('[data-mfilter]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.mfilter === memberFilter ? 'true' : 'false'); });
+    // Admins and managers always show; everyone else sits in the Members dropdown under them
+    var others = shown.filter(function (m) { return !isStaff(m); });
+    var asks = others.filter(function (m) { return m.resetAsked; }).length;
+    var toggle = document.getElementById('m-toggle'), box = document.getElementById('m-box');
+    toggle.hidden = !others.length;
+    document.getElementById('m-total').textContent = others.length;
+    var askTag = document.getElementById('m-asks');
+    askTag.hidden = !asks; askTag.textContent = asks + (asks === 1 ? ' wants a new password' : ' want new passwords');
+    var openBox = membersOpen || !!q;
+    box.hidden = !others.length || !openBox;
+    toggle.setAttribute('aria-expanded', openBox ? 'true' : 'false');
     shown.forEach(function (m) {
-      var li = el('li');
-      li.appendChild(el('span', 'ac-avatar m-av' + (m.role === 'admin' ? ' is-admin' : m.role === 'manager' ? ' is-manager' : '') + (m.joined ? '' : ' waiting'), (m.name || m.id).charAt(0)));
-      var info = el('div', 'm-info');
-      var idLine = el('strong', 'm-id', m.id);
-      info.appendChild(idLine);
+      var li = el('li', 'm-item' + (openMember === m.id ? ' open' : ''));
+      var target = isStaff(m) ? staffList : list;
+      // Each member is one short row; tap it to open the name, role and password controls
+      var head = el('button', 'm-head'); head.type = 'button';
+      head.setAttribute('aria-expanded', openMember === m.id ? 'true' : 'false');
+      head.appendChild(el('span', 'ac-avatar m-av' + (m.role === 'admin' ? ' is-admin' : m.role === 'manager' ? ' is-manager' : '') + (m.joined ? '' : ' waiting'), (m.name || m.id).charAt(0)));
+      var info = el('span', 'm-info');
+      var top = el('span', 'm-top');
+      top.appendChild(el('strong', 'm-id', m.id));
+      top.appendChild(el('span', 'm-nm', m.name || 'No name yet'));
+      info.appendChild(top);
+      info.appendChild(m.resetAsked ? el('small', 'm-ask', 'Wants a new password')
+        : el('small', m.joined ? 'm-joined' : null, m.joined ? 'Joined' : 'Pending'));
+      head.appendChild(info);
+      if (m.role === 'admin' || m.role === 'manager') head.appendChild(el('span', 'm-tag ' + m.role, m.role === 'admin' ? 'Admin' : 'Manager'));
+      head.appendChild(icon('ic-down'));
+      head.addEventListener('click', function () {
+        openMember = openMember === m.id ? null : m.id;
+        renderMembers();
+      });
+      li.appendChild(head);
+      if (openMember !== m.id) { target.appendChild(li); return; }
+      var body = el('div', 'm-body');
       var nm = el('input', 'm-name'); nm.type = 'text'; nm.maxLength = 30; nm.value = m.name || ''; nm.placeholder = 'Add name';
       nm.setAttribute('aria-label', 'Name for ' + m.id);
       nm.addEventListener('change', function () {
         var v = nm.value.trim();
         if (v === (m.name || '')) return;
         m.name = v; writeMember(m); toast('Saved name for ' + m.id);
+        renderMembers();
       });
-      info.appendChild(nm);
-      info.appendChild(el('small', m.joined ? 'm-joined' : null, m.joined ? 'Joined' + (m.joinedAt ? ' · ' + joinedText(m.joinedAt) : '') : 'Pending'));
-      if (m.joined) info.appendChild(el('small', null, m.lastSeen ? 'Last seen · ' + joinedText(m.lastSeen) : 'Not seen yet'));
-      if (m.resetAsked) info.appendChild(el('small', 'm-ask', 'Wants a new password'));
-      else if (m.reset) info.appendChild(el('small', 'm-ask done', 'Password reset'));
-      li.appendChild(info);
+      body.appendChild(nm);
+      var facts = el('div', 'm-facts');
+      facts.appendChild(el('small', m.joined ? 'm-joined' : null, m.joined ? 'Joined' + (m.joinedAt ? ' · ' + joinedText(m.joinedAt) : '') : 'Pending: no account yet'));
+      if (m.joined) facts.appendChild(el('small', null, m.lastSeen ? 'Last seen · ' + joinedText(m.lastSeen) : 'Not seen yet'));
+      if (m.resetAsked) facts.appendChild(el('small', 'm-ask', 'Wants a new password'));
+      else if (m.reset) facts.appendChild(el('small', 'm-ask done', 'Password reset'));
+      body.appendChild(facts);
+      var ctrls = el('div', 'm-ctrls');
       var role = el('select', 'm-role');
       role.setAttribute('aria-label', 'Role for ' + m.id);
       [['member', 'Member'], ['manager', 'Manager'], ['admin', 'Admin']].forEach(function (o) { var op = el('option', null, o[1]); op.value = o[0]; role.appendChild(op); });
@@ -5395,7 +5571,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
         toast(m.id + (m.role === 'admin' ? ' is now an admin' : m.role === 'manager' ? ' is now a manager' : ' is now a member'));
         renderMembers(); applyRole();
       });
-      li.appendChild(role);
+      ctrls.appendChild(role);
       if (m.joined) {
         var key = el('button', 'm-key' + (m.resetAsked ? ' on' : '')); key.type = 'button'; key.appendChild(icon('ic-key'));
         key.title = 'Reset password';
@@ -5407,15 +5583,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
           writeMember(m); renderMembers();
           toast('Password reset for ' + (m.name || m.id) + '. They can sign in with a new password now.');
         });
-        li.appendChild(key);
+        ctrls.appendChild(key);
       }
       var rm = el('button', 'm-remove'); rm.type = 'button'; rm.appendChild(icon('ic-close'));
       rm.setAttribute('aria-label', 'Remove ' + m.id);
       rm.addEventListener('click', function () {
         askRemoveMember(m, rm);
       });
-      li.appendChild(rm);
-      list.appendChild(li);
+      ctrls.appendChild(rm);
+      body.appendChild(ctrls);
+      li.appendChild(body);
+      target.appendChild(li);
     });
   }
   // Ask before removing anyone
@@ -5441,6 +5619,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     if (run) run();
   });
   document.getElementById('m-search').addEventListener('input', function (e) { memberSearch = e.target.value.trim(); renderMembers(); });
+  document.getElementById('m-toggle').addEventListener('click', function () {
+    membersOpen = this.getAttribute('aria-expanded') !== 'true';
+    renderMembers();
+  });
   // Bulk add: rows of {id, name} from the text box or an imported file
   function addMemberRows(rows, err) {
     rows = rows.filter(function (r) { return r.id; });
@@ -5560,7 +5742,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
         membersLoaded = !snap.metadata.fromCache;
         cacheMembers();
         checkAccount();
-        if (!membersSection.hidden && !document.getElementById('m-list').contains(document.activeElement)) renderMembers();
+        if (!membersSection.hidden && !document.getElementById('members-page').querySelector('.member-list:focus-within')) renderMembers();
         applyRole();
       }, function () {});
     }, function () {});
@@ -5723,7 +5905,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
         membersLoaded = !snap.metadata.fromCache;
         cacheMembers();
         checkAccount();
-        if (!membersSection.hidden && !document.getElementById('m-list').contains(document.activeElement)) renderMembers();
+        if (!membersSection.hidden && !document.getElementById('members-page').querySelector('.member-list:focus-within')) renderMembers();
         applyRole();
       }, function () {});
     } else if (!on && fb.unsubAll) {
