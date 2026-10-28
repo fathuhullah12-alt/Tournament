@@ -4968,9 +4968,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     var t = null;
     if (m) { detail.id = m[1]; t = current(); }
     var isQuiz = t && typeOf(t.category).quiz;
-    // The quiz and finished tournaments are for members: visitors sign in first, then go straight in
-    if (t && (isQuiz || statusOf(t) === 'completed') && !auth.account && !isAdmin()) {
-      var quizId = t.id, why = isQuiz ? 'Sign in to play the quiz.' : 'Sign in to see finished tournaments.';
+    // Tournaments are for members: visitors sign in first, then go straight in
+    if (t && !auth.account && !isAdmin()) {
+      var quizId = t.id, why = isQuiz ? 'Sign in to play the quiz.' : 'Sign in to see this tournament.';
       try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
       detail.id = null; t = null; isQuiz = false;
       openAuth(why, function () { location.hash = '#t-' + quizId; });
@@ -5013,6 +5013,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     });
   }
   window.addEventListener('hashchange', function () { route(); window.scrollTo(0, 0); });
+  // Visitors tapping a card get the sign-in box right where they are, without the page moving underneath
+  document.getElementById('grid').addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a.stretch');
+    if (!a || auth.account || isAdmin()) return;
+    var id = (a.getAttribute('href') || '').replace('#t-', '');
+    var t = null;
+    for (var i = 0; i < tournaments.length; i++) if (tournaments[i].id === id) t = tournaments[i];
+    if (!t) return;
+    e.preventDefault();
+    openAuth(typeOf(t.category).quiz ? 'Sign in to play the quiz.' : 'Sign in to see this tournament.', function () { location.hash = '#t-' + id; }, a);
+  });
 
   // Hosted on the web (not in the preview, not opened as a file): Firebase keeps
   // the data and the logins
