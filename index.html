@@ -365,7 +365,10 @@ section.block { padding-block: 48px 8px; }
 .count { color: var(--fg-muted); font-size: 18px; font-variant-numeric: tabular-nums; }
 .count b { color: var(--fg); font-weight: 700; }
 .card.clickable { cursor: pointer; }
-.card .stretch { color: inherit; }
+/* No grey tap box on phones; the card itself presses down a little instead */
+html { -webkit-tap-highlight-color: transparent; }
+.card .stretch { color: inherit; -webkit-touch-callout: none; }
+.card.clickable:active { transform: scale(.985); }
 .card .stretch:focus-visible { outline: none; }
 .card.clickable:has(.stretch:focus-visible) { outline: 2px solid var(--teal-hover); outline-offset: 3px; }
 .card .stretch::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
