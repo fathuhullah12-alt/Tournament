@@ -129,7 +129,7 @@ body {
   font-size: 16px;
   line-height: 1.5;
   /* The footer sits at the bottom of the screen even when the page is short */
-  margin: 0; min-height: 100vh; min-height: 100dvh;
+  margin: 0; min-height: 100vh; min-height: 100svh;
   display: flex; flex-direction: column;
 }
 body > main { flex: 1 0 auto; }
@@ -1295,6 +1295,27 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
 .social a:hover { color: var(--fg); border-color: var(--teal); }
 .legal { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; padding-block: 22px calc(26px + env(safe-area-inset-bottom, 0px)); color: var(--fg-dim); font-size: 14px; }
 .legal a:hover { color: var(--fg); }
+.legal { flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+.stay { display: inline-flex; align-items: center; gap: 10px; justify-self: start; cursor: pointer; font-size: 15px; color: var(--fg); user-select: none; }
+.stay input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.stay-box { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--line-hover, var(--line)); background: var(--field); transition: background .15s, border-color .15s; }
+.stay-box svg.i { width: 15px; height: 15px; stroke: var(--on-teal); stroke-width: 3; fill: none; opacity: 0; }
+.stay input:checked + .stay-box { background: var(--teal); border-color: var(--teal); }
+.stay input:checked + .stay-box svg.i { opacity: 1; }
+.stay input:focus-visible + .stay-box { outline: 2px solid var(--teal); outline-offset: 2px; }
+.crafted { display: inline-flex; align-items: center; gap: 7px; }
+.crafted b { color: var(--amber-fg); font-weight: 600; }
+/* The heart beats, rings and throws a few sparks, on a slow loop */
+.heart { position: relative; display: inline-grid; place-items: center; width: 18px; height: 18px; }
+.heart svg { width: 17px; height: 17px; fill: #e5484d; animation: heart-beat 3.2s ease-in-out infinite, heart-tint 9.6s steps(1) infinite; }
+.heart::before { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1.5px solid #b06ee8; opacity: 0; animation: heart-ring 3.2s ease-out infinite; }
+.heart i { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; opacity: 0; animation: heart-spark 3.2s ease-out infinite;
+  box-shadow: 0 -12px 0 #e5484d, 10px -6px 0 #f0b44c, 11px 6px 0 #e5484d, 0 12px 0 #b06ee8, -11px 6px 0 #f0b44c, -10px -6px 0 #e5484d; }
+@keyframes heart-beat { 0%, 40%, 100% { transform: scale(1); } 8% { transform: scale(1.25); } 16% { transform: scale(.95); } 24% { transform: scale(1.15); } }
+@keyframes heart-ring { 0%, 20% { opacity: 0; transform: scale(.6); } 26% { opacity: 1; } 45% { opacity: 0; transform: scale(1.25); } 100% { opacity: 0; } }
+@keyframes heart-spark { 0%, 8% { opacity: 0; transform: scale(.4); } 12% { opacity: 1; } 34% { opacity: 0; transform: scale(1.35); } 100% { opacity: 0; } }
+@keyframes heart-tint { 0%, 100% { fill: #e5484d; } 66% { fill: #d65db1; } 70% { fill: #e5484d; } }
+@media (prefers-reduced-motion: reduce) { .heart svg, .heart::before, .heart i { animation: none; } }
 @media (max-width: 720px) { .foot { grid-template-columns: 1fr; } }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1634,6 +1655,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
 <footer>
   <div class="wrap legal">
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
+    <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>Faths</b></span>
   </div>
 </footer>
 
@@ -1866,6 +1888,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
       <label class="field" id="au-name-row" hidden><span>Your name</span><input id="au-name" type="text" maxlength="30" autocomplete="name" placeholder="e.g. Ali Hassan"></label>
       <label class="field"><span>Password</span><input id="au-pass" type="password" maxlength="64" autocomplete="current-password" placeholder="At least 6 characters"></label>
       <label class="field" id="au-pass2-row" hidden><span>Password again</span><input id="au-pass2" type="password" maxlength="64" autocomplete="new-password" placeholder="Type the same password"></label>
+      <label class="stay"><input id="au-stay" type="checkbox" checked><span class="stay-box"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>Stay signed in</span></label>
       <p class="auth-reset" id="au-reset-note" hidden>Your password was reset. Type a new password to sign in, and it becomes your password.</p>
       <em class="err" id="au-err" hidden></em>
       <p class="auth-ok" id="au-ok" hidden></p>
@@ -5242,6 +5265,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     authModal.returnFocus = trigger || document.getElementById('account-btn');
     document.getElementById('au-sub').textContent = reason || 'Sign in to predict matches and play the daily quiz.';
     ['au-id', 'au-name', 'au-pass', 'au-pass2'].forEach(function (id) { document.getElementById(id).value = ''; });
+    document.getElementById('au-stay').checked = true;
     setAuthMode(FB_MODE && fb.ownerMissing ? 'owner' : 'signin');
     authModal.hidden = false;
     setTimeout(function () { document.getElementById('au-id').focus(); }, 0);
@@ -5801,6 +5825,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line); background: var(--
     });
   }
   function fbLogin(email, pass, create) {
+    // Unticked "Stay signed in": the login ends when the browser tab is closed
+    var keep = document.getElementById('au-stay').checked;
+    var P = firebase.auth.Auth.Persistence;
+    return fb.auth.setPersistence(keep ? P.LOCAL : P.SESSION).catch(function () {}).then(function () { return doLogin(email, pass, create); });
+  }
+  function doLogin(email, pass, create) {
     if (!create) return fb.auth.signInWithEmailAndPassword(email, pass);
     return fb.auth.createUserWithEmailAndPassword(email, pass).catch(function (e) {
       // Signed up halfway last time: the login exists, so use it
