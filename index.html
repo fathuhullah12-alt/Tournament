@@ -1083,6 +1083,44 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pd-picks li:first-child { border-top: 0; }
 .pd-picks div { display: grid; gap: 2px; min-width: 0; }
 .pd-picks span { font-size: 13px; color: var(--fg-muted); }
+.fx-later .fx { opacity: .72; cursor: default; }
+.yr { display: grid; gap: 14px; }
+.yr-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.yr-head h3 { margin: 0 !important; }
+.yr-cheer { margin: 4px 0 0; color: var(--fg-muted); font-size: 14px; }
+.yr-total { flex: none; display: grid; justify-items: center; padding: 8px 14px; border-radius: 14px; background: color-mix(in srgb, var(--amber-fg) 16%, transparent); color: var(--amber-fg); }
+.yr-total strong { font: 800 28px/1 var(--font-display); }
+.yr-total small { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.yr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.yr-chip { padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--chip); color: var(--fg-muted); }
+.yr-chip.yr-exact { background: color-mix(in srgb, var(--amber-fg) 16%, transparent); color: var(--amber-fg); }
+.yr-chip.yr-right { background: var(--green-bg); color: var(--green-fg); }
+.yr-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.yr-card { --yc: var(--line); display: grid; gap: 12px; padding: 14px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--yc) 55%, var(--line)); background: color-mix(in srgb, var(--yc) 9%, var(--bg-raised)); }
+.yr-card.yr-exact { --yc: var(--amber-fg); }
+.yr-card.yr-right { --yc: var(--green-fg); }
+.yr-card.yr-miss { --yc: var(--fg-dim); }
+.yr-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.yr-tag { display: inline-flex; align-items: center; gap: 7px; font-weight: 800; font-size: 15px; }
+.yr-tag svg.i { width: 20px; height: 20px; stroke-width: 2; }
+.yr-chip { display: inline-flex; align-items: center; gap: 5px; }
+.yr-chip svg.i { width: 15px; height: 15px; stroke-width: 2; }
+.yr-exact .yr-tag { color: var(--amber-fg); }
+.yr-right .yr-tag { color: var(--green-fg); }
+.yr-miss .yr-tag { color: var(--fg-muted); }
+.yr-pts { padding: 4px 11px; border-radius: 999px; font-weight: 800; font-size: 14px; background: color-mix(in srgb, var(--yc) 20%, transparent); color: var(--fg); }
+.yr-miss .yr-pts { color: var(--fg-muted); }
+.yr-exact .yr-pts { background: var(--amber-fg); color: var(--bg); animation: yr-pop 2.4s ease-in-out infinite; }
+@keyframes yr-pop { 0%, 80%, 100% { transform: scale(1); } 88% { transform: scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .yr-exact .yr-pts { animation: none; } }
+.yr-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+.yr-team { display: grid; justify-items: center; gap: 5px; text-align: center; min-width: 0; }
+.yr-team b { font-size: 14px; line-height: 1.2; overflow-wrap: anywhere; }
+.yr-scores { display: flex; gap: 6px; }
+.yr-score { display: grid; justify-items: center; gap: 1px; min-width: 54px; padding: 6px 8px; border-radius: 12px; background: var(--chip); }
+.yr-score small { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-muted); }
+.yr-score b { font: 800 20px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+.yr-mine { background: color-mix(in srgb, var(--yc) 20%, var(--chip)); }
 .pd-gain { flex: none; min-width: 40px; text-align: center; padding: 5px 9px; border-radius: 999px; font-weight: 700; font-size: 14px; background: var(--chip); color: var(--fg-muted); }
 .pd-gain.pd-gain1 { background: var(--blue-bg); color: var(--blue-fg); }
 .pd-gain.pd-gain3 { background: var(--green-bg); color: var(--green-fg); }
@@ -1367,6 +1405,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <symbol id="ic-tabletennis" viewBox="0 0 24 24"><path d="M14.5 15.5a6.5 6.5 0 1 0-6-6"/><path d="M8.5 9.5l6 6-1.6 1.6-.8-.8-5.6 5.6a1.2 1.2 0 0 1-1.7 0l-.7-.7a1.2 1.2 0 0 1 0-1.7l5.6-5.6-.8-.8Z"/><circle cx="19.5" cy="19.5" r="1.8"/></symbol>
     <symbol id="ic-esports" viewBox="0 0 24 24"><path d="M7.5 7h9a5 5 0 0 1 4.9 4l.9 4.6a2.5 2.5 0 0 1-4.3 2.2L16 15.5H8l-2 2.3a2.5 2.5 0 0 1-4.3-2.2l.9-4.6a5 5 0 0 1 4.9-4Z"/><path d="M7.5 10v3.5M5.8 11.75h3.4"/><circle cx="15.5" cy="10.8" r=".6"/><circle cx="17.5" cy="12.8" r=".6"/></symbol>
     <symbol id="ic-quiz" viewBox="0 0 24 24"><path d="M4.5 4.5h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-4.5 3.5v-3.5h-3.5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z"/><path d="M9.8 9.2a2.3 2.3 0 1 1 3.1 2.1c-.6.3-.9.8-.9 1.4v.3"/><circle cx="12" cy="15.2" r=".5"/></symbol>
+ <symbol id="ic-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.8 2.8L16.2 9.5"/></symbol>
+    <symbol id="ic-near" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M15.5 6.5l2-2M17.5 4.5v2.2M17.5 4.5h-2.2"/></symbol>
+    <symbol id="ic-miss" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></symbol>
     <symbol id="ic-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14 9l2 2"/></symbol>
     <symbol id="ic-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
     <symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M7.5 3.5h9v6a4.5 4.5 0 0 1-9 0Z"/><path d="M7.5 5.5h-3a3 3 0 0 0 3 4.5M16.5 5.5h3a3 3 0 0 1-3 4.5M12 14v3.5M8.5 20.5h7l-.8-3h-5.4Z"/></symbol>
@@ -4334,17 +4375,45 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (mine) {
       var done = mine.picks.filter(function (x) { return x.pts != null; });
       if (done.length) {
-        var yp = el('div', 'pd-board');
-        yp.appendChild(el('h3', null, 'Your results'));
-        var ul2 = el('ul', 'pd-picks');
+        var yp = el('div', 'pd-board yr');
+        var ex = done.filter(function (x) { return x.pts === 3; }).length;
+        var rt = done.filter(function (x) { return x.pts === 1; }).length;
+        var earned = done.reduce(function (n, x) { return n + x.pts; }, 0);
+        var head = el('div', 'yr-head');
+        var ht = el('div'); ht.appendChild(el('h3', null, 'Your results'));
+        var hit = (ex + rt) / done.length;
+        ht.appendChild(el('p', 'yr-cheer', ex >= 2 ? 'You are reading these games like a pro!' : hit >= .6 ? 'Great instincts, keep it going!' : hit > 0 ? 'Good start. The next one could be yours!' : 'Every expert started somewhere. Next one!'));
+        head.appendChild(ht);
+        var tot = el('div', 'yr-total'); tot.appendChild(el('strong', null, '+' + earned)); tot.appendChild(el('small', null, 'points'));
+        head.appendChild(tot);
+        yp.appendChild(head);
+        var chips = el('div', 'yr-chips');
+        [[ex, 'exact', 'exact', 'ic-target'], [rt, 'right', 'right', 'ic-check'], [done.length - ex - rt, 'missed', 'miss', 'ic-miss']].forEach(function (c) {
+          var ch = el('span', 'yr-chip yr-' + c[2]); ch.appendChild(icon(c[3])); ch.appendChild(document.createTextNode(c[0] + ' ' + c[1])); chips.appendChild(ch);
+        });
+        yp.appendChild(chips);
+        var ul2 = el('ul', 'yr-list');
         done.slice().reverse().forEach(function (x) {
           var h = teamById(t, x.m.home), a = teamById(t, x.m.away);
-          var li = el('li');
-          var txt = el('div');
-          txt.appendChild(el('b', null, (h ? h.name : 'Home') + ' vs ' + (a ? a.name : 'Away')));
-          txt.appendChild(el('span', null, 'You said ' + x.p.hs + '–' + x.p.as + ' · Final ' + x.m.hs + '–' + x.m.as));
-          li.appendChild(txt);
-          li.appendChild(el('span', 'pd-gain pd-gain' + x.pts, '+' + x.pts));
+          var off = Math.abs(x.p.hs - x.m.hs) + Math.abs(x.p.as - x.m.as);
+          var kind = x.pts === 3 ? 'exact' : x.pts === 1 ? 'right' : 'miss';
+          var li = el('li', 'yr-card yr-' + kind);
+          var top = el('div', 'yr-top');
+          var tag = el('span', 'yr-tag');
+          tag.appendChild(icon(kind === 'exact' ? 'ic-target' : kind === 'right' ? 'ic-check' : off <= 1 ? 'ic-near' : 'ic-miss'));
+          tag.appendChild(document.createTextNode(kind === 'exact' ? 'Spot on!' : kind === 'right' ? 'Nice call' : off <= 1 ? 'So close!' : 'Not this time'));
+          top.appendChild(tag);
+          top.appendChild(el('span', 'yr-pts', '+' + x.pts + (x.pts === 1 ? ' pt' : ' pts')));
+          li.appendChild(top);
+          var row = el('div', 'yr-row');
+          var hs = el('span', 'yr-team'); if (h) hs.appendChild(crest(h, 'sm')); hs.appendChild(el('b', null, h ? h.name : 'Home'));
+          var as = el('span', 'yr-team yr-away'); if (a) as.appendChild(crest(a, 'sm')); as.appendChild(el('b', null, a ? a.name : 'Away'));
+          var sc = el('span', 'yr-scores');
+          var mine2 = el('span', 'yr-score yr-mine'); mine2.appendChild(el('small', null, 'You')); mine2.appendChild(el('b', null, x.p.hs + '–' + x.p.as));
+          var fin = el('span', 'yr-score'); fin.appendChild(el('small', null, 'Final')); fin.appendChild(el('b', null, x.m.hs + '–' + x.m.as));
+          sc.appendChild(mine2); sc.appendChild(fin);
+          row.appendChild(hs); row.appendChild(sc); row.appendChild(as);
+          li.appendChild(row);
           ul2.appendChild(li);
         });
         yp.appendChild(ul2);
@@ -4369,6 +4438,22 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       li.appendChild(row); ul.appendChild(li);
     });
     sec.appendChild(ul); root.appendChild(sec);
+    // Every other match still to be played, with why it can't be picked right now
+    var later = (t.matches || []).filter(function (m) { return !played(m) && !isBye(m) && open.indexOf(m) === -1; });
+    if (later.length) {
+      var ls = el('section', 'fx-stage fx-later');
+      ls.appendChild(el('h3', null, 'Other scheduled matches'));
+      var ul3 = el('ul', 'fx-list');
+      later.forEach(function (m) {
+        var li = el('li'), row = matchRow(t, m);
+        row.disabled = true;
+        var why = !m.home || !m.away ? 'Opens when both teams are known' : 'Kicked off · predictions closed, waiting for the result';
+        var meta = row.querySelector('.meta');
+        if (meta) meta.textContent = (m.home && m.away ? formatKickoff(m.date) + ' · ' : '') + why;
+        li.appendChild(row); ul3.appendChild(li);
+      });
+      ls.appendChild(ul3); root.appendChild(ls);
+    }
     return true;
   }
 
