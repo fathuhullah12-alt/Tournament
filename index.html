@@ -496,6 +496,14 @@ body { overflow-wrap: break-word; }
 .qopts button bdi { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .qopts button.chosen, .qopts button.chosen:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); background: color-mix(in srgb, var(--teal) 16%, var(--field)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--teal) 25%, transparent); }
 .qopts[hidden] { display: none; }
+/* Phones: smaller quiz text so the question and choices fit without scrolling */
+@media (max-width: 560px) {
+  .qcard { gap: 12px; padding: 18px 16px; }
+  .qcard h2 { font-size: 22px; }
+  .qcard h2.dv { font-size: 18px; line-height: 1.65; }
+  .qopts button { padding: 10px 14px; font-size: 15px; }
+  .qopts button bdi.dv, .qopts .dv bdi { font-size: 1.05em; line-height: 1.55; }
+}
 .q-toggle { cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .q-toggle::after { content: ""; flex: none; width: 10px; height: 10px; border-right: 2.5px solid var(--fg-muted); border-bottom: 2.5px solid var(--fg-muted); margin: -5px 6px 0 0; transform: rotate(45deg); transform-origin: 50% 50%; transition: transform .2s, margin .2s; }
 .q-toggle[aria-expanded="true"]::after { transform: rotate(-135deg); margin-top: 5px; }
