@@ -5099,13 +5099,16 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var choosing = playing && quiz.picked === null && !closed;
       if (quiz.choiceFor !== qKey) quiz.choice = null;
       sub.hidden = !choosing;
-      sub.disabled = quiz.choice === null || quiz.choice === undefined;
-      sub.textContent = sub.disabled ? 'Pick an answer' : 'Submit answer ' + LETTERS[quiz.choice];
+      // Admins and managers know the answers, so their IDs can't answer (even when viewing as a member)
+      var staffId = canManage();
+      sub.disabled = staffId || quiz.choice === null || quiz.choice === undefined;
+      sub.textContent = staffId ? 'Admin and manager IDs can\'t answer' : sub.disabled ? 'Pick an answer' : 'Submit answer ' + LETTERS[quiz.choice];
       sub.onclick = function () {
         var pick = quiz.choice;
-        if (pick === null || pick === undefined) return;
+        if (pick === null || pick === undefined || canManage()) return;
         needMember('Sign in to answer and join the leaderboard.', function () {
           if (qRevealed(t, day)) { renderQuiz(); return; }
+          if (canManage()) { toast('Admin and manager IDs can\'t answer the quiz.'); renderQuiz(); return; }
           var already = (t.answers || []).some(function (a) { return a.member === auth.account.id && a.day === day; });
           if (!already) {
             t.answers = (t.answers || []).concat({ member: auth.account.id, name: auth.account.name, day: day, pick: pick, correct: pick === q.answer });
