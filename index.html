@@ -1371,6 +1371,30 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .stay input:checked + .stay-box { background: var(--teal); border-color: var(--teal); }
 .stay input:checked + .stay-box svg.i { opacity: 1; }
 .stay input:focus-visible + .stay-box { outline: 2px solid var(--teal); outline-offset: 2px; }
+.fb-open { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--fg); font: 600 14px var(--font-body); cursor: pointer; }
+.fb-open:hover { border-color: var(--teal); }
+.fb-open svg.i { width: 18px; height: 18px; }
+.fb-badge { min-width: 20px; height: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px; background: var(--live); color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.fb-badge[hidden] { display: none; }
+.fb-stars { display: flex; gap: 6px; }
+.fb-stars button { width: 44px; height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: none; color: var(--fg-dim); cursor: pointer; }
+.fb-stars button svg.i { width: 100%; height: 100%; }
+.fb-stars button.on { color: var(--amber-fg); border-color: color-mix(in srgb, var(--amber-fg) 45%, var(--line)); }
+.fb-stars button.on svg.i, .fb-item .fb-rate .on { fill: currentColor; }
+.fb-filter { margin-bottom: 12px; }
+#feedback-page .m-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.fb-item { padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-raised); display: grid; gap: 8px; }
+.fb-item.is-new { border-color: color-mix(in srgb, var(--teal) 55%, var(--line)); }
+.fb-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.fb-top b { font-weight: 700; }
+.fb-top small { color: var(--fg-muted); font-size: 13px; }
+.fb-top .fb-new { padding: 2px 8px; border-radius: 999px; background: var(--teal); color: var(--on-teal); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.fb-rate { display: flex; gap: 2px; color: var(--amber-fg); }
+.fb-rate svg.i { width: 16px; height: 16px; }
+.fb-rate svg.i:not(.on) { color: var(--fg-dim); opacity: .5; }
+.fb-item p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.45; }
+.fb-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .crafted { display: inline-flex; align-items: center; gap: 7px; }
 .crafted b { color: var(--amber-fg); font-weight: 600; }
 /* The heart beats, rings and throws a few sparks, on a slow loop */
@@ -1427,6 +1451,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
  <symbol id="ic-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.8 2.8L16.2 9.5"/></symbol>
     <symbol id="ic-near" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><path d="M15.5 6.5l2-2M17.5 4.5v2.2M17.5 4.5h-2.2"/></symbol>
     <symbol id="ic-miss" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></symbol>
+    <symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8l-5.2 2.8 1-5.8-4.3-4.1 5.9-.8Z"/></symbol>
+    <symbol id="ic-chat" viewBox="0 0 24 24"><path d="M4.5 5.5h15v10h-9l-4.5 3.5v-3.5h-1.5z"/><path d="M8.5 9.5h7M8.5 12.5h4.5"/></symbol>
     <symbol id="ic-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14 9l2 2"/></symbol>
     <symbol id="ic-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
     <symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M7.5 3.5h9v6a4.5 4.5 0 0 1-9 0Z"/><path d="M7.5 5.5h-3a3 3 0 0 0 3 4.5M16.5 5.5h3a3 3 0 0 1-3 4.5M12 14v3.5M8.5 20.5h7l-.8-3h-5.4Z"/></symbol>
@@ -1449,6 +1475,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <nav class="nav" id="nav" aria-label="Main">
       <a href="#top" aria-current="page"><span class="nav-ic"><svg class="i"><use href="#ic-home"/></svg></span><span>Home</span></a>
       <a href="#members" data-site><span class="nav-ic"><svg class="i"><use href="#ic-users"/></svg></span><span>Members</span></a>
+      <a href="#feedback" data-site><span class="nav-ic"><svg class="i"><use href="#ic-chat"/></svg></span><span>Feedback</span><b class="fb-badge" id="fb-badge" hidden></b></a>
       <a href="#preferences"><span class="nav-ic"><svg class="i"><use href="#ic-gear"/></svg></span><span>Settings</span></a>
     </nav>
     <button class="btn" type="button" data-new data-admin><svg class="i"><use href="#ic-plus"/></svg>New tournament</button>
@@ -1653,6 +1680,29 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </div>
   </section>
 
+  <section class="block detail" id="feedback-page" hidden>
+    <div class="wrap prefs">
+      <a class="back" href="#tournaments"><svg class="i"><use href="#ic-left"/></svg>All tournaments</a>
+      <div>
+        <h1 class="detail-title">Feedback</h1>
+        <p class="detail-sub">What members say about the site. Only admins see this page.</p>
+      </div>
+      <div class="m-stats">
+        <div><strong id="fs-total">0</strong><small>Messages</small></div>
+        <div><strong id="fs-new">0</strong><small>New</small></div>
+        <div><strong id="fs-avg">–</strong><small>Average rating</small></div>
+      </div>
+      <div class="pref-group">
+        <div class="segmented fb-filter" role="group" aria-label="Show">
+          <button type="button" data-fbfilter="all" aria-pressed="true">All</button>
+          <button type="button" data-fbfilter="new" aria-pressed="false">New</button>
+        </div>
+        <p class="m-empty" id="fb-empty" hidden></p>
+        <ul class="fb-list" id="fb-list"></ul>
+      </div>
+    </div>
+  </section>
+
   <!-- Quiz page, opened from a quiz card -->
   <section class="block detail" id="quiz" hidden>
     <div class="wrap">
@@ -1728,6 +1778,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 
 <footer>
   <div class="wrap legal">
+    <button class="fb-open" type="button" id="fb-open"><svg class="i"><use href="#ic-chat"/></svg>Send feedback</button>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
   </div>
@@ -1892,6 +1943,41 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <div class="sheet-actions">
       <button class="btn btn-ghost" type="button" data-close>Cancel</button>
       <button class="btn" type="submit">Save</button>
+    </div>
+  </form>
+</div>
+
+<div class="modal" id="fb-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <form class="sheet" id="fb-form" novalidate aria-labelledby="fb-title">
+    <div class="sheet-head">
+      <div>
+        <h2 id="fb-title">Send feedback</h2>
+        <p class="sheet-sub" id="fb-sub"></p>
+      </div>
+      <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <span>How do you like the site?</span>
+        <div class="fb-stars" id="fb-stars" role="radiogroup" aria-label="Rating">
+          <button type="button" role="radio" data-star="1" aria-label="1 star"><svg class="i"><use href="#ic-star"/></svg></button>
+          <button type="button" role="radio" data-star="2" aria-label="2 stars"><svg class="i"><use href="#ic-star"/></svg></button>
+          <button type="button" role="radio" data-star="3" aria-label="3 stars"><svg class="i"><use href="#ic-star"/></svg></button>
+          <button type="button" role="radio" data-star="4" aria-label="4 stars"><svg class="i"><use href="#ic-star"/></svg></button>
+          <button type="button" role="radio" data-star="5" aria-label="5 stars"><svg class="i"><use href="#ic-star"/></svg></button>
+        </div>
+      </div>
+      <label class="field">
+        <span>Your message</span>
+        <textarea id="fb-text" rows="5" maxlength="1000" placeholder="An idea, a problem, or what you like"></textarea>
+      </label>
+      <small class="hint">Only the site admins read this.</small>
+      <em class="err" id="fb-err" hidden></em>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+      <button class="btn" type="submit" id="fb-send">Send</button>
     </div>
   </form>
 </div>
@@ -5282,6 +5368,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   // Site settings page
   var prefsSection = document.getElementById('preferences');
   var membersSection = document.getElementById('members-page');
+  var feedbackSection = document.getElementById('feedback-page');
   function themeChoice() { return root.getAttribute('data-theme') || 'system'; }
   function renderPrefs() {
     document.querySelectorAll('[data-theme-pick]').forEach(function (b) {
@@ -5370,6 +5457,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       listSection.hidden = true; detailSection.hidden = true; quizSection.hidden = true;
       membersSection.hidden = false;
       renderMembers();
+    } else if (location.hash === '#feedback' && isSiteAdmin()) {
+      detail.id = null;
+      listSection.hidden = true; detailSection.hidden = true; quizSection.hidden = true;
+      feedbackSection.hidden = false;
+      renderFeedback();
     } else if (location.hash === '#preferences') {
       detail.id = null;
       listSection.hidden = true; detailSection.hidden = true; quizSection.hidden = true;
@@ -5385,7 +5477,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (location.hash !== '#preferences') prefsSection.hidden = true;
     document.querySelector('.hi-bar').hidden = listSection.hidden;
     if (location.hash !== '#members' || !isSiteAdmin()) membersSection.hidden = true;
-    var page = location.hash === '#preferences' || (location.hash === '#members' && isSiteAdmin()) ? location.hash : '#top';
+    if (location.hash !== '#feedback' || !isSiteAdmin()) feedbackSection.hidden = true;
+    var page = location.hash === '#preferences' || ((location.hash === '#members' || location.hash === '#feedback') && isSiteAdmin()) ? location.hash : '#top';
     document.querySelectorAll('#nav a').forEach(function (a) {
       var target = a.getAttribute('href');
       var here = target === page;
@@ -5622,7 +5715,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     document.getElementById('brand-hi').hidden = !auth.account;
     if (auth.account) document.getElementById('brand-hi-name').textContent = auth.account.name;
     if (!admin && quiz.tab === 'questions') quiz.tab = 'today';
-    if (location.hash === '#members') route();
+    if (location.hash === '#members' || location.hash === '#feedback') route();
+    updateFbBadge();
     render();
     refreshPage();
     if (!prefsSection.hidden) renderPrefs();
@@ -6332,6 +6426,16 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     } else if (!on && fb.unsubAll) {
       fb.unsubAll(); fb.unsubAll = null; membersDb = null; membersLoaded = false;
     }
+    // Admins also follow the feedback inbox
+    if (on && !fb.unsubFeedback) {
+      fb.unsubFeedback = fb.db.collection('feedback').onSnapshot(function (snap) {
+        feedback = snap.docs.map(function (d) { var x = JSON.parse(JSON.stringify(d.data())); x.id = d.id; return x; });
+        updateFbBadge();
+        if (!feedbackSection.hidden) renderFeedback();
+      }, function () {});
+    } else if (!on && fb.unsubFeedback) {
+      fb.unsubFeedback(); fb.unsubFeedback = null; feedback = []; updateFbBadge();
+    }
   }
   function fbSetAccount(m) {
     if (fb.unsubMe) { fb.unsubMe(); fb.unsubMe = null; }
@@ -6362,6 +6466,109 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (me.role === 'admin' && members.length) members = members.map(function (x) { return x.id === me.id ? me : x; });
       applyRole();
     }, function () {});
+  }
+
+  // Feedback: members send a message and a star rating; admins read them on the Feedback page
+  var feedback = [], fbFilter = 'all', fbRating = 0, fbDeleting = null;
+  var fbModal = document.getElementById('fb-modal');
+  if (!FB_MODE) { try { feedback = JSON.parse(localStorage.getItem('feedback.v1')) || []; } catch (e) { feedback = []; } }
+  function saveLocalFeedback() { try { localStorage.setItem('feedback.v1', JSON.stringify(feedback)); } catch (e) {} }
+  function updateFbBadge() {
+    var n = isSiteAdmin() && feedback ? feedback.filter(function (f) { return !f.read; }).length : 0;
+    var b = document.getElementById('fb-badge');
+    b.textContent = n; b.hidden = !n;
+  }
+  function paintStars() {
+    Array.prototype.forEach.call(document.querySelectorAll('#fb-stars [data-star]'), function (b) {
+      var on = +b.dataset.star <= fbRating;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-checked', +b.dataset.star === fbRating ? 'true' : 'false');
+    });
+  }
+  document.querySelectorAll('#fb-stars [data-star]').forEach(function (b) {
+    b.addEventListener('click', function () { fbRating = fbRating === +b.dataset.star ? 0 : +b.dataset.star; paintStars(); });
+  });
+  function openFeedback(trigger) {
+    needMember('Sign in to send feedback.', function () {
+      fbRating = 0; paintStars();
+      document.getElementById('fb-text').value = '';
+      document.getElementById('fb-err').hidden = true;
+      document.getElementById('fb-send').disabled = false;
+      document.getElementById('fb-sub').textContent = 'From ' + auth.account.name;
+      fbModal.returnFocus = trigger || null;
+      fbModal.hidden = false;
+      setTimeout(function () { document.getElementById('fb-text').focus(); }, 0);
+    }, trigger);
+  }
+  document.getElementById('fb-open').addEventListener('click', function (e) { openFeedback(e.currentTarget); });
+  document.getElementById('fb-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = document.getElementById('fb-err'), text = document.getElementById('fb-text').value.trim().slice(0, 1000);
+    function fail(msg) { err.textContent = msg; err.hidden = false; }
+    if (!text && !fbRating) return fail('Pick a star rating or write a message.');
+    if (!auth.account) return fail('Sign in to send feedback.');
+    var body = { member: auth.account.id, name: auth.account.name, text: text, rating: fbRating, at: new Date().toISOString(), read: false };
+    function done() { fbModal.hidden = true; toast('Thank you! Your feedback was sent.'); }
+    if (FB_MODE) {
+      if (!fb.user) return fail('Sign in again to send feedback.');
+      body.uid = fb.user.uid;
+      var send = document.getElementById('fb-send'); send.disabled = true;
+      fb.db.collection('feedback').add(body).then(done, function () { send.disabled = false; fail('Could not send. Check your connection and try again.'); });
+    } else {
+      body.id = uid(); feedback.push(body); saveLocalFeedback(); updateFbBadge(); done();
+    }
+  });
+  document.querySelectorAll('[data-fbfilter]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      fbFilter = b.dataset.fbfilter;
+      document.querySelectorAll('[data-fbfilter]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+      renderFeedback();
+    });
+  });
+  function setFbRead(f, read) {
+    if (FB_MODE) fb.db.collection('feedback').doc(f.id).update({ read: read }).catch(cloudError);
+    else { f.read = read; saveLocalFeedback(); updateFbBadge(); renderFeedback(); }
+  }
+  function deleteFb(f) {
+    if (FB_MODE) fb.db.collection('feedback').doc(f.id).delete().catch(cloudError);
+    else { feedback = feedback.filter(function (x) { return x !== f; }); saveLocalFeedback(); updateFbBadge(); renderFeedback(); }
+    toast('Feedback deleted');
+  }
+  function renderFeedback() {
+    var all = feedback.slice().sort(function (a, b) { return (b.at || '').localeCompare(a.at || ''); });
+    var rated = all.filter(function (f) { return f.rating > 0; });
+    document.getElementById('fs-total').textContent = all.length;
+    document.getElementById('fs-new').textContent = all.filter(function (f) { return !f.read; }).length;
+    document.getElementById('fs-avg').textContent = rated.length ? (rated.reduce(function (n, f) { return n + f.rating; }, 0) / rated.length).toFixed(1) : '–';
+    var list = fbFilter === 'new' ? all.filter(function (f) { return !f.read; }) : all;
+    var ul = document.getElementById('fb-list'), empty = document.getElementById('fb-empty');
+    ul.textContent = '';
+    empty.hidden = !!list.length;
+    empty.textContent = all.length ? 'No new feedback. You have read everything.' : 'No feedback yet. Members can send it from the button at the bottom of every page.';
+    list.forEach(function (f) {
+      var li = el('li', 'fb-item' + (f.read ? '' : ' is-new'));
+      var top = el('div', 'fb-top');
+      top.appendChild(el('b', null, f.name || 'Member'));
+      top.appendChild(el('small', null, (f.member ? f.member + ' · ' : '') + formatKickoff(f.at)));
+      if (!f.read) top.appendChild(el('span', 'fb-new', 'New'));
+      li.appendChild(top);
+      if (f.rating > 0) {
+        var r = el('div', 'fb-rate'); r.setAttribute('aria-label', f.rating + ' out of 5 stars');
+        for (var i = 1; i <= 5; i++) { var st = svgIcon('ic-star'); if (i <= f.rating) st.classList.add('on'); r.appendChild(st); }
+        li.appendChild(r);
+      }
+      if (f.text) li.appendChild(el('p', null, f.text));
+      var acts = el('div', 'fb-acts');
+      var rd = el('button', 'btn btn-ghost btn-sm', f.read ? 'Mark as new' : 'Mark as read'); rd.type = 'button';
+      rd.addEventListener('click', function () { setFbRead(f, !f.read); });
+      var del = el('button', 'btn btn-ghost btn-sm danger-text', fbDeleting === f.id ? 'Tap again to delete' : 'Delete'); del.type = 'button';
+      del.addEventListener('click', function () {
+        if (fbDeleting === f.id) { fbDeleting = null; deleteFb(f); return; }
+        fbDeleting = f.id; renderFeedback();
+      });
+      acts.appendChild(rd); acts.appendChild(del); li.appendChild(acts);
+      ul.appendChild(li);
+    });
   }
 
   // Predictions, picks and quiz answers: one record per member per tournament
