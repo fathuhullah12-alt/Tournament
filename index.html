@@ -781,7 +781,14 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .fx .meta .potm b { color: var(--fg); font-weight: 700; }
 .goal-add input::-webkit-calendar-picker-indicator { display: none !important; }
 .btn-ghost.danger-text { color: var(--live); }
-/* Played match: scorers and cards under each team */
+/* Played match: scorers and cards under each team, folded until the card is tapped */
+.fx .fx-events[hidden] { display: none; }
+.fx .fx-more { grid-column: 1 / -1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; color: var(--fg-dim); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.fx .fx-more svg.i { width: 14px; height: 14px; transition: transform .2s ease; }
+.fx.fx-open .fx-more svg.i { transform: rotate(180deg); }
+.fx-edit { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; }
+.fx-edit[hidden] { display: none; }
+.fx-edit svg.i { width: 16px; height: 16px; }
 .fx .fx-events { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 18px; margin-top: 4px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
 .fx .fx-events .ev { display: grid; gap: 5px; align-content: start; }
 .fx .fx-events .ev + .ev { border-left: 1px solid color-mix(in srgb, var(--line) 70%, transparent); padding-left: 9px; margin-left: -9px; }
@@ -4031,6 +4038,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
 
   var fxConfirm = false;
+  var openFx = {};
   var openTeams = {};
   function renderFixtures(t, root) {
     var fixed = numberOldFixtures(t);
@@ -4104,9 +4112,34 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var sec = el('section', 'fx-stage'), ul = el('ul', 'fx-list');
     ms.forEach(function (m) {
       var li = el('li'), row = matchRow(t, m);
-      row.disabled = !canEdit();
-      row.addEventListener('click', function () { if (canEdit()) openMatch(t, m, row); });
-      li.appendChild(row); ul.appendChild(li);
+      var ev = row.querySelector('.fx-events');
+      if (ev) {
+        // Scorers and cards stay folded; tapping the card shows them. Admins edit from the button underneath.
+        var more = el('span', 'fx-more');
+        more.appendChild(el('span', null, 'Goals and cards'));
+        more.appendChild(svgIcon('ic-down'));
+        row.insertBefore(more, ev);
+        var edit = null;
+        if (canEdit()) {
+          edit = el('button', 'btn btn-ghost btn-sm fx-edit'); edit.type = 'button';
+          edit.appendChild(svgIcon('ic-edit')); edit.appendChild(document.createTextNode('Edit match'));
+          edit.addEventListener('click', function () { openMatch(t, m, edit); });
+        }
+        var sync = function () {
+          var open = !!openFx[m.id];
+          ev.hidden = !open; row.classList.toggle('fx-open', open);
+          row.setAttribute('aria-expanded', String(open));
+          if (edit) edit.hidden = !open;
+        };
+        row.addEventListener('click', function () { openFx[m.id] = !openFx[m.id]; sync(); });
+        sync();
+        li.appendChild(row); if (edit) li.appendChild(edit);
+      } else {
+        row.disabled = !canEdit();
+        row.addEventListener('click', function () { if (canEdit()) openMatch(t, m, row); });
+        li.appendChild(row);
+      }
+      ul.appendChild(li);
     });
     sec.appendChild(ul); root.appendChild(sec);
     if (t.format === 'league' && teams.length >= 2) {
