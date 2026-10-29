@@ -773,6 +773,17 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .fx .meta .potm b { color: var(--fg); font-weight: 700; }
 .goal-add input::-webkit-calendar-picker-indicator { display: none !important; }
 .btn-ghost.danger-text { color: var(--live); }
+/* Played match: scorers and cards under each team */
+.fx .fx-events { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 18px; margin-top: 4px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+.fx .fx-events .ev { display: grid; gap: 5px; align-content: start; }
+.fx .fx-events .ev + .ev { border-left: 1px solid color-mix(in srgb, var(--line) 70%, transparent); padding-left: 9px; margin-left: -9px; }
+.fx .fx-events .ev-row { display: flex; align-items: center; gap: 7px; min-width: 0; color: var(--fg-muted); font-size: 13px; font-weight: 600; line-height: 1.25; }
+.fx .fx-events .ev-home .ev-row { justify-content: flex-end; text-align: right; }
+.fx .fx-events .ev-home .ev-row > :first-child { order: 2; }
+.fx .fx-events .ev-row span { overflow-wrap: anywhere; }
+.fx .fx-events .ev-row b { color: var(--fg); font-weight: 700; }
+.fx .fx-events svg.i { flex: none; width: 14px; height: 14px; color: var(--fg); }
+.fx .fx-events .bk { width: 9px; height: 12px; }
 .fx-predict { display: flex; align-items: center; gap: 8px; }
 .fx-predict .fx { flex: 1; min-width: 0; }
 .goal-box { display: grid; gap: 8px; }
@@ -784,6 +795,14 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .goal-chips button { width: 24px; height: 24px; border: 0; border-radius: 50%; background: none; color: var(--fg-dim); cursor: pointer; font-size: 16px; line-height: 1; }
 .goal-chips button:hover { color: var(--live); }
 .goal-chips .goal-count { min-width: 20px; height: 20px; padding: 0 6px; margin-left: 2px; border-radius: 999px; background: var(--teal); color: var(--on-teal); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.card-box { display: grid; gap: 8px; }
+.card-box input[hidden], .card-box select[hidden] { display: none; }
+.card-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.card-btns .btn { display: inline-flex; align-items: center; gap: 8px; }
+.bk { flex: none; display: inline-block; width: 10px; height: 14px; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.bk-y { background: #f5c518; }
+.bk-r { background: #e5383b; }
+.goal-chips .bk { margin-right: 2px; }
 .score-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 10px; }
 .score-row > span { padding-bottom: 14px; font-weight: 700; color: var(--fg-dim); }
 .score-row .field span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2116,6 +2135,26 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <select data-goal-pick aria-label="Pick the scorer"></select>
         <div class="goal-add"><input type="text" maxlength="40" placeholder="Player name" data-goal-input><button class="btn btn-ghost btn-sm" type="button" data-goal-add>Add goal</button></div>
         <div class="goal-chips" data-goal-chips></div>
+      </div>
+      <div class="field card-box" data-side="home">
+        <span data-card-label>Home cards</span>
+        <select data-card-pick aria-label="Pick the player"></select>
+        <input type="text" maxlength="40" placeholder="Player name" data-card-input>
+        <div class="card-btns">
+          <button class="btn btn-ghost btn-sm" type="button" data-card="y"><i class="bk bk-y"></i>Yellow card</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-card="r"><i class="bk bk-r"></i>Red card</button>
+        </div>
+        <div class="goal-chips" data-card-chips></div>
+      </div>
+      <div class="field card-box" data-side="away">
+        <span data-card-label>Away cards</span>
+        <select data-card-pick aria-label="Pick the player"></select>
+        <input type="text" maxlength="40" placeholder="Player name" data-card-input>
+        <div class="card-btns">
+          <button class="btn btn-ghost btn-sm" type="button" data-card="y"><i class="bk bk-y"></i>Yellow card</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-card="r"><i class="bk bk-r"></i>Red card</button>
+        </div>
+        <div class="goal-chips" data-card-chips></div>
       </div>
       <label class="field" id="mf-potm-row" hidden><span>Player of the match</span><select id="mf-potm"></select></label>
       <em class="err" id="mf-err" hidden></em>
@@ -3846,6 +3885,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       b.appendChild(el('span', 'fx-ft', 'Full time'));
       if (m.ko && m.hs === m.as && m.pens) { var pw = teamById(t, m.pens); if (pw) meta.push(pw.name + ' won on penalties'); }
     } else meta.push(formatKickoff(m.date));
+    if (played(m) && !isBye(m)) { var ev = matchEvents(m, home, away); if (ev) b.appendChild(ev); }
     var metaEl = el('span', 'meta', meta.join(' · '));
     if (played(m) && m.potm) {
       var star = el('span', 'potm');
@@ -3856,6 +3896,39 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (metaEl.childNodes.length) b.appendChild(metaEl);
     b.setAttribute('aria-label', (home ? home.name : '') + ' against ' + (away ? away.name : 'bye') + (played(m) ? ', ' + m.hs + ' to ' + m.as : ''));
     return b;
+  }
+  // Scorers with goal counts, then yellow and red cards, for each side of a played match
+  function matchEvents(m, home, away) {
+    var goals = m.goals || [], cards = m.cards || [];
+    if (!goals.length && !cards.length) return null;
+    var wrap = el('span', 'fx-events');
+    [[home, 'ev-home'], [away, 'ev-away']].forEach(function (k) {
+      var team = k[0], ul = el('span', 'ev ' + k[1]);
+      if (team) {
+        var order = [], n = {};
+        goals.forEach(function (g) { if (g.team !== team.id) return; if (!n[g.player]) { n[g.player] = 0; order.push(g.player); } n[g.player]++; });
+        order.forEach(function (p) {
+          var li = el('span', 'ev-row'), ic = svgIcon('ic-futsal'), txt = el('span', null, p);
+          if (n[p] > 1) txt.appendChild(el('b', null, ' ×' + n[p]));
+          li.appendChild(ic); li.appendChild(txt); ul.appendChild(li);
+        });
+        ['y', 'r'].forEach(function (c) {
+          cards.forEach(function (x) {
+            if (x.team !== team.id || x.c !== c) return;
+            var li = el('span', 'ev-row'); li.appendChild(el('i', 'bk bk-' + c)); li.appendChild(el('span', null, x.player));
+            li.setAttribute('aria-label', x.player + ', ' + (c === 'y' ? 'yellow' : 'red') + ' card');
+            ul.appendChild(li);
+          });
+        });
+      }
+      wrap.appendChild(ul);
+    });
+    return wrap;
+  }
+  function svgIcon(id) {
+    var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'i'); s.setAttribute('aria-hidden', 'true');
+    var u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#' + id); s.appendChild(u);
+    return s;
   }
   function summarize(names) {
     var counts = {}, order = [];
@@ -4469,8 +4542,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     hs: document.getElementById('mf-hs'), as: document.getElementById('mf-as'),
     pens: document.getElementById('mf-pens'), err: document.getElementById('mf-err')
   };
-  var matchState = { t: null, m: null, goals: [] };
+  var matchState = { t: null, m: null, goals: [], cards: [] };
   var goalBoxes = Array.prototype.slice.call(matchModal.querySelectorAll('.goal-box'));
+  var cardBoxes = Array.prototype.slice.call(matchModal.querySelectorAll('.card-box'));
   // A team picker value is a team id, or "slot:" + a place still to be decided
   function pickOf(t, v) {
     if (v && v.indexOf('slot:') === 0) { var sl = JSON.parse(v.slice(5)); return { id: resolveSlot(t, sl), slot: sl }; }
@@ -4541,7 +4615,50 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         chip.appendChild(x); chips.appendChild(chip);
       });
     });
+    cardBoxes.forEach(function (box) {
+      var side = box.dataset.side, team = sideTeam(side);
+      box.querySelector('[data-card-label]').textContent = (team ? team.name : side === 'home' ? 'Home' : 'Away') + ' cards';
+      var pick = box.querySelector('[data-card-pick]'), players = team ? sortedPlayers(team.players || []) : [];
+      var keep = pick.value;
+      pick.textContent = '';
+      var first = el('option', null, 'Choose the player'); first.value = ''; pick.appendChild(first);
+      players.forEach(function (p) {
+        var o = el('option', null, (p.number !== '' && p.number != null ? '#' + p.number + '  ' : '') + p.name); o.value = p.name; pick.appendChild(o);
+      });
+      var oth = el('option', null, 'Other player…'); oth.value = '__other'; pick.appendChild(oth);
+      pick.value = keep; if (pick.value !== keep) pick.value = '';
+      pick.hidden = !players.length;
+      box.querySelector('[data-card-input]').hidden = !!players.length && pick.value !== '__other';
+      var chips = box.querySelector('[data-card-chips]');
+      chips.textContent = '';
+      matchState.cards.forEach(function (c, i) {
+        if (!team || c.team !== team.id) return;
+        var chip = el('span'), x = el('button', null, '×');
+        chip.appendChild(el('i', 'bk bk-' + c.c)); chip.appendChild(document.createTextNode(c.player));
+        x.type = 'button'; x.setAttribute('aria-label', 'Remove ' + (c.c === 'y' ? 'yellow' : 'red') + ' card for ' + c.player);
+        x.addEventListener('click', function () { matchState.cards.splice(i, 1); syncMatch(); });
+        chip.appendChild(x); chips.appendChild(chip);
+      });
+    });
   }
+  cardBoxes.forEach(function (box) {
+    var pick = box.querySelector('[data-card-pick]'), input = box.querySelector('[data-card-input]');
+    pick.addEventListener('change', function () {
+      input.hidden = !pick.hidden && pick.value !== '__other';
+      if (!input.hidden) input.focus();
+    });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-card]'), function (btn) {
+      btn.addEventListener('click', function () {
+        var team = sideTeam(box.dataset.side);
+        var name = !pick.hidden && pick.value && pick.value !== '__other' ? pick.value : input.value.trim();
+        if (!team || !name) { toast('Choose the player first.'); (pick.hidden || pick.value === '__other' ? input : pick).focus(); return; }
+        matchState.cards.push({ team: team.id, player: name, c: btn.dataset.card });
+        input.value = ''; pick.value = '';
+        syncMatch();
+      });
+    });
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') e.preventDefault(); });
+  });
   function isKo(t, stage) {
     if (t.format === 'knockout') return true;
     return stage !== 'League' && groupNames(t).indexOf(stage) === -1;
@@ -4576,7 +4693,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 
   function openMatch(t, m, trigger, presetStage) {
     goalBoxes.forEach(function (box) { box.dataset.other = ''; });
-    matchState = { t: t, m: m || null, goals: m ? (m.goals || []).map(function (g) { return { team: g.team, player: g.player }; }) : [] };
+    matchState = { t: t, m: m || null, goals: m ? (m.goals || []).map(function (g) { return { team: g.team, player: g.player }; }) : [],
+      cards: m ? (m.cards || []).map(function (c) { return { team: c.team, player: c.player, c: c.c }; }) : [] };
+    cardBoxes.forEach(function (box) { box.querySelector('[data-card-pick]').value = ''; box.querySelector('[data-card-input]').value = ''; });
     matchModal.returnFocus = trigger || null;
     document.getElementById('mf-title').textContent = m ? 'Match' : 'Add match';
     document.getElementById('mf-sub').textContent = m ? m.stage : '';
@@ -4653,12 +4772,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var hg = goals.filter(function (g) { return g.team === home; }).length, ag = goals.length - hg;
     if (hs != null && (hg > hs || ag > as)) return fail('There are more scorers than goals. Raise the score or remove a scorer.');
     if (hs == null && goals.length) return fail('Enter the score to save the scorers.');
+    var cards = matchState.cards.filter(function (c) { return c.team === home || c.team === away; });
+    if (hs == null && cards.length) return fail('Enter the score to save the cards.');
     var ko = isKo(t, stage);
     var pens = ko && hs != null && hs === as ? mf.pens.value || null : null;
     if (ko && hs != null && hs === as && !pens && !bye) return fail('Knockout matches need a winner. Choose who won on penalties.');
     var pv = document.getElementById('mf-potm').value, cut = pv.indexOf('|');
     var potm = hs != null && pv && (pv.slice(0, cut) === home || pv.slice(0, cut) === away) ? { team: pv.slice(0, cut), player: pv.slice(cut + 1) } : null;
-    var data = { home: home, away: away, stage: stage, ko: ko, date: mf.date.value, hs: hs, as: as, pens: pens, goals: goals, potm: potm };
+    var data = { home: home, away: away, stage: stage, ko: ko, date: mf.date.value, hs: hs, as: as, pens: pens, goals: goals, cards: cards, potm: potm };
     if (hp.slot) data.homeSlot = hp.slot;
     if (ap.slot) data.awaySlot = ap.slot;
     if (m) {
