@@ -1083,7 +1083,7 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pd-picks li:first-child { border-top: 0; }
 .pd-picks div { display: grid; gap: 2px; min-width: 0; }
 .pd-picks span { font-size: 13px; color: var(--fg-muted); }
-.fx-later .fx { opacity: .72; cursor: default; }
+.fx-later .fx { opacity: .72; }
 .yr { display: grid; gap: 14px; }
 .yr-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .yr-head h3 { margin: 0 !important; }
@@ -4446,10 +4446,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var ul3 = el('ul', 'fx-list');
       later.forEach(function (m) {
         var li = el('li'), row = matchRow(t, m);
-        row.disabled = true;
-        var why = !m.home || !m.away ? 'Opens when both teams are known' : 'Kicked off · predictions closed, waiting for the result';
+        var why = 'Kicked off · predictions closed, waiting for the result';
         var meta = row.querySelector('.meta');
-        if (meta) meta.textContent = (m.home && m.away ? formatKickoff(m.date) + ' · ' : '') + why;
+        if (meta) meta.textContent = (m.date ? formatKickoff(m.date) + ' · ' : '') + why;
+        row.addEventListener('click', function () {
+          toast(isAdmin()
+            ? 'Kickoff time has passed. Change the match time in Fixtures to reopen predictions.'
+            : 'This match has kicked off, so predictions are closed.');
+        });
         li.appendChild(row); ul3.appendChild(li);
       });
       ls.appendChild(ul3); root.appendChild(ls);
