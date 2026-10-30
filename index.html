@@ -317,6 +317,45 @@ section.block { padding-block: 48px 8px; }
 .hid-pill { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; padding: 3px 9px; border-radius: 999px; background: var(--chip); color: var(--fg-muted); font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
 .hid-pill svg.i { width: 14px; height: 14px; }
 .card.is-hidden { border-style: dashed; }
+/* Sponsor strip on the tournament page */
+.spons { display: grid; gap: 8px; margin-top: 14px; }
+.spons[hidden] { display: none; }
+.sp-label { color: var(--fg-dim); font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.sp-stage { position: relative; height: 64px; overflow: hidden; }
+.sp-card { position: absolute; inset: 0; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-raised); color: var(--fg); text-decoration: none;
+  opacity: 0; transform: translateX(40px); pointer-events: none; transition: opacity .5s ease, transform .5s ease; }
+.sp-card.in { opacity: 1; transform: none; pointer-events: auto; }
+.sp-card.out { opacity: 0; transform: translateX(-40px); }
+.sp-logo { flex: none; width: 42px; height: 42px; border-radius: 10px; display: grid; place-items: center; overflow: hidden; color: #fff; font: 800 16px var(--font-display); letter-spacing: .03em; }
+.sp-logo img { width: 100%; height: 100%; object-fit: cover; }
+.sp-text { display: grid; gap: 1px; min-width: 0; }
+.sp-text b { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-text small { color: var(--fg-muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-label { text-align: center; }
+.sp-card { justify-content: center; }
+.spons .sp-card { border-color: transparent; background: none; }
+.sp-text { text-align: left; }
+.sp-dots { display: flex; gap: 6px; justify-content: center; }
+.sp-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: background .3s, width .3s; }
+.sp-dots i.on { width: 16px; border-radius: 3px; background: var(--teal); }
+@media (prefers-reduced-motion: reduce) { .sp-card, .sp-card.out { transform: none; } }
+.sp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sp-row { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border: 1px solid var(--line); border-radius: 14px; }
+.sp-row.editing { border-color: var(--teal); }
+.sp-row .sp-card { position: static; opacity: 1; transform: none; flex: 1; min-width: 0; padding: 0; border: 0; background: none; justify-content: flex-start; }
+.sp-row-acts { display: flex; gap: 4px; flex: none; }
+.sp-ic { width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 10px; background: none; color: var(--fg-muted); cursor: pointer; }
+.sp-ic:disabled { opacity: .35; cursor: default; }
+.sp-ic svg.i { width: 16px; height: 16px; }
+.sp-ic:first-child svg.i { transform: rotate(90deg); }
+.sp-add { display: grid; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.sp-add h3 { margin: 0; font: 800 18px var(--font-display); text-transform: uppercase; }
+.sp-logo-pick { display: flex; align-items: center; gap: 10px; }
+.sp-logo-pick .btn { display: inline-flex; align-items: center; gap: 6px; }
+.sp-add-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.sp-add-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+#spm-empty { margin: 0; }
+#spm-empty[hidden] { display: none; }
 .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .desc { margin: -4px 0 0; color: var(--fg-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .card h3 {
@@ -1557,6 +1596,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <h1 class="detail-title" id="d-name"></h1>
       <p class="detail-sub" id="d-sub"></p>
       <p class="detail-desc" id="d-desc" hidden></p>
+      <div class="spons" id="d-spons" hidden aria-label="Sponsors"></div>
       <div class="next-kick detail-kick" id="d-kick" hidden></div>
       <p class="lock-note" id="d-lock" hidden><svg class="i"><use href="#ic-lock"/></svg>This tournament is finished, so it's locked. Only the owner or an admin can change it.</p>
 
@@ -1743,6 +1783,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <h1 class="detail-title" id="q-name"></h1>
       <p class="detail-sub" id="q-sub"></p>
       <p class="detail-desc q-desc" id="q-desc" hidden></p>
+      <div class="spons" id="q-spons" hidden aria-label="Sponsors"></div>
 
       <div class="detail-tabs quiz-tabs" role="tablist" aria-label="Quiz sections" id="q-tabs">
         <button type="button" role="tab" data-qtab="today">Today</button>
@@ -1900,6 +1941,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <div class="menu-list">
         <button type="button" id="s-edit"><strong>Edit details</strong><small>Name, date, venue, format and description</small></button>
         <button type="button" id="s-awards-row" class="awards-row"><strong id="s-awards">Add awards</strong><small>Best player, top scorer, best 5, best coach and best manager</small></button>
+        <button type="button" id="s-spons-row"><strong>Sponsors</strong><small>Logos that slide under the tournament name</small></button>
         <button type="button" id="s-delete" class="danger"><strong>Delete tournament</strong><small>Removes its teams, players, matches and results</small></button>
         <div class="confirm" id="s-confirm" hidden>
           <strong>Delete this tournament?</strong>
@@ -2011,6 +2053,43 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <div class="sheet-actions">
       <button class="btn btn-ghost" type="button" data-close>Cancel</button>
       <button class="btn" type="submit" id="fb-send">Send</button>
+    </div>
+  </form>
+</div>
+
+<div class="modal" id="sp-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <form class="sheet" id="sp-form" novalidate aria-labelledby="spm-title">
+    <div class="sheet-head">
+      <div>
+        <h2 id="spm-title">Sponsors</h2>
+        <p class="sheet-sub" id="spm-sub"></p>
+      </div>
+      <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <ul class="sp-list" id="spm-list"></ul>
+      <p class="hint" id="spm-empty">No sponsors yet. Add the first one below.</p>
+      <div class="sp-add">
+        <h3 id="spm-form-title">Add a sponsor</h3>
+        <div class="sp-logo-pick">
+          <span class="sp-logo" id="spm-logo-prev"></span>
+          <label class="btn btn-ghost btn-sm" for="spm-logo"><svg class="i"><use href="#ic-upload"/></svg>Logo</label>
+          <input id="spm-logo" type="file" accept="image/*" hidden>
+          <button class="btn btn-ghost btn-sm" type="button" id="spm-logo-clear" hidden>Remove logo</button>
+        </div>
+        <label class="field"><span>Name</span><input id="spm-name" type="text" maxlength="40" placeholder="e.g. Island Fresh Mart"></label>
+        <label class="field"><span>Short line (optional)</span><input id="spm-note" type="text" maxlength="50" placeholder="e.g. Groceries delivered daily"></label>
+        <label class="field"><span>Link (optional)</span><input id="spm-link" type="url" maxlength="300" placeholder="Instagram, Facebook or website"></label>
+        <em class="err" id="spm-err" hidden></em>
+        <div class="sp-add-actions">
+          <button class="btn btn-ghost btn-sm" type="button" id="spm-cancel" hidden>Cancel edit</button>
+          <button class="btn btn-sm" type="submit" id="spm-save"><svg class="i"><use href="#ic-plus"/></svg>Add sponsor</button>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn" type="button" data-close>Done</button>
     </div>
   </form>
 </div>
@@ -2839,6 +2918,100 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     settings.hidden = true;
     openForm(settings.returnFocus, sTarget);
   });
+  document.getElementById('s-spons-row').addEventListener('click', function () {
+    settings.hidden = true;
+    openSponsorsEditor(sTarget, settings.returnFocus);
+  });
+  // Sponsors editor: add, edit, reorder and remove the sponsor cards
+  var spModal = document.getElementById('sp-modal');
+  var spEd = { t: null, idx: -1, logo: null };
+  function openSponsorsEditor(t, trigger) {
+    spEd.t = t;
+    spModal.returnFocus = trigger || null;
+    document.getElementById('spm-sub').textContent = t.name;
+    resetSponsorForm();
+    drawSponsorList();
+    spModal.hidden = false;
+  }
+  function resetSponsorForm() {
+    spEd.idx = -1; spEd.logo = null;
+    ['spm-name', 'spm-note', 'spm-link'].forEach(function (id) { document.getElementById(id).value = ''; });
+    document.getElementById('spm-err').hidden = true;
+    document.getElementById('spm-form-title').textContent = 'Add a sponsor';
+    document.getElementById('spm-save').lastChild.textContent = 'Add sponsor';
+    document.getElementById('spm-cancel').hidden = true;
+    drawLogoPreview();
+  }
+  function drawLogoPreview() {
+    var pv = document.getElementById('spm-logo-prev'), name = document.getElementById('spm-name').value.trim();
+    pv.textContent = ''; pv.style.background = '';
+    if (spEd.logo) { var img = document.createElement('img'); img.src = spEd.logo; img.alt = ''; pv.appendChild(img); }
+    else { pv.textContent = name ? name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase() : '?'; pv.style.background = 'var(--teal)'; }
+    document.getElementById('spm-logo-clear').hidden = !spEd.logo;
+  }
+  document.getElementById('spm-name').addEventListener('input', drawLogoPreview);
+  document.getElementById('spm-logo').addEventListener('change', function (e) {
+    var file = e.target.files[0]; e.target.value = '';
+    if (!file) return;
+    shrinkImage(file, 160, 'image/png', function (url) {
+      if (!url) { var er = document.getElementById('spm-err'); er.textContent = 'That image could not be read. Try another one.'; er.hidden = false; return; }
+      spEd.logo = url; drawLogoPreview();
+    });
+  });
+  document.getElementById('spm-logo-clear').addEventListener('click', function () { spEd.logo = null; drawLogoPreview(); });
+  document.getElementById('spm-cancel').addEventListener('click', resetSponsorForm);
+  function saveSponsors() { save(tournaments); refreshPage(); drawSponsorList(); }
+  function drawSponsorList() {
+    var list = spEd.t.sponsors || [], ul = document.getElementById('spm-list');
+    ul.textContent = '';
+    document.getElementById('spm-empty').hidden = !!list.length;
+    list.forEach(function (s, i) {
+      var li = el('li', 'sp-row' + (i === spEd.idx ? ' editing' : ''));
+      var card = sponsorCard(s); card.classList.add('in');
+      if (card.tagName === 'A') { var d = el('div', 'sp-card in'); while (card.firstChild) d.appendChild(card.firstChild); card = d; }
+      li.appendChild(card);
+      var acts = el('span', 'sp-row-acts');
+      function btn(label, icon, fn, dis) {
+        var b = el('button', 'sp-ic'); b.type = 'button'; b.setAttribute('aria-label', label); b.title = label; b.disabled = !!dis;
+        b.appendChild(svgIcon(icon)); b.addEventListener('click', fn); acts.appendChild(b);
+      }
+      btn('Move up', 'ic-left', function () { list.splice(i - 1, 0, list.splice(i, 1)[0]); saveSponsors(); }, i === 0);
+      btn('Edit', 'ic-edit', function () {
+        spEd.idx = i; spEd.logo = s.logo || null;
+        document.getElementById('spm-name').value = s.name; document.getElementById('spm-note').value = s.note || ''; document.getElementById('spm-link').value = s.link || '';
+        document.getElementById('spm-form-title').textContent = 'Edit ' + s.name;
+        document.getElementById('spm-save').lastChild.textContent = 'Save sponsor';
+        document.getElementById('spm-cancel').hidden = false;
+        drawLogoPreview(); drawSponsorList();
+        document.getElementById('spm-name').focus();
+      });
+      btn('Remove', 'ic-close', function () {
+        list.splice(i, 1); if (!list.length) delete spEd.t.sponsors;
+        if (spEd.idx === i) resetSponsorForm();
+        saveSponsors(); toast('Sponsor removed');
+      });
+      li.appendChild(acts); ul.appendChild(li);
+    });
+  }
+  document.getElementById('sp-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = document.getElementById('spm-err');
+    var name = document.getElementById('spm-name').value.trim();
+    var note = document.getElementById('spm-note').value.trim();
+    var link = document.getElementById('spm-link').value.trim();
+    if (!name) { err.textContent = 'Give the sponsor a name.'; err.hidden = false; document.getElementById('spm-name').focus(); return; }
+    if (link && !/^https?:\/\//i.test(link)) link = 'https://' + link;
+    var item = { name: name };
+    if (note) item.note = note;
+    if (link) item.link = link;
+    if (spEd.logo) item.logo = spEd.logo;
+    var list = spEd.t.sponsors || (spEd.t.sponsors = []);
+    if (spEd.idx >= 0) list[spEd.idx] = item; else list.push(item);
+    var added = spEd.idx < 0;
+    resetSponsorForm();
+    saveSponsors();
+    toast(added ? 'Sponsor added' : 'Sponsor saved');
+  });
   document.getElementById('s-awards').addEventListener('click', function () {
     settings.hidden = true;
     openAwards(sTarget, settings.returnFocus);
@@ -3025,6 +3198,57 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       default: return ['No teams yet', canEdit() ? 'Add the first team with the Add team button, then add its players.' : 'Teams appear here once they register.'];
     }
   }
+  // Sponsors: one small card at a time, sliding to the next every few seconds
+  var DEMO_SPONSORS = [
+    { name: 'Island Fresh Mart', note: 'Groceries delivered daily', c: '#2f8f6b' },
+    { name: 'Blue Wave Cafe', note: 'Coffee, juice and short eats', c: '#2b6cb0' },
+    { name: 'Atoll Motors', note: 'Bikes, parts and service', c: '#c05621' },
+    { name: 'Sunrise Pharmacy', note: 'Open 24 hours', c: '#b83280' },
+    { name: 'Coral Tech', note: 'Phones and repairs', c: '#6b46c1' }
+  ];
+  function sponsorsOf(t) {
+    if (t.sponsors && t.sponsors.length) return t.sponsors;
+    return FB_MODE ? [] : DEMO_SPONSORS; // demo cards only in the preview
+  }
+  function renderSponsors(t, boxId) {
+    var box = document.getElementById(boxId || 'd-spons'), list = sponsorsOf(t);
+    var key = t.id + '|' + JSON.stringify(list);
+    if (key === box.spKey) return;
+    box.spKey = key; clearInterval(box.spTimer);
+    box.textContent = '';
+    box.hidden = !list.length;
+    if (!list.length) return;
+    box.appendChild(el('small', 'sp-label', list.length === 1 ? 'Sponsor' : 'Sponsors'));
+    var stage = el('div', 'sp-stage'), dots = el('div', 'sp-dots'), at = 0;
+    var cards = list.map(function (s, i) {
+      var c = sponsorCard(s); if (i === 0) c.classList.add('in');
+      stage.appendChild(c);
+      dots.appendChild(el('i', i === 0 ? 'on' : null));
+      return c;
+    });
+    box.appendChild(stage);
+    if (list.length < 2) return;
+    box.appendChild(dots);
+    box.spTimer = setInterval(function () {
+      if (document.hidden || !box.offsetParent) return;
+      var old = cards[at];
+      old.classList.remove('in'); old.classList.add('out');
+      setTimeout(function () { old.classList.remove('out'); }, 600);
+      dots.children[at].className = '';
+      at = (at + 1) % cards.length;
+      cards[at].classList.add('in'); dots.children[at].className = 'on';
+    }, 4000);
+  }
+  function sponsorCard(s) {
+    var c = el(s.link ? 'a' : 'div', 'sp-card');
+    if (s.link) { c.href = s.link; c.target = '_blank'; c.rel = 'noopener'; }
+    var logo = el('span', 'sp-logo');
+    if (s.logo) { var img = document.createElement('img'); img.src = s.logo; img.alt = ''; logo.appendChild(img); }
+    else { logo.textContent = s.name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); logo.style.background = s.c || 'var(--teal)'; }
+    var txt = el('span', 'sp-text'); txt.appendChild(el('b', null, s.name)); if (s.note) txt.appendChild(el('small', null, s.note));
+    c.appendChild(logo); c.appendChild(txt);
+    return c;
+  }
   function renderDetail() {
     var t = current();
     if (!t) return;
@@ -3035,6 +3259,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     status.className = 'status ' + STATUSES[st].cls; status.textContent = STATUSES[st].label;
     document.getElementById('d-name').textContent = t.name;
     document.getElementById('d-name').classList.toggle('title-dv', thaana(t.name));
+    renderSponsors(t);
     var sub = [['calendar', formatDate(t.date)]];
     if (t.location) sub.push(['pin', t.location]);
     sub.push(['users', (t.squads || []).length + ' of ' + t.teams + ' teams']);
@@ -5109,6 +5334,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       ['quiz', qs.length + (qs.length === 1 ? ' question' : ' questions')], ['users', players + (players === 1 ? ' player' : ' players')]]);
     var desc = document.getElementById('q-desc');
     desc.textContent = t.description || ''; desc.hidden = !t.description;
+    renderSponsors(t, 'q-spons');
 
     document.querySelectorAll('[data-qtab]').forEach(function (b) {
       b.setAttribute('aria-selected', b.dataset.qtab === quiz.tab ? 'true' : 'false');
