@@ -4514,7 +4514,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   });
 
   // Result picture for WhatsApp: teams, score, scorers, cards and player of the match on one image
-  var shModal = document.getElementById('sh-modal'), shFile = null, shUrl = null, shText = '';
+  var shModal = document.getElementById('sh-modal'), shFile = null, shUrl = null, shText = '', shLink = '';
   function loadImg(src) {
     return new Promise(function (ok) {
       if (!src) return ok(null);
@@ -4648,6 +4648,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function openShare(t, m, trigger) {
     var home = teamById(t, m.home), away = teamById(t, m.away);
     shText = (home ? home.name : '') + ' ' + m.hs + ' – ' + m.as + ' ' + (away ? away.name : '') + ' · ' + t.name;
+    // The caption carries a link straight to this tournament
+    shLink = 'https://noonuprc.com/#t-' + t.id;
     shFile = null;
     var img = document.getElementById('sh-img'), wait = document.getElementById('sh-wait');
     img.hidden = true; wait.hidden = false; wait.textContent = 'Making the picture…';
@@ -4669,13 +4671,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   document.getElementById('sh-save').addEventListener('click', function () { if (shFile) { savePicture(); toast('Picture saved'); } });
   document.getElementById('sh-go').addEventListener('click', function () {
     if (!shFile) return;
-    var data = { files: [shFile], title: shText };
+    var data = { files: [shFile], title: shText, text: shText + '\n' + shLink };
     if (navigator.canShare && navigator.canShare(data)) {
       navigator.share(data).catch(function () {});
     } else {
       // No picture sharing here (most computers): save it, and open WhatsApp with the score as text
       savePicture();
-      window.open('https://wa.me/?text=' + encodeURIComponent(shText), '_blank', 'noopener');
+      window.open('https://wa.me/?text=' + encodeURIComponent(shText + '\n' + shLink), '_blank', 'noopener');
       toast('Picture saved. Attach it in WhatsApp.');
     }
   });
