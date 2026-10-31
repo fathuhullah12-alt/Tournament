@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tournament Home</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NPRC">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#121817">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -412,6 +420,22 @@ section.block { padding-block: 48px 8px; }
 @keyframes nk-pulse { 50% { opacity: .3; transform: scale(.7); } }
 @media (prefers-reduced-motion: reduce) { .next-kick.is-playing .nk-label::before { animation: none; } }
 .detail-kick { margin-top: 14px; max-width: 520px; pointer-events: auto; }
+/* Remind me: adds a match to the phone's calendar with an alert before kickoff */
+.remind-btn { display: inline-flex; align-items: center; gap: 6px; }
+.remind-btn[hidden] { display: none; }
+.remind-btn svg.i { width: 16px; height: 16px; }
+.d-remind { width: 100%; max-width: 520px; justify-content: center; margin: -8px 0 18px; }
+.fx-list li > .remind-btn { margin: 6px auto 0; display: flex; }
+.rm-list { display: grid; gap: 10px; }
+.rm-opt { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); text-align: left; font: inherit; cursor: pointer; }
+.rm-opt:hover { border-color: var(--teal); }
+.rm-opt[hidden] { display: none; }
+.rm-opt svg.i { flex: none; width: 22px; height: 22px; color: var(--teal); }
+.rm-opt span { display: grid; gap: 2px; }
+.rm-opt b { font-weight: 700; }
+.rm-opt small { color: var(--fg-muted); font-size: 13px; }
+.rm-when { display: grid; gap: 6px; }
+.rm-when .segmented { justify-self: start; }
 .card hr { border: 0; border-top: 1.5px dashed var(--line); margin: 6px 0 0; }
 .count { color: var(--fg-muted); font-size: 18px; font-variant-numeric: tabular-nums; }
 .count b { color: var(--fg); font-weight: 700; }
@@ -466,7 +490,7 @@ html { -webkit-tap-highlight-color: transparent; }
 .meta-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail-desc { margin: 4px 0 24px; color: var(--fg-muted); max-width: 60ch; }
 .detail-kick { margin-bottom: 18px; }
-#detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
+#detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-remind, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
 .hi-bar { position: relative; }
 .hi-bar[hidden] { display: none; }
 .hi-bar .wrap { padding-top: 20px; }
@@ -842,6 +866,13 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .fx-edit { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; }
 .fx-edit[hidden] { display: none; }
 .fx-edit svg.i { width: 16px; height: 16px; }
+.fx-btns { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.fx-btns[hidden] { display: none; }
+.fx-btns .fx-edit { margin-top: 0; }
+.sh-preview { display: block; width: 100%; max-width: 420px; margin: 0 auto; border-radius: 14px; border: 1px solid var(--line); background: #121817; }
+.sh-wait { text-align: center; color: var(--fg-muted); padding: 40px 0; }
+#sh-go svg.i { width: 18px; height: 18px; }
+#sh-save { white-space: nowrap; }
 .fx .fx-events { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 18px; margin-top: 4px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
 .fx .fx-events .ev { display: grid; gap: 5px; align-content: start; }
 .fx .fx-events .ev + .ev { border-left: 1px solid color-mix(in srgb, var(--line) 70%, transparent); padding-left: 9px; margin-left: -9px; }
@@ -870,6 +901,18 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .bk { flex: none; display: inline-block; width: 10px; height: 14px; border-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,.35); }
 .bk-y { background: #f5c518; }
 .bk-r { background: #e5383b; }
+/* Stats tab: totals, then the goals and cards tables */
+.st-sum { margin: 14px 0; }
+.m-stats.st-sum div:nth-child(1) strong { color: var(--fg); }
+.m-stats.st-sum div:nth-child(2) strong { color: var(--teal); }
+.m-stats.st-sum div:nth-child(3) strong { color: #e0b21a; }
+.m-stats.st-sum div:nth-child(4) strong { color: #e5383b; }
+.st-sum small { display: inline-flex; align-items: center; gap: 6px; }
+.st-cards { margin-top: 14px; }
+.st-cards th .bk { vertical-align: middle; }
+.st-cards .st-n { width: 44px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+.st-cards .st-n.zero { color: var(--fg-dim); font-weight: 600; }
+.st-cards tr.sc-row { cursor: default; }
 .goal-chips .bk { margin-right: 2px; }
 .score-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 10px; }
 .score-row > span { padding-bottom: 14px; font-weight: 700; color: var(--fg-dim); }
@@ -1442,6 +1485,26 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .fb-open { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--fg); font: 600 14px var(--font-body); cursor: pointer; }
 .fb-open:hover { border-color: var(--teal); }
 .fb-open svg.i { width: 18px; height: 18px; }
+.foot-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.foot-btns [hidden] { display: none; }
+/* Install the app: a small bar at the bottom, and a sheet with the steps for iPhone or Android */
+.app-bar { position: fixed; z-index: 40; left: 50%; transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  width: min(520px, calc(100% - 24px)); display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 12px;
+  border-radius: 16px; border: 1px solid var(--line); background: var(--bg-raised); box-shadow: 0 14px 34px -12px rgba(0, 0, 0, .5); }
+.app-bar[hidden] { display: none; }
+.app-ic { flex: none; width: 42px; height: 42px; border-radius: 10px; overflow: hidden; background: #0e1630; }
+.app-ic img { display: block; width: 100%; height: 100%; }
+.app-txt { flex: 1; min-width: 0; display: grid; line-height: 1.25; }
+.app-txt b { font-weight: 700; }
+.app-txt small { color: var(--fg-muted); font-size: 13px; }
+.app-bar .btn { flex: none; padding: 9px 16px; font-size: 15px; }
+.app-x { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: none; color: var(--fg-muted); cursor: pointer; }
+.app-x svg.i { width: 18px; height: 18px; }
+.app-steps { margin: 0; padding-left: 22px; display: grid; gap: 12px; font-size: 16px; line-height: 1.4; }
+.app-steps[hidden] { display: none; }
+.app-key { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 6px; margin: 0 2px; vertical-align: middle;
+  border-radius: 8px; border: 1px solid var(--line); background: var(--chip); color: var(--teal); font-weight: 800; }
+.app-key svg.i { width: 17px; height: 17px; }
 .fb-badge { min-width: 20px; height: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px; background: var(--live); color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .fb-badge[hidden] { display: none; }
 .fb-stars { display: flex; gap: 6px; }
@@ -1498,6 +1561,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <symbol id="ic-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5"/></symbol>
     <symbol id="ic-doc" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V20.5H7zM14 3.5v4h4M9.5 12h6M9.5 15.5h6"/></symbol>
     <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.3"/><path d="M3 19.5c.5-3.3 2.9-5.2 6-5.2s5.5 1.9 6 5.2M15.5 5.6a3.2 3.2 0 0 1 0 6M17.5 14.6c2 .6 3.2 2.2 3.5 4.9"/></symbol>
+    <symbol id="ic-phone-dl" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7M9 11.5l3 3 3-3M10.5 18.5h3"/></symbol>
     <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4.5 15v4.5h15V15"/></symbol>
     <symbol id="ic-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
     <symbol id="ic-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
@@ -1598,6 +1662,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <p class="detail-desc" id="d-desc" hidden></p>
       <div class="spons" id="d-spons" hidden aria-label="Sponsors"></div>
       <div class="next-kick detail-kick" id="d-kick" hidden></div>
+      <button class="btn btn-ghost btn-sm remind-btn d-remind" type="button" id="d-remind" hidden><svg class="i"><use href="#ic-calendar"/></svg>Remind me</button>
       <p class="lock-note" id="d-lock" hidden><svg class="i"><use href="#ic-lock"/></svg>This tournament is finished, so it's locked. Only the owner or an admin can change it.</p>
 
       <div class="awards" id="d-awards">
@@ -1848,7 +1913,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 
 <footer>
   <div class="wrap legal">
-    <button class="fb-open" type="button" id="fb-open"><svg class="i"><use href="#ic-chat"/></svg>Send feedback</button>
+    <span class="foot-btns">
+      <button class="fb-open" type="button" id="fb-open"><svg class="i"><use href="#ic-chat"/></svg>Send feedback</button>
+      <button class="fb-open" type="button" id="app-open" hidden><svg class="i"><use href="#ic-phone-dl"/></svg>Install app</button>
+    </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
   </div>
@@ -2055,6 +2123,91 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <button class="btn" type="submit" id="fb-send">Send</button>
     </div>
   </form>
+</div>
+
+<div class="app-bar" id="app-bar" role="region" aria-label="Install the app" hidden>
+  <span class="app-ic"><img src="data:image/png;base64,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" alt=""></span>
+  <span class="app-txt"><b>Get the NPRC app</b><small>Opens full screen from your home screen</small></span>
+  <button class="btn" type="button" id="app-bar-go">Install</button>
+  <button class="app-x" type="button" id="app-bar-x" aria-label="Not now"><svg class="i"><use href="#ic-close"/></svg></button>
+</div>
+
+<div class="modal" id="app-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="app-title">
+    <div class="sheet-head">
+      <div>
+        <h2 id="app-title">Install the app</h2>
+        <p class="sheet-sub">Add NPRC to your home screen. It opens full screen, like any other app.</p>
+      </div>
+      <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <ol class="app-steps" id="app-ios">
+        <li>Open <b>noonuprc.com</b> in <b>Safari</b>.</li>
+        <li>Tap the <b>Share</b> button <span class="app-key"><svg class="i"><use href="#ic-upload"/></svg></span> at the bottom of the screen.</li>
+        <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
+        <li>Tap <b>Add</b>.</li>
+      </ol>
+      <ol class="app-steps" id="app-android" hidden>
+        <li>Open <b>noonuprc.com</b> in <b>Chrome</b>.</li>
+        <li>Tap the menu <span class="app-key">⋮</span> at the top right.</li>
+        <li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li>
+        <li>Tap <b>Install</b>.</li>
+      </ol>
+    </div>
+    <div class="sheet-actions sheet-actions-end">
+      <button class="btn" type="button" data-close>Got it</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="rm-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rm-title">
+    <div class="sheet-head">
+      <div>
+        <h2 id="rm-title">Remind me</h2>
+        <p class="sheet-sub" id="rm-sub"></p>
+      </div>
+      <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <div class="field rm-when">
+        <span>Alert me before kickoff</span>
+        <div class="segmented" role="group" aria-label="Alert me">
+          <button type="button" data-rm-before="5" aria-pressed="false">5 min</button>
+          <button type="button" data-rm-before="15" aria-pressed="true">15 min</button>
+          <button type="button" data-rm-before="60" aria-pressed="false">1 hour</button>
+        </div>
+      </div>
+      <div class="rm-list">
+        <button class="rm-opt" type="button" id="rm-ics"><svg class="i"><use href="#ic-calendar"/></svg><span><b>Phone calendar</b><small>iPhone, Samsung and most phones</small></span></button>
+        <button class="rm-opt" type="button" id="rm-google"><svg class="i"><use href="#ic-calendar"/></svg><span><b>Google Calendar</b><small>Opens Google Calendar to save it</small></span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="sh-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+    <div class="sheet-head">
+      <div>
+        <h2 id="sh-title">Share result</h2>
+        <p class="sheet-sub">Send this picture to a WhatsApp chat, group or status.</p>
+      </div>
+      <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
+    </div>
+    <div class="sheet-body">
+      <p class="sh-wait" id="sh-wait">Making the picture…</p>
+      <img class="sh-preview" id="sh-img" alt="" hidden>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-ghost" type="button" id="sh-save">Save picture</button>
+      <button class="btn" type="button" id="sh-go"><svg class="i"><use href="#ic-whatsapp"/></svg> Share</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="sp-modal" hidden>
@@ -3158,7 +3311,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   });
 
   // Tournament page
-  var DETAIL_TABS = ['Standings', 'Groups', 'Fixtures', 'Top scorers', 'Players', 'Teams'];
+  var DETAIL_TABS = ['Standings', 'Groups', 'Fixtures', 'Stats', 'Players', 'Teams'];
   var detail = { id: null, tab: 'Standings' };
   var listSection = document.getElementById('tournaments');
   var detailSection = document.getElementById('detail');
@@ -3192,7 +3345,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         ? ['No groups yet', 'Teams are drawn into ' + t.groups + ' groups once they register.']
         : ['No groups', 'This tournament is a ' + formatName + ', so teams are not split into groups.'];
       case 'Fixtures': return ['No fixtures yet', canEdit() ? 'Add at least two teams, then generate the fixtures here.' : 'The match schedule appears here once it is made.'];
-      case 'Top scorers': return ['No goals yet', 'Add scorers when you enter a match result and they show up here.'];
+      case 'Stats': return ['No goals or cards yet', 'Add scorers and cards when you enter a match result and they show up here.'];
       case 'Predictions': return ['No predictions yet', 'Predictions open once fixtures are made.'];
       case 'Players': return ['No players yet', canEdit() ? 'Add players to each team in the Teams tab and they show up here.' : 'Players appear here once teams add their squads.'];
       default: return ['No teams yet', canEdit() ? 'Add the first team with the Add team button, then add its players.' : 'Teams appear here once they register.'];
@@ -3266,6 +3419,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     metaPills(document.getElementById('d-sub'), sub);
     var dk = document.getElementById('d-kick');
     dk.dataset.kick = t.id; fillNextKick(dk, t);
+    var nkm = nextKick(t), dr = document.getElementById('d-remind');
+    dr.hidden = !(nkm && remindable(nkm.m));
+    dr.onclick = function () { openRemind(t, [nkm.m], dr); };
     var desc = document.getElementById('d-desc');
     desc.textContent = t.description || ''; desc.hidden = !t.description;
 
@@ -3426,7 +3582,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   function renderTeamTab(t, tab, root) {
     if (tab === 'Fixtures') return renderFixtures(t, root);
-    if (tab === 'Top scorers') return renderScorers(t, root);
+    if (tab === 'Stats') return renderScorers(t, root);
     if (tab === 'Predictions') return renderPredictions(t, root);
     if (tab === 'Players') return renderPlayers(t, root);
     var teams = t.squads || [];
@@ -4290,6 +4446,239 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     });
     return wrap;
   }
+  // Remind me: a calendar event with an alert, so the phone reminds members even when the site is closed
+  function remindable(m) {
+    if (played(m) || isBye(m) || !m.date) return false;
+    var at = new Date(m.date).getTime();
+    return !isNaN(at) && at > Date.now();
+  }
+  var rmModal = document.getElementById('rm-modal'), rm = { t: null, ms: [], before: 15 };
+  function matchTitle(t, m) {
+    function side(id, slot) { var x = id && teamById(t, id); return x ? x.name : slot ? slotLabel(t, slot) : 'TBD'; }
+    return side(m.home, m.homeSlot) + ' vs ' + side(m.away, m.awaySlot);
+  }
+  function openRemind(t, ms, trigger) {
+    rm.t = t; rm.ms = ms;
+    document.getElementById('rm-sub').textContent = ms.length === 1
+      ? matchTitle(t, ms[0]) + ' · ' + formatKickoff(ms[0].date)
+      : ms.length + ' upcoming matches in ' + t.name;
+    document.getElementById('rm-google').hidden = ms.length !== 1;
+    rmModal.returnFocus = trigger || null;
+    rmModal.hidden = false;
+  }
+  rmModal.querySelectorAll('[data-rm-before]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      rm.before = +b.dataset.rmBefore;
+      rmModal.querySelectorAll('[data-rm-before]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+    });
+  });
+  function icsTime(d) { return d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); }
+  function icsText(v) { return String(v || '').replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/([,;])/g, '\\$1'); }
+  function buildIcs(t, ms, before) {
+    var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//NPRC//Tournaments//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+    ms.forEach(function (m) {
+      var start = new Date(m.date), end = new Date(start.getTime() + 60 * 60 * 1000);
+      lines.push('BEGIN:VEVENT', 'UID:' + t.id + '-' + m.id + '@noonuprc.com', 'DTSTAMP:' + icsTime(new Date()),
+        'DTSTART:' + icsTime(start), 'DTEND:' + icsTime(end),
+        'SUMMARY:' + icsText(matchTitle(t, m) + ' · ' + t.name),
+        'DESCRIPTION:' + icsText('Match ' + ((t.matches || []).indexOf(m) + 1) + (m.stage ? ' · ' + m.stage : '') + '\nhttps://noonuprc.com/#t-' + t.id));
+      if (t.location) lines.push('LOCATION:' + icsText(t.location));
+      lines.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(matchTitle(t, m) + ' starts soon'), 'TRIGGER:-PT' + before + 'M', 'END:VALARM', 'END:VEVENT');
+    });
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
+  }
+  document.getElementById('rm-ics').addEventListener('click', function () {
+    var ics = buildIcs(rm.t, rm.ms, rm.before);
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (ios) {
+      // Safari opens a calendar file straight into "Add to Calendar"
+      location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+    } else {
+      var url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+      var a = document.createElement('a'); a.href = url; a.download = rm.ms.length === 1 ? 'match.ics' : 'matches.ics';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      toast('Open the file to add it to your calendar');
+    }
+    closeModal(rmModal);
+  });
+  document.getElementById('rm-google').addEventListener('click', function () {
+    var t = rm.t, m = rm.ms[0], start = new Date(m.date), end = new Date(start.getTime() + 60 * 60 * 1000);
+    var q = 'action=TEMPLATE&text=' + encodeURIComponent(matchTitle(t, m) + ' · ' + t.name) +
+      '&dates=' + icsTime(start) + '/' + icsTime(end) +
+      '&details=' + encodeURIComponent('Match ' + ((t.matches || []).indexOf(m) + 1) + (m.stage ? ' · ' + m.stage : '') + '\nhttps://noonuprc.com/#t-' + t.id) +
+      (t.location ? '&location=' + encodeURIComponent(t.location) : '');
+    window.open('https://calendar.google.com/calendar/render?' + q, '_blank', 'noopener');
+    closeModal(rmModal);
+  });
+
+  // Result picture for WhatsApp: teams, score, scorers, cards and player of the match on one image
+  var shModal = document.getElementById('sh-modal'), shFile = null, shUrl = null, shText = '';
+  function loadImg(src) {
+    return new Promise(function (ok) {
+      if (!src) return ok(null);
+      var img = new Image();
+      if (!/^data:|^blob:/.test(src)) img.crossOrigin = 'anonymous';
+      img.onload = function () { ok(img); }; img.onerror = function () { ok(null); };
+      img.src = src;
+    });
+  }
+  function resultPicture(t, m, withLogos) {
+    var home = teamById(t, m.home), away = teamById(t, m.away);
+    var FD = '"Barlow Condensed", "Noto Sans Thaana", sans-serif', FB = '"Barlow", "Noto Sans Thaana", sans-serif';
+    var fonts = ['800 60px "Barlow Condensed"', '700 40px "Barlow Condensed"', '600 30px "Barlow"', '700 30px "Barlow"'].map(function (f) { return document.fonts ? document.fonts.load(f).catch(function () {}) : null; });
+    return Promise.all(fonts.concat([loadImg(withLogos && home && home.logo), loadImg(withLogos && away && away.logo)])).then(function (r) {
+      var logos = [r[r.length - 2], r[r.length - 1]];
+      function rows(team) {
+        var out = [];
+        if (!team) return out;
+        var order = [], n = {};
+        (m.goals || []).forEach(function (g) { if (g.team !== team.id) return; if (!n[g.player]) { n[g.player] = 0; order.push(g.player); } n[g.player]++; });
+        order.forEach(function (p) { out.push({ k: 'g', name: p + (n[p] > 1 ? '  ×' + n[p] : '') }); });
+        ['y', 'r'].forEach(function (c) { (m.cards || []).forEach(function (x) { if (x.team === team.id && x.c === c) out.push({ k: c, name: x.player }); }); });
+        return out;
+      }
+      var hr = rows(home), ar = rows(away), lines = Math.max(hr.length, ar.length);
+      var W = 1080, top = 640, rowH = 54;
+      var bottom = top + (lines ? 40 + lines * rowH : 0) + (m.potm ? 130 : 0) + 130;
+      var H = Math.max(1080, bottom);
+      var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      var x = cv.getContext('2d');
+      x.fillStyle = '#121817'; x.fillRect(0, 0, W, H);
+      function wash(cx, col) {
+        var g = x.createRadialGradient(cx, 360, 40, cx, 360, 620);
+        g.addColorStop(0, col + '66'); g.addColorStop(1, col + '00');
+        x.fillStyle = g; x.fillRect(0, 0, W, H);
+      }
+      function hex(c) { return /^#[0-9a-f]{6}$/i.test(c || '') ? c : '#346b4a'; }
+      wash(240, hex(home && home.c1)); wash(840, hex(away && away.c1));
+      x.textAlign = 'center'; x.textBaseline = 'alphabetic';
+      function fit(text, font, size, max) {
+        do { x.font = font.replace('#', size); size -= 2; } while (x.measureText(text).width > max && size > 14);
+      }
+      // Tournament and stage
+      x.fillStyle = '#eef1ef'; fit((t.name || '').toUpperCase(), '800 #px ' + FD, 60, W - 120);
+      x.fillText((t.name || '').toUpperCase(), W / 2, 120);
+      var no = (t.matches || []).indexOf(m) + 1;
+      x.fillStyle = '#9aa5a2'; x.font = '600 30px ' + FB;
+      x.fillText('Match ' + no + (m.stage ? ' · ' + m.stage : ''), W / 2, 172);
+      // Crests
+      function crestAt(team, logo, cx) {
+        var cy = 360, rad = 116;
+        x.save(); x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.closePath();
+        x.fillStyle = logo ? '#ffffff' : hex(team && team.c1); x.fill();
+        x.lineWidth = 8; x.strokeStyle = (team && team.c2) || '#ffffff'; x.stroke();
+        if (logo) {
+          x.clip();
+          var s = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82;
+          x.drawImage(logo, cx - logo.width * s / 2, cy - logo.height * s / 2, logo.width * s, logo.height * s);
+        } else {
+          x.fillStyle = (team && team.c2) || '#ffffff'; x.font = '800 120px ' + FD; x.textBaseline = 'middle';
+          x.fillText(((team && team.name) || 'T').trim().charAt(0).toUpperCase(), cx, cy + 6);
+          x.textBaseline = 'alphabetic';
+        }
+        x.restore();
+        x.fillStyle = '#eef1ef'; fit((team && team.name) || '', '700 #px ' + FD, 50, 400);
+        x.fillText((team && team.name) || '', cx, 540);
+      }
+      crestAt(home, logos[0], 240); crestAt(away, logos[1], 840);
+      // Score
+      x.fillStyle = '#ffffff'; x.font = '800 170px ' + FD;
+      x.fillText(m.hs + ' – ' + m.as, W / 2, 410);
+      x.fillStyle = '#e0aa4d'; x.font = '700 30px ' + FD;
+      x.fillText('FULL TIME', W / 2, 470);
+      if (m.ko && m.hs === m.as && m.pens) {
+        var pw = teamById(t, m.pens);
+        if (pw) { x.fillStyle = '#9aa5a2'; x.font = '600 26px ' + FB; x.fillText(pw.name + ' won on penalties', W / 2, 590); }
+      }
+      // Scorers and cards
+      if (lines) {
+        x.strokeStyle = 'rgba(255,255,255,.12)'; x.lineWidth = 2;
+        x.beginPath(); x.moveTo(90, top); x.lineTo(W - 90, top); x.stroke();
+        x.beginPath(); x.moveTo(W / 2, top + 30); x.lineTo(W / 2, top + 30 + lines * rowH - 10); x.stroke();
+        function list(rs, cx) {
+          // One left edge per column, so the names line up under each other
+          x.font = '600 30px ' + FB;
+          var names = rs.map(function (r0) {
+            var name = r0.name;
+            while (x.measureText(name).width > 380 && name.length > 3) name = name.slice(0, -2);
+            return name === r0.name ? name : name + '…';
+          });
+          var widest = Math.max.apply(null, names.map(function (n) { return x.measureText(n).width; }).concat([0]));
+          var ix = cx - (widest + 40) / 2;
+          rs.forEach(function (r0, i) {
+            var y = top + 40 + i * rowH + 30, name = names[i];
+            x.font = '600 30px ' + FB;
+            if (r0.k === 'g') {
+              x.beginPath(); x.arc(ix + 12, y - 10, 12, 0, Math.PI * 2); x.fillStyle = '#eef1ef'; x.fill();
+              x.beginPath(); x.arc(ix + 12, y - 10, 5, 0, Math.PI * 2); x.fillStyle = '#121817'; x.fill();
+            } else {
+              x.fillStyle = r0.k === 'y' ? '#f2c230' : '#e2493a';
+              x.beginPath(); if (x.roundRect) x.roundRect(ix + 2, y - 28, 20, 28, 3); else x.rect(ix + 2, y - 28, 20, 28); x.fill();
+            }
+            x.fillStyle = '#eef1ef'; x.textAlign = 'left'; x.fillText(name, ix + 40, y); x.textAlign = 'center';
+          });
+        }
+        list(hr, 270); list(ar, 810);
+      }
+      var y2 = top + (lines ? 40 + lines * rowH : 0) + 30;
+      // Player of the match
+      if (m.potm) {
+        var label = 'PLAYER OF THE MATCH', pn = '★ ' + m.potm.player;
+        x.font = '700 26px ' + FD; var lw = x.measureText(label).width;
+        x.font = '700 34px ' + FB; var nw = Math.min(x.measureText(pn).width, 560);
+        var pwid = lw + nw + 90, px = (W - pwid) / 2;
+        x.fillStyle = 'rgba(227,181,60,.2)'; x.strokeStyle = 'rgba(227,181,60,.55)'; x.lineWidth = 2;
+        x.beginPath(); if (x.roundRect) x.roundRect(px, y2, pwid, 76, 38); else x.rect(px, y2, pwid, 76); x.fill(); x.stroke();
+        x.textAlign = 'left';
+        x.fillStyle = '#e0aa4d'; x.font = '700 26px ' + FD; x.fillText(label, px + 34, y2 + 48);
+        x.fillStyle = '#ffffff'; x.font = '700 34px ' + FB; x.fillText(pn, px + 34 + lw + 22, y2 + 50, 560);
+        x.textAlign = 'center';
+      }
+      // Footer
+      x.fillStyle = '#6f7a77'; x.font = '600 28px ' + FB;
+      var when = m.date && !isNaN(new Date(m.date)) ? (function (d) { return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); })(new Date(m.date)) : '';
+      x.fillText((when ? when + '  ·  ' : '') + 'noonuprc.com', W / 2, H - 60);
+      return new Promise(function (ok, bad) {
+        try { cv.toBlob(function (b) { b ? ok(b) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); }
+      });
+    });
+  }
+  function openShare(t, m, trigger) {
+    var home = teamById(t, m.home), away = teamById(t, m.away);
+    shText = (home ? home.name : '') + ' ' + m.hs + ' – ' + m.as + ' ' + (away ? away.name : '') + ' · ' + t.name;
+    shFile = null;
+    var img = document.getElementById('sh-img'), wait = document.getElementById('sh-wait');
+    img.hidden = true; wait.hidden = false; wait.textContent = 'Making the picture…';
+    document.getElementById('sh-go').disabled = true; document.getElementById('sh-save').disabled = true;
+    shModal.returnFocus = trigger || null; shModal.hidden = false;
+    resultPicture(t, m, true).catch(function () { return resultPicture(t, m, false); }).then(function (blob) {
+      var name = ((home ? home.name : 'home') + '-' + (away ? away.name : 'away')).replace(/[^\wހ-޿-]+/g, '-') + '.png';
+      try { shFile = new File([blob], name, { type: 'image/png' }); } catch (e) { shFile = blob; shFile.name = name; }
+      if (shUrl) URL.revokeObjectURL(shUrl);
+      shUrl = URL.createObjectURL(blob);
+      img.src = shUrl; img.alt = shText; img.hidden = false; wait.hidden = true;
+      document.getElementById('sh-go').disabled = false; document.getElementById('sh-save').disabled = false;
+    }).catch(function () { wait.textContent = 'Could not make the picture. Try again.'; });
+  }
+  function savePicture() {
+    var a = document.createElement('a'); a.href = shUrl; a.download = shFile.name || 'result.png';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  document.getElementById('sh-save').addEventListener('click', function () { if (shFile) { savePicture(); toast('Picture saved'); } });
+  document.getElementById('sh-go').addEventListener('click', function () {
+    if (!shFile) return;
+    var data = { files: [shFile], title: shText };
+    if (navigator.canShare && navigator.canShare(data)) {
+      navigator.share(data).catch(function () {});
+    } else {
+      // No picture sharing here (most computers): save it, and open WhatsApp with the score as text
+      savePicture();
+      window.open('https://wa.me/?text=' + encodeURIComponent(shText), '_blank', 'noopener');
+      toast('Picture saved. Attach it in WhatsApp.');
+    }
+  });
   function svgIcon(id) {
     var s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('class', 'i'); s.setAttribute('aria-hidden', 'true');
     var u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#' + id); s.appendChild(u);
@@ -4373,35 +4762,55 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       return true;
     }
     if (next && next.wait && !champ && !ms.some(function (m) { return m.homeSlot; })) root.appendChild(el('p', 'table-note', next.wait));
+    var soon = ms.filter(remindable);
+    if (soon.length > 1) {
+      var all = el('button', 'btn btn-ghost btn-sm remind-btn'); all.type = 'button';
+      all.appendChild(svgIcon('ic-calendar')); all.appendChild(document.createTextNode('Add all ' + soon.length + ' matches to my calendar'));
+      all.style.marginBottom = '12px';
+      all.addEventListener('click', function () { openRemind(t, soon, all); });
+      root.appendChild(all);
+    }
     var sec = el('section', 'fx-stage'), ul = el('ul', 'fx-list');
     ms.forEach(function (m) {
       var li = el('li'), row = matchRow(t, m);
       var ev = row.querySelector('.fx-events');
-      if (ev) {
-        // Scorers and cards stay folded; tapping the card shows them. Admins edit from the button underneath.
+      if (played(m) && !isBye(m)) {
+        // Scorers and cards stay folded; tapping the card shows them with Share and, for admins, Edit
         var more = el('span', 'fx-more');
-        more.appendChild(el('span', null, 'Goals and cards'));
+        more.appendChild(el('span', null, ev ? 'Goals and cards' : 'Share result'));
         more.appendChild(svgIcon('ic-down'));
-        row.insertBefore(more, ev);
-        var edit = null;
+        if (ev) row.insertBefore(more, ev); else row.insertBefore(more, row.querySelector('.meta'));
+        var btns = el('div', 'fx-btns');
+        var share = el('button', 'btn btn-ghost btn-sm fx-edit'); share.type = 'button';
+        share.appendChild(svgIcon('ic-whatsapp')); share.appendChild(document.createTextNode('Share result'));
+        share.addEventListener('click', function () { openShare(t, m, share); });
+        btns.appendChild(share);
         if (canEdit()) {
-          edit = el('button', 'btn btn-ghost btn-sm fx-edit'); edit.type = 'button';
+          var edit = el('button', 'btn btn-ghost btn-sm fx-edit'); edit.type = 'button';
           edit.appendChild(svgIcon('ic-edit')); edit.appendChild(document.createTextNode('Edit match'));
           edit.addEventListener('click', function () { openMatch(t, m, edit); });
+          btns.appendChild(edit);
         }
         var sync = function () {
           var open = !!openFx[m.id];
-          ev.hidden = !open; row.classList.toggle('fx-open', open);
+          if (ev) ev.hidden = !open;
+          row.classList.toggle('fx-open', open);
           row.setAttribute('aria-expanded', String(open));
-          if (edit) edit.hidden = !open;
+          btns.hidden = !open;
         };
         row.addEventListener('click', function () { openFx[m.id] = !openFx[m.id]; sync(); });
         sync();
-        li.appendChild(row); if (edit) li.appendChild(edit);
+        li.appendChild(row); li.appendChild(btns);
       } else {
         row.disabled = !canEdit();
         row.addEventListener('click', function () { if (canEdit()) openMatch(t, m, row); });
         li.appendChild(row);
+        if (remindable(m)) {
+          var rb = el('button', 'btn btn-ghost btn-sm remind-btn'); rb.type = 'button';
+          rb.appendChild(svgIcon('ic-calendar')); rb.appendChild(document.createTextNode('Remind me'));
+          rb.addEventListener('click', function () { openRemind(t, [m], rb); });
+          li.appendChild(rb);
+        }
       }
       ul.appendChild(li);
     });
@@ -4448,10 +4857,74 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       .sort(function (a, b) { return b.goals - a.goals || a.player.localeCompare(b.player); });
   }
   var scorersOpen = {};
+  // Yellow and red cards per player, most reds first
+  function cardRows(t) {
+    var tally = {};
+    (t.matches || []).forEach(function (m) {
+      (m.cards || []).forEach(function (c) {
+        var key = c.team + '|' + c.player;
+        if (!tally[key]) tally[key] = { team: teamById(t, c.team), player: c.player, y: 0, r: 0 };
+        tally[key][c.c === 'r' ? 'r' : 'y']++;
+      });
+    });
+    return Object.keys(tally).map(function (k) { return tally[k]; }).filter(function (r) { return r.team; })
+      .sort(function (a, b) { return b.r - a.r || b.y - a.y || a.player.localeCompare(b.player); });
+  }
+  function playerCell(t, r) {
+    var td = el('td', 'team-cell'), span = el('span');
+    var pl = (r.team.players || []).filter(function (x) { return x.name === r.player; })[0];
+    span.appendChild(avatar(pl && pl.photo ? pl : { name: r.player, number: '' }, r.team, 'sm'));
+    var who = el('span', 'who'); who.appendChild(el('b', null, r.player));
+    var club = el('small'); club.appendChild(crest(r.team, 'sm')); club.appendChild(document.createTextNode(r.team.name));
+    who.appendChild(club); span.appendChild(who); td.appendChild(span);
+    return td;
+  }
   function renderScorers(t, root) {
-    var rows = scorerRows(t);
-    if (!rows.length) return false;
+    var rows = scorerRows(t), cards = cardRows(t);
+    if (!rows.length && !cards.length) return false;
+    // Totals across the tournament
+    var playedN = (t.matches || []).filter(function (m) { return played(m) && !isBye(m); }).length;
+    var goalsN = rows.reduce(function (n, r) { return n + r.goals; }, 0);
+    var yN = cards.reduce(function (n, r) { return n + r.y; }, 0), rN = cards.reduce(function (n, r) { return n + r.r; }, 0);
+    var sum = el('div', 'm-stats st-sum');
+    function tile(v, label, bk) {
+      var d = el('div'); d.appendChild(el('strong', null, String(v)));
+      var sm = el('small'); if (bk) sm.appendChild(el('i', 'bk ' + bk)); sm.appendChild(document.createTextNode(label));
+      d.appendChild(sm); sum.appendChild(d);
+    }
+    tile(goalsN, goalsN === 1 ? 'Goal' : 'Goals');
+    tile(playedN ? (Math.round(goalsN / playedN * 10) / 10) : '–', 'Goals per match');
+    tile(yN, yN === 1 ? 'Yellow card' : 'Yellow cards', 'bk-y');
+    tile(rN, rN === 1 ? 'Red card' : 'Red cards', 'bk-r');
+    root.appendChild(sum);
+    if (rows.length) root.appendChild(goalsTable(t, rows));
+    if (cards.length) {
+      var cw = el('div', 'table-wrap st-cards'), ct = el('table', 'standings');
+      ct.appendChild(el('caption', null, 'Cards'));
+      var chd = el('thead'), chr = el('tr');
+      [['#'], ['Player', 'team-cell'], ['bk-y', 'st-n', 'Yellow cards'], ['bk-r', 'st-n', 'Red cards']].forEach(function (h) {
+        var th = el('th', h[1] || null); th.scope = 'col';
+        if (h[2]) { th.appendChild(el('i', 'bk ' + h[0])); th.setAttribute('aria-label', h[2]); } else th.textContent = h[0];
+        chr.appendChild(th);
+      });
+      chd.appendChild(chr); ct.appendChild(chd);
+      var cb = el('tbody');
+      cards.forEach(function (r, i) {
+        var tr = el('tr', 'sc-row');
+        if (r.team.c1) tr.style.setProperty('--tc', r.team.c1);
+        var pos = el('td', 'st-pos'); pos.appendChild(el('span', 'st-rank', String(i + 1))); tr.appendChild(pos);
+        tr.appendChild(playerCell(t, r));
+        tr.appendChild(el('td', 'st-n' + (r.y ? '' : ' zero'), String(r.y)));
+        tr.appendChild(el('td', 'st-n' + (r.r ? '' : ' zero'), String(r.r)));
+        cb.appendChild(tr);
+      });
+      ct.appendChild(cb); cw.appendChild(ct); root.appendChild(cw);
+    }
+    return true;
+  }
+  function goalsTable(t, rows) {
     var wrap = el('div', 'table-wrap'), table = el('table', 'standings'), head = el('thead'), hr = el('tr');
+    table.appendChild(el('caption', null, 'Top scorers'));
     ['#', 'Player', 'Goals'].forEach(function (h, i) { var th = el('th', i === 1 ? 'team-cell' : null, h); th.scope = 'col'; hr.appendChild(th); });
     head.appendChild(hr); table.appendChild(head);
     var body = el('tbody'), rank = 0, prev = null;
@@ -4505,8 +4978,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       tr.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
       body.appendChild(det);
     });
-    table.appendChild(body); wrap.appendChild(table); root.appendChild(wrap);
-    return true;
+    table.appendChild(body); wrap.appendChild(table);
+    return wrap;
   }
 
   // A match takes score predictions until its kickoff time (or until a result is entered)
@@ -5821,6 +6294,42 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   var FB_MODE = !(window.claude && typeof window.claude.use === 'function') && /^https?:$/.test(location.protocol);
   var fb = { ready: Promise.reject(), db: null, auth: null, user: null, busy: false, ownerMissing: false, ids: {}, looked: {} };
   fb.ready.catch(function () {});
+  // Install as an app. Android Chrome gives its own prompt; iPhone needs the Share > Add to Home Screen steps.
+  (function () {
+    var bar = document.getElementById('app-bar'), footBtn = document.getElementById('app-open');
+    var appModal = document.getElementById('app-modal'), prompt = null;
+    var installed = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var phone = ios || /android/i.test(navigator.userAgent);
+    var dismissed = false;
+    try { dismissed = localStorage.getItem('appbar.off') === '1'; } catch (e) {}
+    if (FB_MODE && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+    function show() {
+      if (installed) return;
+      footBtn.hidden = false;
+      bar.hidden = dismissed;
+    }
+    // Phones get the button straight away; computers only when the browser says it can install
+    if (phone || !FB_MODE) show();
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); prompt = e; show(); });
+    window.addEventListener('appinstalled', function () { installed = true; bar.hidden = true; footBtn.hidden = true; prompt = null; toast('App installed'); });
+    function hideBar() { bar.hidden = true; dismissed = true; try { localStorage.setItem('appbar.off', '1'); } catch (e) {} }
+    function install(trigger) {
+      if (prompt) {
+        prompt.prompt();
+        prompt.userChoice.then(function (c) { if (c.outcome === 'accepted') hideBar(); prompt = null; }).catch(function () {});
+        return;
+      }
+      document.getElementById('app-ios').hidden = !ios;
+      document.getElementById('app-android').hidden = ios;
+      appModal.returnFocus = trigger || null;
+      appModal.hidden = false;
+    }
+    document.getElementById('app-bar-go').addEventListener('click', function (e) { install(e.currentTarget); });
+    document.getElementById('app-bar-x').addEventListener('click', hideBar);
+    footBtn.addEventListener('click', function (e) { install(e.currentTarget); });
+  })();
+
   // Members' own picks and answers are saved apart from the tournament, so a
   // member can only ever change their own
   var MEMBER_KEYS = ['predictions', 'bonus', 'answers'];
