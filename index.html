@@ -4668,7 +4668,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var a = document.createElement('a'); a.href = shUrl; a.download = shFile.name || 'result.png';
     document.body.appendChild(a); a.click(); a.remove();
   }
-  document.getElementById('sh-save').addEventListener('click', function () { if (shFile) { savePicture(); toast('Picture saved'); } });
+  document.getElementById('sh-save').addEventListener('click', function () {
+    if (!shFile) return;
+    // Phones save pictures to the gallery through the share list ("Save Image"); a download link only reaches Files
+    var only = { files: [shFile] };
+    if (navigator.canShare && navigator.canShare(only)) {
+      toast('Choose Save Image');
+      navigator.share(only).catch(function () {});
+    } else { savePicture(); toast('Picture saved'); }
+  });
   document.getElementById('sh-go').addEventListener('click', function () {
     if (!shFile) return;
     var data = { files: [shFile], title: shText, text: shText + '\n' + shLink };
