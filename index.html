@@ -139,6 +139,8 @@ body {
   /* The footer sits at the bottom of the screen even when the page is short */
   margin: 0; min-height: 100vh; min-height: 100svh;
   display: flex; flex-direction: column;
+  /* Installed app on iPhone: the page runs under the status bar, so start below it */
+  box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px);
 }
 body > main { flex: 1 0 auto; }
 body::before {
@@ -1936,7 +1938,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 1.4</span>
+    <span class="site-ver">Version 1.4.1</span>
   </div>
 </footer>
 
