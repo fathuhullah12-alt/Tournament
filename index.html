@@ -1941,7 +1941,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 1.5</span>
+    <span class="site-ver">Version 1.5.1</span>
   </div>
 </footer>
 
@@ -6066,9 +6066,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     lb.hidden = quiz.tab !== 'leaderboard' || !board.length;
     if (board.length) {
       var meId = auth.account ? auth.account.id : null;
+      // Only players with at least one right answer get a place on the podium
+      var pod = board.filter(function (r) { return r.correct > 0; }).slice(0, 3);
       var podium = el('div', 'qb-podium');
       [1, 0, 2].forEach(function (k) {
-        var r = board[k];
+        var r = pod[k];
         if (!r) return;
         var c = el('div', 'qb-pod qb-o' + (k + 1) + ' qb-p' + Math.min(r.rank, 3) + (r.member === meId ? ' qb-me' : ''));
         c.appendChild(el('span', 'qb-medal', String(r.rank)));
@@ -6080,12 +6082,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         c.appendChild(step);
         podium.appendChild(c);
       });
-      lb.appendChild(podium);
-      if (board.length > 3) {
+      if (pod.length) lb.appendChild(podium);
+      if (board.length > pod.length) {
         var rest = el('ol', 'qb-list');
-        board.slice(3).forEach(function (r, j) {
+        board.slice(pod.length).forEach(function (r, j) {
           var li = el('li', r.member === meId ? 'qb-me' : null);
-          li.appendChild(el('span', 'qb-rank', String(r.rank)));
+          li.appendChild(el('span', 'qb-rank', r.correct > 0 ? String(r.rank) : '–'));
           li.appendChild(el('span', 'qb-av', (r.name || '?').charAt(0).toUpperCase()));
           var tx = el('div', 'qb-txt');
           tx.appendChild(el('b', null, r.name + (r.member === meId ? ' (you)' : '')));
