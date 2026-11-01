@@ -364,6 +364,9 @@ section.block { padding-block: 48px 8px; }
 .sp-logo-pick .btn { display: inline-flex; align-items: center; gap: 6px; }
 .sp-add-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .sp-add-actions .btn { display: inline-flex; align-items: center; gap: 6px; }
+/* Small buttons default to a plain background; this one is the main action, so it stays teal in light mode too */
+#spm-save, #q-reveal, #tm-bulk-add { background: var(--teal); color: var(--on-teal); }
+#spm-save:hover, #q-reveal:hover, #tm-bulk-add:hover { background: var(--teal-hover); }
 #spm-empty { margin: 0; }
 #spm-empty[hidden] { display: none; }
 .card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -1938,7 +1941,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 1.4.1</span>
+    <span class="site-ver">Version 1.4.2</span>
   </div>
 </footer>
 
@@ -2262,7 +2265,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       </div>
     </div>
     <div class="sheet-actions">
-      <button class="btn" type="button" data-close>Done</button>
+      <button class="btn" type="button" id="spm-done">Done</button>
     </div>
   </form>
 </div>
@@ -3184,6 +3187,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     resetSponsorForm();
     saveSponsors();
     toast(added ? 'Sponsor added' : 'Sponsor saved');
+  });
+  // Done also keeps a sponsor that was typed in but not added yet
+  document.getElementById('spm-done').addEventListener('click', function () {
+    if (document.getElementById('spm-name').value.trim()) {
+      document.getElementById('spm-save').click();
+      if (!document.getElementById('spm-err').hidden) return;
+    }
+    closeModal(spModal);
   });
   document.getElementById('s-awards').addEventListener('click', function () {
     settings.hidden = true;
