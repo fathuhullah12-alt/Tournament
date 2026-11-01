@@ -1941,7 +1941,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 1.4.2</span>
+    <span class="site-ver">Version 1.5</span>
   </div>
 </footer>
 
@@ -3425,7 +3425,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   function sponsorCard(s) {
     var c = el(s.link ? 'a' : 'div', 'sp-card');
-    if (s.link) { c.href = s.link; c.target = '_blank'; c.rel = 'noopener'; }
+    // Only web links open; anything else (a javascript: link written straight to the database) stays plain text
+    if (s.link && /^https?:\/\//i.test(s.link)) { c.href = s.link; c.target = '_blank'; c.rel = 'noopener noreferrer'; }
     var logo = el('span', 'sp-logo');
     if (s.logo) { var img = document.createElement('img'); img.src = s.logo; img.alt = ''; logo.appendChild(img); }
     else { logo.textContent = s.name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); logo.style.background = s.c || 'var(--teal)'; }
@@ -5899,13 +5900,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (quiz.testDay !== null && quiz.testDay >= qs.length) quiz.testDay = Math.max(0, qs.length - 1);
     var day = testing ? quiz.testDay : quizOpen(t);
     var q = day >= 0 && day < qs.length ? qs[day] : null;
+    fetchQuizKeys(t);
+    // An open question whose text is still on its way from the database
+    var qLoading = !!q && !q.options;
+    if (qLoading) q = null;
     document.getElementById('q-today-card').hidden = !q;
     document.getElementById('q-today-empty').hidden = !!q;
     if (!q) {
       var title, text;
       var admin = isAdmin();
       var left = qs.filter(function (x, i) { return !qShown(t, i); }).length;
-      if (!qs.length) { title = 'No questions yet'; text = admin ? 'Add the questions on the Questions tab.' : 'The first question appears here when the manager shows it.'; }
+      if (qLoading) { title = 'Opening the question'; text = 'One moment…'; }
+      else if (!qs.length) { title = 'No questions yet'; text = admin ? 'Add the questions on the Questions tab.' : 'The first question appears here when the manager shows it.'; }
       else if (left) { title = 'No question right now'; text = admin ? 'Open the Questions tab and tap Show on the next question. Members can answer it straight away.' : 'The next question appears here when the manager shows it.'; }
       else { title = 'All questions done'; text = admin ? 'Every question has been shown. Add more on the Questions tab.' : 'Every question has been asked. See how you did on the Leaderboard.'; }
       document.getElementById('q-today-title').textContent = title;
@@ -5922,7 +5928,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var mine = playing && auth.account ? dayAnswers.filter(function (a) { return a.member === auth.account.id; })[0] : null;
       if (playing) quiz.picked = mine ? mine.pick : null;
       // Players see right and wrong only once the answer is revealed; admins and test mode see it at once
-      var showRight = !playing || shown;
+      var showRight = (!playing || shown) && q.answer != null;
       // A pick only counts for this exact question, member and visit
       var qKey = t.id + '|' + day + '|' + q.q + '|' + (auth.account ? auth.account.id : '');
       var closed = playing && shown && !mine;
@@ -5960,7 +5966,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           if (canManage()) { toast('Admin and manager IDs can\'t answer the quiz.'); renderQuiz(); return; }
           var already = (t.answers || []).some(function (a) { return a.member === auth.account.id && a.day === day; });
           if (!already) {
-            t.answers = (t.answers || []).concat({ member: auth.account.id, name: auth.account.name, day: day, pick: pick, correct: pick === q.answer });
+            t.answers = (t.answers || []).concat({ member: auth.account.id, name: auth.account.name, day: day, pick: pick });
             save(tournaments);
             toast('Answer submitted');
           }
@@ -5991,7 +5997,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       }
       result.className = 'qresult';
       if (closed) {
-        result.textContent = 'Answers are closed. The right answer is ' + LETTERS[q.answer] + '.';
+        result.textContent = q.answer != null ? 'Answers are closed. The right answer is ' + LETTERS[q.answer] + '.' : 'Answers are closed.';
         result.style.color = 'var(--fg-muted)';
       } else if (quiz.picked !== null && !showRight) {
         result.textContent = 'Your answer is saved. The right answer and your score show when the manager reveals it.';
@@ -6031,7 +6037,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var past = document.getElementById('q-past'), pl = document.getElementById('q-past-list');
     pl.textContent = '';
     var revealedDays = [];
-    qs.forEach(function (item, i) { if (qRevealed(t, i) && !(q && i === day)) revealedDays.push(i); });
+    qs.forEach(function (item, i) { if (qRevealed(t, i) && item.options && !(q && i === day)) revealedDays.push(i); });
     revealedDays.reverse().forEach(function (i) {
       var item = qs[i], li = el('li');
       var all = (t.answers || []).filter(function (a) { return a.day === i; });
@@ -6041,7 +6047,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       li.appendChild(top);
       li.appendChild(textDir(el('strong', null, item.q), item.q));
       var ans = el('p', 'qp-ans'); ans.appendChild(el('span', null, 'Answer: '));
-      ans.appendChild(optText(el('b'), LETTERS[item.answer], item.options[item.answer])); li.appendChild(ans);
+      if (item.answer != null) ans.appendChild(optText(el('b'), LETTERS[item.answer], item.options[item.answer]));
+      else ans.appendChild(el('b', null, 'on its way…'));
+      li.appendChild(ans);
       if (auth.account && !isAdmin()) {
         var my = all.filter(function (a) { return a.member === auth.account.id; })[0];
         li.appendChild(el('span', 'qp-you ' + (!my ? 'none' : qRight(t, my) ? 'ok' : 'bad'),
@@ -6104,9 +6112,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (item.showAt && !isShown) when.push('Shows ' + whenText(item.showAt));
       if (item.revealAt && !qRevealed(t, i)) when.push('Answer at ' + whenText(item.revealAt));
       if (when.length) qh.appendChild(el('small', 'qwhen', when.join(' · ')));
-      li.appendChild(textDir(el('strong', null, item.q), item.q));
+      li.appendChild(textDir(el('strong', null, item.q != null ? item.q : 'Loading…'), item.q || ''));
       var ans = el('small', null, 'Answer: ');
-      ans.appendChild(el('b', null, item.options[item.answer]));
+      ans.appendChild(el('b', null, item.options && item.answer != null ? item.options[item.answer] : '…'));
       li.appendChild(ans);
       if (quiz.editing === i && !qForm.hidden) li.classList.add('editing');
       var btns = el('div', 'qbtns');
@@ -6162,8 +6170,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     document.getElementById('q-err').hidden = true;
     document.getElementById('q-text').value = item.q;
     setTimeout(growQ, 0);
-    qOpts.forEach(function (input, k) { input.value = item.options[k] || ''; });
-    qForm.querySelector('[name="q-correct"][value="' + item.answer + '"]').checked = true;
+    qOpts.forEach(function (input, k) { input.value = (item.options || [])[k] || ''; });
+    var pick = qForm.querySelector('[name="q-correct"][value="' + item.answer + '"]');
+    if (pick) pick.checked = true;
     document.getElementById('q-show-at').value = item.showAt || '';
     document.getElementById('q-reveal-at').value = item.revealAt || '';
     document.getElementById('q-time-err').hidden = true;
@@ -6211,7 +6220,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (revealAt) fresh.revealAt = revealAt;
     if (editing !== null && t.questions[editing]) {
       var old = t.questions[editing];
-      ['shown', 'shownOn', 'revealed'].forEach(function (k) { if (old[k]) fresh[k] = old[k]; });
+      ['shown', 'shownOn', 'revealed', 'k'].forEach(function (k) { if (old[k]) fresh[k] = old[k]; });
       t.questions[editing] = fresh;
     } else {
       editing = null;
@@ -6415,8 +6424,131 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (!FB_MODE) return t;
     var c = {};
     Object.keys(t).forEach(function (k) { if (MEMBER_KEYS.indexOf(k) === -1) c[k] = t[k]; });
+    if (t.questions) c.questions = t.questions.map(function (q, i) { return publicQ(t, i); });
     return c;
   }
+
+  // Quiz answers and unopened questions stay out of the public tournament record.
+  // The question text lives in quizQ and the right answer in quizA; the database
+  // rules open those to members only once the show or reveal time has passed.
+  var quizKeys = {}; // "<tournament>__<question key>" -> { q, options, answer }
+  try { quizKeys = JSON.parse(localStorage.getItem('quizKeys.v1')) || {}; } catch (e) { quizKeys = {}; }
+  function saveQuizKeys() { try { localStorage.setItem('quizKeys.v1', JSON.stringify(quizKeys)); } catch (e) {} }
+  function qDocId(t, q) { return t.id + '__' + q.k; }
+  function ensureKeys(t) { (t.questions || []).forEach(function (q) { if (!q.k) q.k = Math.random().toString(36).slice(2, 10); }); }
+  function dayAfter(v) { var p = String(v).slice(0, 10).split('-'); return new Date(+p[0], +p[1] - 1, +p[2] + 1); }
+  // When members may see the answer: the set reveal time, else midnight after the question opened
+  function qRevealTime(q) {
+    if (q.revealAt) return new Date(q.revealAt);
+    if (q.shownOn) return dayAfter(q.shownOn);
+    if (q.showAt) return dayAfter(q.showAt);
+    return null;
+  }
+  function publicQ(t, i) {
+    var q = t.questions[i], c = {};
+    Object.keys(q).forEach(function (k) { if (k !== 'q' && k !== 'options' && k !== 'answer') c[k] = q[k]; });
+    if (qShown(t, i) && q.q != null) { c.q = q.q; c.options = q.options; }
+    if (qRevealed(t, i) && q.answer != null) c.answer = q.answer;
+    return c;
+  }
+  function harvestKeys(t) {
+    var got = false;
+    (t.questions || []).forEach(function (q) {
+      if (!q.k) return;
+      var c = quizKeys[qDocId(t, q)] || {};
+      if (q.q != null && q.options && (c.q !== q.q || JSON.stringify(c.options) !== JSON.stringify(q.options))) { c.q = q.q; c.options = q.options; got = true; }
+      if (q.answer != null && c.answer !== q.answer) { c.answer = q.answer; got = true; }
+      quizKeys[qDocId(t, q)] = c;
+    });
+    if (got) saveQuizKeys();
+  }
+  function mergeQuizKeys(t) {
+    (t.questions || []).forEach(function (q) {
+      var c = q.k && quizKeys[qDocId(t, q)];
+      if (!c) return;
+      if (q.q == null && c.q != null) { q.q = c.q; q.options = c.options; }
+      if (q.answer == null && c.answer != null) q.answer = c.answer;
+    });
+  }
+  var keysTimer = null;
+  function keysChanged() {
+    clearTimeout(keysTimer);
+    keysTimer = setTimeout(function () { render(); if (!quizSection.hidden) renderQuiz(); }, 50);
+  }
+  // Managers follow every key as it changes
+  var keyUnsubs = null;
+  function followQuizKeys(on) {
+    if (!FB_MODE || !fb.db) return;
+    if (on && !keyUnsubs) {
+      keyUnsubs = ['quizQ', 'quizA'].map(function (col) {
+        return fb.db.collection(col).onSnapshot(function (snap) {
+          snap.docs.forEach(function (d) {
+            var v = d.data(), c = quizKeys[d.id] || (quizKeys[d.id] = {});
+            if (col === 'quizQ') { c.q = v.q; c.options = v.options; } else c.answer = v.answer;
+          });
+          saveQuizKeys(); tournaments.forEach(mergeQuizKeys); keysChanged();
+        }, function () {});
+      });
+      migrateQuizzes();
+    } else if (!on && keyUnsubs) {
+      keyUnsubs.forEach(function (u) { u(); }); keyUnsubs = null;
+    }
+  }
+  // Members fetch a question or answer once its time has come
+  var keyTried = {};
+  var QUIZ_REST = 'https://firestore.googleapis.com/v1/projects/tournament-app-bb436/databases/(default)/documents/';
+  function restVal(x) {
+    if ('stringValue' in x) return x.stringValue;
+    if ('integerValue' in x) return +x.integerValue;
+    if ('doubleValue' in x) return x.doubleValue;
+    if ('booleanValue' in x) return x.booleanValue;
+    if ('arrayValue' in x) return (x.arrayValue.values || []).map(restVal);
+    if ('mapValue' in x) { var o = {}, f = x.mapValue.fields || {}; Object.keys(f).forEach(function (k) { o[k] = restVal(f[k]); }); return o; }
+    return null;
+  }
+  function fetchQuizKeys(t) {
+    if (!FB_MODE || !fb.db || canManage()) return;
+    (t.questions || []).forEach(function (q, i) {
+      if (!q.k) return;
+      var id = qDocId(t, q);
+      [['quizQ', q.q == null && qShown(t, i)], ['quizA', q.answer == null && qRevealed(t, i)]].forEach(function (x) {
+        var col = x[0], key = col + '/' + id;
+        if (!x[1] || (keyTried[key] && Date.now() - keyTried[key] < 20000)) return;
+        keyTried[key] = Date.now();
+        // A plain web request each time, so the server checks the opening time afresh
+        fetch(QUIZ_REST + col + '/' + encodeURIComponent(id), { cache: 'no-store' }).then(function (r) {
+          if (r.status === 404) return null;
+          if (!r.ok) throw new Error('closed');
+          return r.json();
+        }).then(function (d) {
+          if (!d || !d.fields) return;
+          var v = restVal({ mapValue: { fields: d.fields } }), c = quizKeys[id] || (quizKeys[id] = {});
+          if (col === 'quizQ') { c.q = v.q; c.options = v.options; } else c.answer = v.answer;
+          saveQuizKeys(); tournaments.forEach(mergeQuizKeys); keysChanged();
+        }, function () {
+          // Not open yet by the server's clock: look again shortly
+          setTimeout(function () { if (!quizSection.hidden) renderQuiz(); }, 20000);
+        });
+      });
+    });
+  }
+  // Write the protected copies first, so the public record never loses the only copy
+  function pushQuizKeys(t) {
+    if (!FB_MODE || !t.questions || !t.questions.length) return Promise.resolve();
+    var TS = firebase.firestore.Timestamp, jobs = [];
+    t.questions.forEach(function (q) {
+      if (!q.k || q.q == null || !q.options || q.answer == null) return;
+      var id = qDocId(t, q), rt = qRevealTime(q), st = q.showAt ? new Date(q.showAt) : null;
+      var qd = { t: t.id, q: q.q, options: q.options, showAt: st && !isNaN(st) ? TS.fromDate(st) : null };
+      var ad = { t: t.id, answer: q.answer, revealAt: rt && !isNaN(rt) ? TS.fromDate(rt) : null };
+      var json = JSON.stringify([q.q, q.options, st && +st, q.answer, rt && +rt]);
+      if (keysSynced[id] === json) return;
+      jobs.push(Promise.all([fb.db.collection('quizQ').doc(id).set(qd), fb.db.collection('quizA').doc(id).set(ad)])
+        .then(function () { keysSynced[id] = json; }));
+    });
+    return Promise.all(jobs);
+  }
+  var keysSynced = {};
 
   // Online saving: tournaments and site settings live in the artifact's shared
   // database; this browser keeps a copy so the page draws before it connects
@@ -6433,7 +6565,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var col = cloud.collection('tournaments'), jobs = [], ids = {};
     tournaments.forEach(function (t) {
       ids[t.id] = true;
+      if (FB_MODE && t.questions) { ensureKeys(t); harvestKeys(t); }
       var json = JSON.stringify(stripT(t));
+      if (FB_MODE && t.questions) jobs.push(function () { return pushQuizKeys(t); });
       if (synced[t.id] === json) return;
       jobs.push(function () {
         pending[t.id] = true;
@@ -6490,7 +6624,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       synced[id] = json;
       if (local && JSON.stringify(stripT(local)) === json) return;
       var fresh = JSON.parse(json);
-      if (FB_MODE) mergeEntries(fresh);
+      if (FB_MODE) {
+        mergeEntries(fresh);
+        if (local) harvestKeys(local);
+        harvestKeys(fresh); mergeQuizKeys(fresh);
+      }
       if (local) { Object.keys(local).forEach(function (k) { delete local[k]; }); Object.assign(local, fresh); }
       else tournaments.push(fresh);
       changed = true;
@@ -6517,6 +6655,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (!prefsSection.hidden) renderPrefs();
     }
     if (push || (firstDefinitive && Object.keys(synced).length !== tournaments.length)) save(tournaments);
+    else migrateQuizzes();
+  }
+  // A manager's visit moves answers still sitting in an older public quiz record into protected storage
+  function migrateQuizzes() {
+    if (!FB_MODE || !cloudReady || !canManage()) return;
+    if (tournaments.some(function (t) { return t.questions && (t.questions.some(function (q) { return !q.k; }) || synced[t.id] !== JSON.stringify(stripT(t))); })) save(tournaments);
   }
 
   // Site name and logo
@@ -6595,6 +6739,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function member() { return auth.account; }
   function applyRole() {
     var admin = isAdmin();
+    followQuizKeys(canManage());
     root.classList.toggle('role-admin', admin);
     root.classList.toggle('role-visitor', !admin);
     root.classList.toggle('role-site', isSiteAdmin());
