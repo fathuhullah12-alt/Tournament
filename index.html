@@ -1031,6 +1031,10 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
   background: var(--teal); color: var(--on-teal); font: 800 22px var(--font-display); text-transform: uppercase;
 }
 .ac-avatar.is-admin { background: var(--gold); color: #1d1606; }
+.has-photo { background-size: cover !important; background-position: center !important; color: transparent !important; }
+.ac-photo { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.ac-photo .btn-sm { flex: none; }
+#ac-photo-add { background: var(--teal); color: var(--on-teal); border-color: transparent; }
 .ac-head { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .ac-head h2 { overflow-wrap: anywhere; }
 .ac-role { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
@@ -1941,7 +1945,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 1.5.1</span>
+    <span class="site-ver">Version 1.6</span>
   </div>
 </footer>
 
@@ -2401,6 +2405,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
     </div>
     <div class="sheet-body">
+      <div class="ac-photo" id="ac-photo" hidden>
+        <button class="btn btn-sm" type="button" id="ac-photo-add">Add photo</button>
+        <button class="btn btn-sm btn-ghost danger-text" type="button" id="ac-photo-rm" hidden>Remove photo</button>
+        <input type="file" id="ac-photo-file" accept="image/*" hidden>
+      </div>
       <div class="ac-role"><span class="tag" id="ac-role"></span><small id="ac-role-text"></small></div>
       <div class="pref-row ac-visitor" id="ac-visitor-row" hidden>
         <div><strong>View as visitor</strong><small>See the site the way your visitors do. Editing is hidden until you turn this off.</small></div>
@@ -5289,6 +5298,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var key = p.name.toLowerCase();
       if (!board[key]) board[key] = { key: key, name: p.name, n: 0, settled: 0, pts: 0, exact: 0, right: 0, bonus: 0, picks: [] };
       var r = board[key], pts = predPoints(p, m);
+      if (p.member) r.mid = p.member;
       r.n++;
       r.picks.push({ p: p, m: m, pts: pts });
       if (pts == null) return;
@@ -5357,7 +5367,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     rows.forEach(function (r) {
       var li = el('li', 'pd-row' + (r.rank <= 3 && r.pts ? ' pd-top' + r.rank : '') + (r.key === me ? ' pd-me' : ''));
       li.appendChild(el('span', 'pd-pos', String(r.rank)));
-      li.appendChild(el('span', 'pd-av', r.name.trim().charAt(0).toUpperCase()));
+      li.appendChild(memberPhoto(el('span', 'pd-av', r.name.trim().charAt(0).toUpperCase()), r.mid));
       var mid = el('div', 'pd-mid');
       var nm = el('b', null, r.name);
       if (r.key === me) nm.appendChild(el('em', null, 'You'));
@@ -6074,7 +6084,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         if (!r) return;
         var c = el('div', 'qb-pod qb-o' + (k + 1) + ' qb-p' + Math.min(r.rank, 3) + (r.member === meId ? ' qb-me' : ''));
         c.appendChild(el('span', 'qb-medal', String(r.rank)));
-        c.appendChild(el('span', 'qb-av', (r.name || '?').charAt(0).toUpperCase()));
+        c.appendChild(memberPhoto(el('span', 'qb-av', (r.name || '?').charAt(0).toUpperCase()), r.member));
         c.appendChild(el('b', 'qb-name', r.name + (r.member === meId ? ' (you)' : '')));
         c.appendChild(el('span', 'qb-pts', ptsText(r.correct * QUIZ_POINTS)));
         c.appendChild(el('small', null, r.correct + ' of ' + r.played + ' right'));
@@ -6088,7 +6098,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         board.slice(pod.length).forEach(function (r, j) {
           var li = el('li', r.member === meId ? 'qb-me' : null);
           li.appendChild(el('span', 'qb-rank', r.correct > 0 ? String(r.rank) : '–'));
-          li.appendChild(el('span', 'qb-av', (r.name || '?').charAt(0).toUpperCase()));
+          li.appendChild(memberPhoto(el('span', 'qb-av', (r.name || '?').charAt(0).toUpperCase()), r.member));
           var tx = el('div', 'qb-txt');
           tx.appendChild(el('b', null, r.name + (r.member === meId ? ' (you)' : '')));
           tx.appendChild(el('small', null, r.correct + ' of ' + r.played + ' right'));
@@ -6753,6 +6763,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (!who) { btn.textContent = 'Sign in'; btn.setAttribute('aria-label', 'Sign in'); }
     else {
       var av = el('span', 'ac-avatar' + (roleOf() !== 'member' ? ' is-' + roleOf() : ''), who.charAt(0));
+      if (auth.account) memberPhoto(av, auth.account.id);
       btn.appendChild(av); btn.appendChild(el('span', 'ac-label', who));
       btn.setAttribute('aria-label', 'Account: ' + who);
     }
@@ -6838,6 +6849,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (ok && m.name) {
       document.getElementById('au-match-name').textContent = m.name;
       document.getElementById('au-match-av').textContent = m.name.charAt(0);
+      memberPhoto(document.getElementById('au-match-av'), m.id);
     }
     document.getElementById('au-name-row').hidden = !(ok && !m.name);
     var rm = authMode === 'signin' ? memberById(cleanId(document.getElementById('au-id').value)) : null;
@@ -6881,12 +6893,88 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (next) next();
   });
 
+  // ---- Member photos (optional): a small square picture, one record per member ----
+  var photos = {}, photoAsked = {};
+  try { photos = JSON.parse(localStorage.getItem('photos.v1') || '{}') || {}; } catch (e) { photos = {}; }
+  function savePhotos() { try { localStorage.setItem('photos.v1', JSON.stringify(photos)); } catch (e) {} }
+  function paintPhoto(node, id) {
+    var img = photos[id];
+    node.classList.toggle('has-photo', !!img);
+    node.style.backgroundImage = img ? 'url("' + img + '")' : '';
+  }
+  // Show a member's photo on an avatar circle; the initial stays underneath when there is none
+  function memberPhoto(node, id) {
+    if (!node) return node;
+    node.removeAttribute('data-photo');
+    if (!id) { paintPhoto(node, ''); return node; }
+    node.setAttribute('data-photo', id);
+    paintPhoto(node, id);
+    if (FB_MODE && fb.db && !photoAsked[id]) {
+      photoAsked[id] = true;
+      fb.db.collection('photos').doc(id).get().then(function (d) {
+        var img = d.exists && typeof d.data().img === 'string' && /^data:image\/jpeg;base64,/.test(d.data().img) ? d.data().img : null;
+        if ((photos[id] || null) === img) return;
+        if (img) photos[id] = img; else delete photos[id];
+        savePhotos(); repaintPhotos(id);
+      }, function () { photoAsked[id] = false; });
+    }
+    return node;
+  }
+  function repaintPhotos(id) {
+    document.querySelectorAll('[data-photo]').forEach(function (n) { if (n.getAttribute('data-photo') === id) paintPhoto(n, id); });
+  }
+  function photoButtons() {
+    var has = !!(auth.account && photos[auth.account.id]);
+    document.getElementById('ac-photo-add').textContent = has ? 'Change photo' : 'Add photo';
+    document.getElementById('ac-photo-rm').hidden = !has;
+  }
+  // Crop the middle square and shrink it, so each photo stays small (about 10 KB)
+  function shrinkPhoto(file, done) {
+    var url = URL.createObjectURL(file), img = new Image();
+    img.onload = function () {
+      var n = Math.min(img.naturalWidth, img.naturalHeight), c = document.createElement('canvas');
+      c.width = c.height = 160;
+      var x = c.getContext('2d');
+      x.fillStyle = '#fff'; x.fillRect(0, 0, 160, 160);
+      x.drawImage(img, (img.naturalWidth - n) / 2, (img.naturalHeight - n) / 2, n, n, 0, 0, 160, 160);
+      URL.revokeObjectURL(url);
+      done(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = function () { URL.revokeObjectURL(url); done(null); };
+    img.src = url;
+  }
+  function setMyPhoto(img) {
+    var id = auth.account.id;
+    var job = !FB_MODE ? Promise.resolve()
+      : img ? fb.db.collection('photos').doc(id).set({ img: img }) : fb.db.collection('photos').doc(id).delete();
+    return job.then(function () {
+      if (img) photos[id] = img; else delete photos[id];
+      savePhotos(); repaintPhotos(id); photoButtons();
+      toast(img ? 'Photo saved' : 'Photo removed');
+    }, function () { toast('Couldn\'t save the photo. Check your connection and try again.'); });
+  }
+  document.getElementById('ac-photo-add').addEventListener('click', function () {
+    var f = document.getElementById('ac-photo-file'); f.value = ''; f.click();
+  });
+  document.getElementById('ac-photo-file').addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file || !auth.account) return;
+    shrinkPhoto(file, function (img) {
+      if (!img) { toast('That picture couldn\'t be opened. Try a JPG or PNG photo.'); return; }
+      setMyPhoto(img);
+    });
+  });
+  document.getElementById('ac-photo-rm').addEventListener('click', function () { if (auth.account) setMyPhoto(null); });
+
   var accountModal = document.getElementById('account-modal');
   function openAccount(trigger) {
     accountModal.returnFocus = trigger;
     var who = auth.account ? auth.account.name : 'Admin';
     var av = document.getElementById('ac-avatar');
     av.textContent = who.charAt(0);
+    memberPhoto(av, auth.account ? auth.account.id : null);
+    document.getElementById('ac-photo').hidden = !auth.account;
+    photoButtons();
     var r = roleOf(), adm = r !== 'member';
     av.classList.toggle('is-admin', r === 'admin');
     av.classList.toggle('is-manager', r === 'manager');
@@ -7082,6 +7170,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var head = el('button', 'm-head'); head.type = 'button';
       head.setAttribute('aria-expanded', openMember === m.id ? 'true' : 'false');
       head.appendChild(el('span', 'ac-avatar m-av' + (m.role === 'admin' ? ' is-admin' : m.role === 'manager' ? ' is-manager' : '') + (m.joined ? '' : ' waiting'), (m.name || m.id).charAt(0)));
+      memberPhoto(head.lastChild, m.id);
       var info = el('span', 'm-info');
       var top = el('span', 'm-top');
       top.appendChild(el('strong', 'm-id', m.id));
