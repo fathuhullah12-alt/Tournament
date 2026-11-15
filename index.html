@@ -1031,6 +1031,9 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
   background: var(--teal); color: var(--on-teal); font: 800 22px var(--font-display); text-transform: uppercase;
 }
 .ac-avatar.is-admin { background: var(--gold); color: #1d1606; }
+.card-when { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 3px; color: var(--muted); font-size: 12px; }
+.card-when span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.card-when .bk { width: 8px; height: 11px; }
 .has-photo { background-size: cover !important; background-position: center !important; color: transparent !important; }
 .ac-photo { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
 .ac-photo .btn-sm { flex: none; }
@@ -1945,7 +1948,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 1.6</span>
+    <span class="site-ver">Version 1.6.1</span>
   </div>
 </footer>
 
@@ -4935,11 +4938,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   // Yellow and red cards per player, most reds first
   function cardRows(t) {
     var tally = {};
-    (t.matches || []).forEach(function (m) {
+    (t.matches || []).forEach(function (m, mi) {
       (m.cards || []).forEach(function (c) {
         var key = c.team + '|' + c.player;
-        if (!tally[key]) tally[key] = { team: teamById(t, c.team), player: c.player, y: 0, r: 0 };
+        if (!tally[key]) tally[key] = { team: teamById(t, c.team), player: c.player, y: 0, r: 0, ev: [] };
         tally[key][c.c === 'r' ? 'r' : 'y']++;
+        // Which match each card came in, and who the team was playing
+        var opp = teamById(t, m.home === c.team ? m.away : m.home);
+        tally[key].ev.push({ c: c.c === 'r' ? 'r' : 'y', no: mi + 1, opp: opp ? opp.name : '' });
       });
     });
     return Object.keys(tally).map(function (k) { return tally[k]; }).filter(function (r) { return r.team; })
@@ -4988,7 +4994,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         var tr = el('tr', 'sc-row');
         if (r.team.c1) tr.style.setProperty('--tc', r.team.c1);
         var pos = el('td', 'st-pos'); pos.appendChild(el('span', 'st-rank', String(i + 1))); tr.appendChild(pos);
-        tr.appendChild(playerCell(t, r));
+        var pc = playerCell(t, r), when = el('small', 'card-when');
+        r.ev.forEach(function (e) {
+          var it = el('span'); it.appendChild(el('i', 'bk bk-' + e.c));
+          it.appendChild(document.createTextNode('Match ' + e.no + (e.opp ? ' vs ' + e.opp : '')));
+          when.appendChild(it);
+        });
+        pc.querySelector('.who').appendChild(when);
+        tr.appendChild(pc);
         tr.appendChild(el('td', 'st-n' + (r.y ? '' : ' zero'), String(r.y)));
         tr.appendChild(el('td', 'st-n' + (r.r ? '' : ' zero'), String(r.r)));
         cb.appendChild(tr);
