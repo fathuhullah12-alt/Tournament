@@ -1149,6 +1149,35 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .q-badge i { font-style: normal; font-size: 16px; }
 .qb-badges { display: inline-flex; gap: 2px; margin-left: 6px; font-size: 14px; vertical-align: 1px; }
 .qb-pod .qb-badges { margin: 2px 0 0; font-size: 16px; }
+.t-logo { flex: none; width: 52px; height: 52px; border-radius: 12px; object-fit: contain; background: #fff; border: 1px solid var(--line); padding: 3px; }
+.t-logo[hidden] { display: none; }
+/* Logo glow: a thin gold ring with a soft halo that slowly breathes */
+.t-logo:not(.hf-head .t-logo) { border-color: transparent; box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 85%, transparent), 0 0 14px 2px color-mix(in srgb, var(--gold) 45%, transparent), 0 4px 12px rgba(0,0,0,.25); animation: logo-glow 3.2s ease-in-out infinite; }
+@keyframes logo-glow { 50% { box-shadow: 0 0 0 2px var(--gold), 0 0 26px 6px color-mix(in srgb, var(--gold) 55%, transparent), 0 4px 12px rgba(0,0,0,.25); } }
+@media (prefers-reduced-motion: reduce) { .t-logo { animation: none !important; } }
+.card-head { display: flex; align-items: center; gap: 12px; }
+.card-head h3 { margin: 0; min-width: 0; }
+.d-head { display: flex; align-items: center; gap: 16px; margin: 12px 0 10px; }
+.d-head .detail-title { margin: 0; min-width: 0; }
+.t-logo-lg { width: 76px; height: 76px; border-radius: 16px; padding: 4px; }
+@media (max-width: 560px) { .t-logo-lg { width: 60px; height: 60px; border-radius: 14px; } }
+.tl-pick { display: flex; align-items: center; gap: 14px; }
+.tc-swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.tc-sw { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--line); background: var(--sw); cursor: pointer; padding: 0; position: relative; }
+.tc-sw.is-default { background: conic-gradient(from 200deg, #e3b553, #c8644a, #e3b553); }
+.tc-sw[aria-checked="true"] { border-color: var(--fg); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--sw, var(--gold)); }
+.tc-sw.tc-custom { background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red); overflow: hidden; }
+.tc-sw.tc-custom input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; border: 0; padding: 0; }
+/* A tournament's own card color tints its glow, live shine and logo ring */
+.card.has-color { --card-glow: color-mix(in srgb, var(--tc) 38%, transparent); --gold: var(--tc); --amber-fg: var(--tc); }
+.tl-prev { flex: none; width: 64px; height: 64px; border-radius: 14px; display: grid; place-items: center; border: 1.5px dashed var(--line); color: var(--fg-dim); background: var(--field); overflow: hidden; }
+.tl-prev.has-img { border-style: solid; background: #fff; padding: 3px; }
+.tl-prev img { width: 100%; height: 100%; object-fit: contain; }
+.tl-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.tl-btns label.btn { cursor: pointer; }
+.hf-head.has-logo { display: flex; align-items: center; gap: 12px; }
+.hf-head .t-logo { width: 44px; height: 44px; border-radius: 10px; }
+.hf-ht { display: grid; gap: 2px; min-width: 0; }
 .card-when { display: flex; flex-wrap: wrap; gap: 2px 10px; margin-top: 3px; color: var(--muted); font-size: 12px; }
 .card-when span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .card-when .bk { width: 8px; height: 11px; }
@@ -1801,7 +1830,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <button class="gear" type="button" data-admin id="d-edit" aria-label="Tournament settings"><svg class="i"><use href="#ic-gear"/></svg></button>
       </div>
       <div class="card-top detail-badges"><span class="tag" id="d-tag"></span><span class="status" id="d-status"></span><button class="pred-btn" type="button" id="d-pred"><svg class="i"><use href="#ic-target"/></svg>Predictions</button></div>
-      <h1 class="detail-title" id="d-name"></h1>
+      <div class="d-head"><img class="t-logo t-logo-lg" id="d-logo" alt="" hidden><h1 class="detail-title" id="d-name"></h1></div>
       <p class="detail-sub" id="d-sub"></p>
       <p class="detail-desc" id="d-desc" hidden></p>
       <div class="spons" id="d-spons" hidden aria-label="Sponsors"></div>
@@ -2001,7 +2030,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <button class="gear" type="button" data-admin id="q-edit" aria-label="Quiz settings"><svg class="i"><use href="#ic-gear"/></svg></button>
       </div>
       <div class="card-top detail-badges"><span class="tag t-amber">Quiz</span><span class="status" id="q-status"></span></div>
-      <h1 class="detail-title" id="q-name"></h1>
+      <div class="d-head"><img class="t-logo t-logo-lg" id="q-logo" alt="" hidden><h1 class="detail-title" id="q-name"></h1></div>
       <p class="detail-sub" id="q-sub"></p>
       <p class="detail-desc q-desc" id="q-desc" hidden></p>
       <div class="spons" id="q-spons" hidden aria-label="Sponsors"></div>
@@ -2082,7 +2111,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.1.1</span>
+    <span class="site-ver">Version 2.2.2</span>
   </div>
 </footer>
 
@@ -2099,6 +2128,21 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <input id="f-name" name="name" type="text" maxlength="60" placeholder="e.g. One Day Cup" required>
         <em class="err" id="err-name" hidden>Give the tournament a name.</em>
       </label>
+      <div class="field tl-row">
+        <span>Tournament logo <small class="hint">(optional)</small></span>
+        <div class="tl-pick">
+          <span class="tl-prev" id="f-logo-prev" aria-hidden="true"></span>
+          <div class="tl-btns">
+            <label class="btn btn-ghost btn-sm">Choose logo<input id="f-logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden></label>
+            <button class="btn btn-ghost btn-sm danger-text" type="button" id="f-logo-rm" hidden>Remove</button>
+          </div>
+        </div>
+        <small class="hint" id="f-logo-hint">Shows on the tournament card, its page and the share picture.</small>
+      </div>
+      <div class="field tc-row">
+        <span>Card color</span>
+        <div class="tc-swatches" id="f-colors" role="radiogroup" aria-label="Card color"></div>
+      </div>
       <div class="field-row">
         <label class="field">
           <span>Type</span>
@@ -2978,6 +3022,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function cardFor(t) {
     var type = typeOf(t.category);
     var card = el('article', 'card');
+    if (t.color) { card.classList.add('has-color'); card.style.setProperty('--tc', t.color); }
     // A big faint sport icon in the corner: a ball for futsal, a quiz mark for quizzes
     var wm = el('span', 'card-wm'); wm.setAttribute('aria-hidden', 'true');
     wm.appendChild(svgIcon(type.quiz ? 'ic-quiz' : 'ic-futsal'));
@@ -2994,7 +3039,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     link.href = '#t-' + t.id;
     h3.appendChild(link);
     card.classList.add('clickable');
-    card.appendChild(h3);
+    if (t.logo) {
+      var hd = el('div', 'card-head'), lg = el('img', 't-logo'); lg.src = t.logo; lg.alt = '';
+      hd.appendChild(lg); hd.appendChild(h3); card.appendChild(hd);
+    } else card.appendChild(h3);
     if (t.description) card.appendChild(el('p', 'desc', t.description));
 
     var meta = el('div', 'meta');
@@ -3192,6 +3240,47 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     input.setAttribute('aria-invalid', show ? 'true' : 'false');
   }
   var editing = null;
+  // Tournament logo in the form
+  var CARD_COLORS = [['', 'Default'], ['#e3b553', 'Gold'], ['#e0533d', 'Red'], ['#f08a24', 'Orange'], ['#3fa34d', 'Green'], ['#23a69a', 'Teal'], ['#3b7ddd', 'Blue'], ['#7c5cd6', 'Purple'], ['#d9468f', 'Pink']];
+  var formColor = '';
+  function syncFormColor() {
+    var box = document.getElementById('f-colors'); box.textContent = '';
+    var known = CARD_COLORS.some(function (c) { return c[0] === formColor; });
+    CARD_COLORS.forEach(function (c) {
+      var b = el('button', 'tc-sw' + (c[0] ? '' : ' is-default')); b.type = 'button';
+      b.setAttribute('role', 'radio'); b.setAttribute('aria-label', c[1]); b.title = c[1];
+      if (c[0]) b.style.setProperty('--sw', c[0]);
+      b.setAttribute('aria-checked', String(c[0] === formColor));
+      b.addEventListener('click', function () { formColor = c[0]; syncFormColor(); });
+      box.appendChild(b);
+    });
+    var cu = el('label', 'tc-sw tc-custom'); cu.title = 'Any color';
+    cu.setAttribute('aria-checked', String(!known));
+    if (!known) { cu.style.background = formColor; cu.style.setProperty('--sw', formColor); }
+    var inp = el('input'); inp.type = 'color'; inp.setAttribute('aria-label', 'Pick any color'); inp.value = /^#[0-9a-f]{6}$/i.test(formColor) ? formColor : '#e3b553';
+    inp.addEventListener('change', function () { formColor = inp.value; syncFormColor(); });
+    cu.appendChild(inp); box.appendChild(cu);
+  }
+  var formLogo = null;
+  function syncFormLogo() {
+    var pv = document.getElementById('f-logo-prev'); pv.textContent = '';
+    pv.classList.toggle('has-img', !!formLogo);
+    if (formLogo) { var im = document.createElement('img'); im.src = formLogo; im.alt = ''; pv.appendChild(im); }
+    else pv.appendChild(svgIcon('ic-trophy'));
+    document.getElementById('f-logo-rm').hidden = !formLogo;
+  }
+  document.getElementById('f-logo').addEventListener('change', function (e) {
+    var file = e.target.files[0]; e.target.value = '';
+    if (!file) return;
+    var hint = document.getElementById('f-logo-hint');
+    shrinkImage(file, 256, 'image/png', function (url) {
+      if (!url) { hint.textContent = 'That file could not be read. Try a PNG or JPG image.'; hint.style.color = 'var(--live)'; return; }
+      hint.textContent = 'Shows on the tournament card, its page and the share picture.'; hint.style.color = '';
+      formLogo = url; syncFormLogo();
+      storeImage(url).then(function (src) { if (formLogo === url) { formLogo = src; } });
+    });
+  });
+  document.getElementById('f-logo-rm').addEventListener('click', function () { formLogo = null; syncFormLogo(); });
   function openForm(trigger, t) {
     lastTrigger = trigger || null;
     editing = t || null;
@@ -3207,6 +3296,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       f.date.value = todayISO();
     }
     document.getElementById('f-hidden').setAttribute('aria-checked', t && t.hidden ? 'true' : 'false');
+    formLogo = t && t.logo ? t.logo : null; syncFormLogo();
+    formColor = t && t.color ? t.color : ''; syncFormColor();
     ERRORS.forEach(function (e) { document.getElementById(e[1]).hidden = true; f[e[0]].removeAttribute('aria-invalid'); });
     syncFields();
     modal.hidden = false;
@@ -3495,6 +3586,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       editing.groups = !quiz && format === 'groups' ? groups : 0;
       editing.description = f.desc.value.trim();
       editing.hidden = document.getElementById('f-hidden').getAttribute('aria-checked') === 'true';
+      if (formLogo) editing.logo = formLogo; else delete editing.logo;
+      if (formColor) editing.color = formColor; else delete editing.color;
       save(tournaments);
       render();
       modal.hidden = true;
@@ -3517,6 +3610,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       status: f.date.value < todayISO() ? 'completed' : f.date.value > todayISO() ? 'upcoming' : 'live'
     });
     var added = tournaments[0];
+    if (formLogo) added.logo = formLogo;
+    if (formColor) added.color = formColor;
     view.tab = isArchived(added) ? 'archive' : 'current';
     if (view.type !== 'all' && view.type !== typeOf(added.category).name) view.type = 'all';
     save(tournaments);
@@ -3628,6 +3723,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     status.className = 'status ' + STATUSES[st].cls; status.textContent = STATUSES[st].label;
     document.getElementById('d-name').textContent = t.name;
     document.getElementById('d-name').classList.toggle('title-dv', thaana(t.name));
+    var dl = document.getElementById('d-logo'); dl.hidden = !t.logo; if (t.logo) dl.src = t.logo; else dl.removeAttribute('src');
     renderSponsors(t);
     var sub = [['calendar', formatDate(t.date)]];
     if (t.location) sub.push(['pin', t.location]);
@@ -4960,8 +5056,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var home = teamById(t, m.home), away = teamById(t, m.away);
     var FD = '"Barlow Condensed", "Noto Sans Thaana", sans-serif', FB = '"Barlow", "Noto Sans Thaana", sans-serif';
     var fonts = ['800 60px "Barlow Condensed"', '700 40px "Barlow Condensed"', '600 30px "Barlow"', '700 30px "Barlow"'].map(function (f) { return document.fonts ? document.fonts.load(f).catch(function () {}) : null; });
-    return Promise.all(fonts.concat([loadImg(withLogos && home && home.logo), loadImg(withLogos && away && away.logo)])).then(function (r) {
-      var logos = [r[r.length - 2], r[r.length - 1]];
+    return Promise.all(fonts.concat([loadImg(withLogos && t.logo), loadImg(withLogos && home && home.logo), loadImg(withLogos && away && away.logo)])).then(function (r) {
+      var logos = [r[r.length - 2], r[r.length - 1]], tLogo = r[r.length - 3];
       function rows(team) {
         var out = [];
         if (!team) return out;
@@ -4989,12 +5085,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       function fit(text, font, size, max) {
         do { x.font = font.replace('#', size); size -= 2; } while (x.measureText(text).width > max && size > 14);
       }
-      // Tournament and stage
-      x.fillStyle = '#eef1ef'; fit((t.name || '').toUpperCase(), '800 #px ' + FD, 60, W - 120);
-      x.fillText((t.name || '').toUpperCase(), W / 2, 120);
+      // Tournament logo (when it has one), name and stage
+      var ty = 0;
+      if (tLogo) {
+        var ls = 76, lr = Math.min(ls / tLogo.naturalWidth, ls / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr;
+        x.drawImage(tLogo, (W - lw) / 2, 26 + (ls - lh) / 2, lw, lh);
+        ty = 48;
+      }
+      x.fillStyle = '#eef1ef'; fit((t.name || '').toUpperCase(), '800 #px ' + FD, tLogo ? 52 : 60, W - 120);
+      x.fillText((t.name || '').toUpperCase(), W / 2, 120 + ty);
       var no = (t.matches || []).indexOf(m) + 1;
       x.fillStyle = '#9aa5a2'; x.font = '600 30px ' + FB;
-      x.fillText('Match ' + no + (m.stage ? ' · ' + m.stage : ''), W / 2, 172);
+      x.fillText('Match ' + no + (m.stage ? ' · ' + m.stage : ''), W / 2, 172 + ty * .6);
       // Crests
       function crestAt(team, logo, cx) {
         var cy = 360, rad = 116;
@@ -6284,6 +6386,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     status.className = 'status ' + STATUSES[st].cls; status.textContent = STATUSES[st].label;
     document.getElementById('q-name').textContent = t.name;
     document.getElementById('q-name').classList.toggle('title-dv', thaana(t.name));
+    var ql = document.getElementById('q-logo'); ql.hidden = !t.logo; if (t.logo) ql.src = t.logo; else ql.removeAttribute('src');
     var players = quizBoard(t).length;
     metaPills(document.getElementById('q-sub'), [['calendar', 'Starts ' + formatDate(t.date)],
       ['quiz', qs.length + (qs.length === 1 ? ' question' : ' questions')], ['users', players + (players === 1 ? ' player' : ' players')]]);
@@ -6785,9 +6888,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       sec.appendChild(el('h2', 'hf-y', y));
       byYear[y].forEach(function (x) {
         var t = x.t, card = el('article', 'hf-card');
-        var head = el('a', 'hf-head'); head.href = '#t-' + t.id;
-        head.appendChild(el('small', null, t.category || ''));
-        head.appendChild(el('strong', null, t.name));
+        var head = el('a', 'hf-head' + (t.logo ? ' has-logo' : '')); head.href = '#t-' + t.id;
+        if (t.logo) { var hl = el('img', 't-logo'); hl.src = t.logo; hl.alt = ''; head.appendChild(hl); }
+        var ht = el('span', 'hf-ht');
+        ht.appendChild(el('small', null, t.category || ''));
+        ht.appendChild(el('strong', null, t.name));
+        head.appendChild(ht);
         card.appendChild(head);
         var ul = el('ul');
         x.rows.forEach(function (r) {
@@ -8305,5 +8411,6 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   route();
 })();
 </script>
+
 
 </html>
