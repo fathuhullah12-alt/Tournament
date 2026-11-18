@@ -178,6 +178,19 @@ svg.i { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor;
 @keyframes fade-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .site-header.open .nav, .menu-scrim { animation: none; } }
 .nav a[aria-current="page"] { color: var(--fg); }
+/* Computer screens: the menu is a row of icons, the name shows on hover */
+@media (min-width: 821px) {
+  .nav { gap: 6px; align-items: center; }
+  .nav a { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: var(--fg-muted); }
+  .nav a:hover { background: var(--card); color: var(--fg); }
+  .nav a[aria-current="page"] { background: color-mix(in srgb, var(--teal) 14%, transparent); color: var(--teal); }
+  .nav .nav-ic { display: grid; place-items: center; }
+  .nav .nav-ic svg.i { width: 22px; height: 22px; }
+  .nav a > span:not(.nav-ic) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .nav a::after { content: attr(data-tip); position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); padding: 5px 9px; border-radius: 8px; background: var(--fg); color: var(--bg); font-size: 13px; font-weight: 600; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s; z-index: 30; }
+  .nav a:hover::after, .nav a:focus-visible::after { opacity: 1; }
+  .nav .fb-badge { position: absolute; top: 2px; right: 0; margin: 0; min-width: 18px; height: 18px; font-size: 11px; padding: 0 5px; }
+}
 .logo-mark.has-logo { border: 0; overflow: hidden; background: var(--bg-raised); }
 .logo-mark img { width: 100%; height: 100%; object-fit: cover; }
 /* Header: square logo beside the club name, the name balanced over at most two lines */
@@ -2069,7 +2082,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.1</span>
+    <span class="site-ver">Version 2.1.1</span>
   </div>
 </footer>
 
@@ -6712,6 +6725,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 
   // Plain #t-<id> anchors open a tournament; anything else shows the list
   var hallSection = document.getElementById('hall');
+  // Icon menu on computers: each link keeps its name for the hover label and screen readers
+  document.querySelectorAll('#nav a').forEach(function (a) {
+    var label = a.querySelector('span:not(.nav-ic)');
+    if (label) { a.setAttribute('data-tip', label.textContent); a.setAttribute('aria-label', label.textContent); }
+  });
   function renderHall() {
     var done = tournaments.filter(function (t) { return visibleTo(t) && statusOf(t) === 'completed'; })
       .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
