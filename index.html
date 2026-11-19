@@ -762,10 +762,25 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .team-list .t-colors { display: flex; gap: 4px; }
 .team-list .t-colors i { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--line); }
 .group-grid { display: grid; gap: 14px; margin-top: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
-.group-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); padding: 16px; display: grid; gap: 10px; align-content: start; }
-.group-card h3 { margin: 0; font: 800 22px var(--font-display); text-transform: uppercase; }
+.group-card { position: relative; overflow: hidden; isolation: isolate; border: 1px solid var(--line); border-top: 4px solid var(--gc); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; align-content: start;
+  background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--gc) 16%, transparent), transparent 60%), var(--bg-raised); }
+.group-card h3 { margin: 0; font: 800 24px var(--font-display); text-transform: uppercase; color: var(--gc); }
+.gc-wm { position: absolute; z-index: -1; right: 10px; top: -12px; font: 800 150px/1 var(--font-display); color: var(--gc); opacity: .1; pointer-events: none; user-select: none; }
 .group-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .group-card li { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.gc-row { display: block !important; }
+.gc-team { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; font: inherit; color: var(--fg);
+  padding: 9px 12px 9px 14px; border-radius: 12px; border: 1px solid var(--line-soft, var(--line)); background: color-mix(in srgb, var(--bg-raised) 70%, transparent);
+  box-shadow: inset 4px 0 0 var(--tc); transition: border-color .2s, transform .15s; }
+.gc-team:hover { border-color: var(--line-hover); }
+.gc-team:active { transform: scale(.985); }
+.gc-team:focus-visible { outline: 2px solid var(--teal-hover); outline-offset: 2px; }
+.gc-through .gc-team { background: color-mix(in srgb, #2e9d5b 10%, var(--bg-raised)); border-color: color-mix(in srgb, #2e9d5b 35%, var(--line)); }
+.gc-info { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.gc-info strong { font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gc-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gc-sub small { color: var(--fg-muted); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.gc-q { flex: none; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #2e9d5b; background: color-mix(in srgb, #2e9d5b 14%, transparent); padding: 4px 8px; border-radius: 999px; }
 .group-card .muted { color: var(--fg-muted); font-weight: 400; font-size: 14px; }
 .table-wrap { overflow-x: auto; margin-top: 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); }
 .table-wrap + .table-wrap { margin-top: 12px; }
@@ -1568,6 +1583,10 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
   padding-block: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-bottom, 0px));
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
+/* While a popup is open the page behind it stays still */
+html.modal-lock, html.modal-lock body { overflow: hidden; overscroll-behavior: none; }
+.modal { overscroll-behavior: contain; }
+.modal .sheet { overscroll-behavior: contain; }
 .modal-backdrop { position: absolute; inset: 0; background: var(--backdrop); backdrop-filter: blur(4px); }
 .sheet {
   position: relative; width: 100%; max-width: 500px; max-height: 100%;
@@ -2111,7 +2130,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.2.2</span>
+    <span class="site-ver">Version 2.3.1</span>
   </div>
 </footer>
 
@@ -3320,6 +3339,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var open = Array.prototype.filter.call(document.querySelectorAll('.modal'), function (m) { return !m.hidden; });
     if (open.length) closeModal(open[open.length - 1]);
   });
+  // Lock page scrolling whenever any popup is open, so swiping inside one never moves the page behind
+  (function () {
+    var root = document.documentElement;
+    function sync() {
+      var open = Array.prototype.some.call(document.querySelectorAll('.modal'), function (m) { return !m.hidden; });
+      root.classList.toggle('modal-lock', open);
+    }
+    var mo = new MutationObserver(sync);
+    Array.prototype.forEach.call(document.querySelectorAll('.modal'), function (m) { mo.observe(m, { attributes: true, attributeFilter: ['hidden'] }); });
+    sync();
+  })();
   function closeModal(m) {
     if (!m) return;
     if (m === modal) { closeForm(); return; }
@@ -3950,6 +3980,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       scorerRows(t).forEach(function (r) { tally[r.team.id + '|' + r.player] = r.goals; });
       teams.forEach(function (team) {
         var li = el('li'), head = el('div', 'squad-head');
+        li.setAttribute('data-team', team.id);
         var tb = el('button', 'squad-team'); tb.type = 'button';
         tb.appendChild(crest(team));
         var info = el('span', 't-info');
@@ -4025,11 +4056,39 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       groups.concat(['Not in a group yet']).forEach(function (g) {
         var members = teams.filter(function (team) { return (team.group || 'Not in a group yet') === g; });
         if (g === 'Not in a group yet' && !members.length) return;
-        var card = el('div', 'group-card');
+        var gi = groups.indexOf(g), card = el('div', 'group-card');
+        // Each group gets its own accent color and a big faded letter in the corner
+        card.style.setProperty('--gc', gi < 0 ? 'var(--fg-dim)' : GROUP_COLORS[gi % GROUP_COLORS.length]);
+        if (gi >= 0) { var gl = el('span', 'gc-wm', g.replace(/^Group\s+/i, '')); gl.setAttribute('aria-hidden', 'true'); card.appendChild(gl); }
         card.appendChild(el('h3', null, g));
         var list = el('ul');
         if (!members.length) list.appendChild(el('li', 'muted', 'No teams yet'));
-        members.forEach(function (team) { var li = el('li'); li.appendChild(crest(team, 'sm')); li.appendChild(document.createTextNode(team.name)); list.appendChild(li); });
+        // Teams in table order once matches are played, with played, points and form
+        var rows = tableFor(t, members);
+        var started = rows.some(function (r) { return r.p > 0; });
+        if (!started) rows = members.map(function (team) { return rows.filter(function (r) { return r.team === team; })[0] || { team: team, p: 0, pts: 0 }; });
+        rows.forEach(function (r, i) {
+          var team = r.team, li = el('li', 'gc-row' + (started && gi >= 0 && i < 2 ? ' gc-through' : ''));
+          li.style.setProperty('--tc', team.c1 || '#346b4a');
+          var b = el('button', 'gc-team'); b.type = 'button';
+          b.setAttribute('aria-label', team.name + ': show squad');
+          b.appendChild(crest(team));
+          var info = el('span', 'gc-info');
+          var nm = el('strong', null, team.name);
+          info.appendChild(nm);
+          var sub = el('span', 'gc-sub');
+          sub.appendChild(el('small', null, r.p + ' P · ' + r.pts + (r.pts === 1 ? ' pt' : ' pts')));
+          var fm = formDots(t, team.id); if (fm) sub.appendChild(fm);
+          info.appendChild(sub);
+          b.appendChild(info);
+          if (started && gi >= 0 && i < 2) b.appendChild(el('span', 'gc-q', '\u2191 Qualify'));
+          b.addEventListener('click', function () {
+            openTeams[team.id] = true; detail.tab = 'Teams'; renderDetail();
+            var row = document.querySelector('#detail [data-team="' + team.id + '"]');
+            if (row) row.scrollIntoView({ block: 'start', behavior: 'smooth' });
+          });
+          li.appendChild(b); list.appendChild(li);
+        });
         card.appendChild(list); grid.appendChild(card);
       });
       root.appendChild(grid);
@@ -4056,6 +4115,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
 
   // Add / edit team
+  var GROUP_COLORS = ['#2e9d8f', '#3b7ddd', '#d9a632', '#d9468f', '#7c5cd6', '#e0533d', '#3fa34d', '#f08a24'];
   var SWATCHES = ['#346b4a', '#3d8a89', '#2f4f9f', '#5f3090', '#7d2240', '#b3442e', '#cc5428', '#ddb05d', '#141414', '#f2f2f2'];
   var teamModal = document.getElementById('team-modal');
   var tm = {
