@@ -456,6 +456,19 @@ section.block { padding-block: 48px 8px; }
 .remind-btn svg.i { width: 16px; height: 16px; }
 .d-remind { width: 100%; max-width: 520px; justify-content: center; margin: -8px 0 18px; }
 .fx-list li > .remind-btn { margin: 6px auto 0; display: flex; }
+/* Bell in the match card's corner: grey until a reminder is set, then gold */
+.fx-list li.has-bell { position: relative; }
+.fx-bell { position: absolute; top: 7px; right: 7px; z-index: 2; width: 32px; height: 32px; display: grid; place-items: center; cursor: pointer;
+  border-radius: 50%; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg-raised) 80%, transparent); color: var(--fg-dim); transition: color .2s, background .2s, border-color .2s; }
+.fx-bell svg.i { width: 17px; height: 17px; }
+.d-remind.is-set { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 60%, var(--line)); }
+.d-remind.is-set svg.i { fill: currentColor; }
+.fx-bell:hover { color: var(--fg); border-color: var(--line-hover); }
+.fx-bell.on { color: #fff; background: var(--gold); border-color: var(--gold); box-shadow: 0 0 14px -2px color-mix(in srgb, var(--gold) 70%, transparent); }
+.fx-bell.on svg.i { fill: currentColor; }
+.fx-bell.ring svg.i { animation: bell-ring .9s ease-in-out; transform-origin: 50% 15%; }
+@keyframes bell-ring { 15% { transform: rotate(18deg); } 30% { transform: rotate(-16deg); } 45% { transform: rotate(12deg); } 60% { transform: rotate(-8deg); } 75% { transform: rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) { .fx-bell.ring svg.i { animation: none; } }
 .rm-list { display: grid; gap: 10px; }
 .q-next { display: flex; align-items: center; gap: 12px; max-width: 520px; margin: 14px 0 0; padding: 12px 12px 12px 14px; border-radius: 14px;
   background: linear-gradient(120deg, color-mix(in srgb, var(--teal) 12%, transparent), color-mix(in srgb, #d9a93a 12%, transparent)); border: 1px solid color-mix(in srgb, var(--teal) 22%, transparent); }
@@ -1749,6 +1762,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
+    <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2H4.5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></symbol>
     <symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
     <symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 21.5s-7-6.2-7-11.7a7 7 0 0 1 14 0c0 5.5-7 11.7-7 11.7Z"/><circle cx="12" cy="9.8" r="2.5"/></symbol>
     <symbol id="ic-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" /></symbol>
@@ -2139,7 +2153,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.3.3</span>
+    <span class="site-ver">Version 2.3.4</span>
   </div>
 </footer>
 
@@ -3772,7 +3786,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     dk.dataset.kick = t.id; fillNextKick(dk, t);
     var nkm = nextKick(t), dr = document.getElementById('d-remind');
     dr.hidden = !(nkm && remindable(nkm.m));
-    dr.onclick = function () { openRemind(t, [nkm.m], dr); };
+    dr.onclick = function () { openRemind(t, [nkm.m], dr, function () { renderDetail(); toast('Reminder set 🔔'); }); };
+    if (nkm && remindable(nkm.m)) {
+      var drOn = isReminded(t, nkm.m);
+      dr.classList.toggle('is-set', drOn);
+      dr.lastChild.textContent = drOn ? 'Reminder set for the next match' : 'Remind me';
+      dr.firstChild.querySelector('use').setAttribute('href', '#ic-bell');
+    }
     var desc = document.getElementById('d-desc');
     desc.textContent = t.description || ''; desc.hidden = !t.description;
 
@@ -5025,7 +5045,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var at = new Date(m.date).getTime();
     return !isNaN(at) && at > Date.now();
   }
-  var rmModal = document.getElementById('rm-modal'), rm = { events: [], before: 15 };
+  var rmModal = document.getElementById('rm-modal'), rm = { events: [], before: 15, done: null };
+  // Matches this phone has added to a calendar, so their bell shows gold
+  var remSet = (function () { try { return JSON.parse(localStorage.getItem('reminders.v1')) || {}; } catch (e) { return {}; } })();
+  function markReminded(events) {
+    events.forEach(function (e) { remSet[e.uid] = e.start.getTime(); });
+    try { localStorage.setItem('reminders.v1', JSON.stringify(remSet)); } catch (e) {}
+    if (rm.done) { var f = rm.done; rm.done = null; f(); }
+  }
+  function isReminded(t, m) { return !!remSet[t.id + '-' + m.id]; }
   function matchTitle(t, m) {
     function side(id, slot) { var x = id && teamById(t, id); return x ? x.name : slot ? slotLabel(t, slot) : 'TBD'; }
     return side(m.home, m.homeSlot) + ' vs ' + side(m.away, m.awaySlot);
@@ -5042,13 +5070,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       alert: 'The next quiz question opens soon', place: '',
       details: 'Answer it on the site\nhttps://noonuprc.com/#t-' + t.id };
   }
-  function openRemind(t, ms, trigger) {
+  function openRemind(t, ms, trigger, done) {
     openRemindFor(ms.map(function (m) { return matchEvent(t, m); }), ms.length === 1
-      ? matchTitle(t, ms[0]) + ' · ' + formatKickoff(ms[0].date)
-      : ms.length + ' upcoming matches in ' + t.name, trigger);
+      ? matchTitle(t, ms[0]) + ' · ' + formatKickoff(ms[0].date) + (isReminded(t, ms[0]) ? ' · reminder already set' : '')
+      : ms.length + ' upcoming matches in ' + t.name, trigger, done);
   }
-  function openRemindFor(events, sub, trigger) {
-    rm.events = events;
+  function openRemindFor(events, sub, trigger, done) {
+    rm.events = events; rm.done = done || null;
     document.getElementById('rm-sub').textContent = sub;
     document.getElementById('rm-google').hidden = events.length !== 1;
     rmModal.returnFocus = trigger || null;
@@ -5076,18 +5104,25 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     return lines.join('\r\n');
   }
   document.getElementById('rm-ics').addEventListener('click', function () {
-    var ics = buildIcs(rm.events, rm.before);
+    var ics = buildIcs(rm.events, rm.before), events = rm.events;
     var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (ios) {
-      // Safari opens a calendar file straight into "Add to Calendar"
+    var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+    var name = events.length === 1 ? 'reminder.ics' : 'reminders.ics';
+    var blob = new Blob([ics], { type: 'text/calendar' });
+    if (ios && !standalone) {
+      // Safari in the browser opens a calendar file straight into "Add to Calendar"
       location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+    } else if (ios && standalone && window.File && navigator.canShare && navigator.canShare({ files: [new File([blob], name, { type: 'text/calendar' })] })) {
+      // The home-screen app can't open calendar files directly, so hand it to the share sheet
+      navigator.share({ files: [new File([blob], name, { type: 'text/calendar' })] }).catch(function () {});
     } else {
-      var url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
-      var a = document.createElement('a'); a.href = url; a.download = rm.events.length === 1 ? 'reminder.ics' : 'reminders.ics';
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href = url; a.download = name;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
       toast('Open the file to add it to your calendar');
     }
+    markReminded(events);
     closeModal(rmModal);
   });
   document.getElementById('rm-google').addEventListener('click', function () {
@@ -5097,6 +5132,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       '&details=' + encodeURIComponent(e.details) +
       (e.place ? '&location=' + encodeURIComponent(e.place) : '');
     window.open('https://calendar.google.com/calendar/render?' + q, '_blank', 'noopener');
+    markReminded(rm.events);
     closeModal(rmModal);
   });
   // Quiz questions that open at a set time, soonest first
@@ -5380,7 +5416,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var all = el('button', 'btn btn-ghost btn-sm remind-btn'); all.type = 'button';
       all.appendChild(svgIcon('ic-calendar')); all.appendChild(document.createTextNode('Add all ' + soon.length + ' matches to my calendar'));
       all.style.marginBottom = '12px';
-      all.addEventListener('click', function () { openRemind(t, soon, all); });
+      all.addEventListener('click', function () { openRemind(t, soon, all, function () { renderDetail(); toast('Reminders set 🔔'); }); });
       root.appendChild(all);
     }
     var sec = el('section', 'fx-stage'), ul = el('ul', 'fx-list');
@@ -5419,10 +5455,20 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         row.addEventListener('click', function () { if (canEdit()) openMatch(t, m, row); });
         li.appendChild(row);
         if (remindable(m)) {
-          var rb = el('button', 'btn btn-ghost btn-sm remind-btn'); rb.type = 'button';
-          rb.appendChild(svgIcon('ic-calendar')); rb.appendChild(document.createTextNode('Remind me'));
-          rb.addEventListener('click', function () { openRemind(t, [m], rb); });
-          li.appendChild(rb);
+          var rb = el('button', 'fx-bell'); rb.type = 'button';
+          rb.setAttribute('data-m', m.id);
+          rb.appendChild(svgIcon('ic-bell'));
+          var syncBell = function () {
+            var on = isReminded(t, m);
+            rb.classList.toggle('on', on);
+            rb.setAttribute('aria-label', on ? 'Reminder set for this match' : 'Remind me about this match');
+            rb.title = on ? 'Reminder set' : 'Remind me';
+          };
+          syncBell();
+          rb.addEventListener('click', function () {
+            openRemind(t, [m], rb, function () { renderDetail(); var nb = document.querySelector('#detail .fx-bell[data-m="' + m.id + '"]'); if (nb) nb.classList.add('ring'); toast('Reminder set 🔔'); });
+          });
+          li.classList.add('has-bell'); li.appendChild(rb);
         }
       }
       ul.appendChild(li);
