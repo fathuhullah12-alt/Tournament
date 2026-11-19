@@ -940,6 +940,15 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .fx .fx-events .bk { width: 9px; height: 12px; }
 .fx-predict { display: flex; align-items: center; gap: 8px; }
 .fx-predict .fx { flex: 1; min-width: 0; }
+/* Matches I've already predicted: teal glow, my score in the middle and a Predicted tag */
+.fx.fx-mine { position: relative; border-color: color-mix(in srgb, var(--teal) 70%, var(--line)); box-shadow: 0 0 0 1px color-mix(in srgb, var(--teal) 45%, transparent), 0 6px 22px -8px color-mix(in srgb, var(--teal) 55%, transparent); }
+.fx.fx-mine .fx-myscore { display: grid; justify-items: center; gap: 2px; padding: 6px 14px; border-radius: 12px; line-height: 1.1;
+  background: color-mix(in srgb, var(--teal) 20%, transparent); border: 1px solid color-mix(in srgb, var(--teal) 55%, transparent); color: var(--fg); }
+.fx-myscore small { font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--teal-hover, var(--teal)); }
+.fx-myscore b { font: 800 22px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.fx-done { position: absolute; top: 10px; right: 12px; display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  color: #fff; background: var(--teal); padding: 3px 8px 3px 6px; border-radius: 999px; }
+.fx-done svg.i { width: 12px; height: 12px; }
 .goal-box { display: grid; gap: 8px; }
 .goal-add { display: flex; gap: 8px; }
 .goal-add[hidden] { display: none; }
@@ -2130,7 +2139,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.3.1</span>
+    <span class="site-ver">Version 2.3.2</span>
   </div>
 </footer>
 
@@ -5978,12 +5987,29 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var open = ms.filter(predOpen);
     var sec = el('section', 'fx-stage');
     sec.appendChild(el('h3', null, open.length ? 'Open for predictions' : 'No matches open for predictions'));
-    if (open.length) sec.appendChild(el('p', 'table-note', 'Predictions for a match close when it kicks off.'));
+    // The signed-in member's own pick for a match, if they made one
+    var myId = auth.account ? auth.account.id : null;
+    function myPick(m) {
+      return preds.filter(function (p) { return p.match === m.id && ((myId && p.member === myId) || (me && (p.name || '').toLowerCase() === me)); })[0] || null;
+    }
+    var doneN = open.filter(myPick).length;
+    if (open.length) sec.appendChild(el('p', 'table-note', 'Predictions for a match close when it kicks off.' + (me ? ' You have predicted ' + doneN + ' of ' + open.length + '.' : '')));
     var ul = el('ul', 'fx-list');
     open.forEach(function (m) {
       var li = el('li', 'fx-predict'), row = matchRow(t, m);
       var n = preds.filter(function (p) { return p.match === m.id; }).length;
       row.querySelector('.meta').textContent = formatKickoff(m.date) + ' · ' + n + (n === 1 ? ' prediction' : ' predictions');
+      var mp = myPick(m);
+      if (mp) {
+        // Already predicted: highlight the card and show the score in place of "vs"
+        row.classList.add('fx-mine');
+        var sc = row.querySelector('.score');
+        if (sc) { sc.textContent = ''; sc.className = 'score fx-myscore'; sc.appendChild(el('small', null, 'Your pick')); sc.appendChild(el('b', null, mp.hs + ' – ' + mp.as)); }
+        var badge = el('span', 'fx-done'); badge.appendChild(icon('ic-check')); badge.appendChild(document.createTextNode('Predicted'));
+        row.appendChild(badge);
+        row.querySelector('.meta').textContent += ' · Tap to change';
+        row.setAttribute('aria-label', 'Your prediction ' + mp.hs + '–' + mp.as + '. Tap to change.');
+      }
       row.addEventListener('click', function () {
         needMember('Sign in to predict this match.', function () { openPrediction(t, m, row); }, row);
       });
