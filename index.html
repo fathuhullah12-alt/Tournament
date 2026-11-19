@@ -2139,7 +2139,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.3.2</span>
+    <span class="site-ver">Version 2.3.3</span>
   </div>
 </footer>
 
@@ -6024,10 +6024,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var ul3 = el('ul', 'fx-list');
       later.forEach(function (m) {
         var li = el('li'), row = matchRow(t, m);
-        var why = 'Kicked off · predictions closed, waiting for the result';
+        // Two reasons a match can't be picked: its teams aren't known yet, or it has kicked off
+        var tbd = !m.home || !m.away;
+        var why = tbd ? 'Teams not decided yet · predictions open once both teams are known'
+          : 'Kicked off · predictions closed, waiting for the result';
         var meta = row.querySelector('.meta');
         if (meta) meta.textContent = (m.date ? formatKickoff(m.date) + ' · ' : '') + why;
         row.addEventListener('click', function () {
+          if (tbd) { toast('The teams for this match are not decided yet. Predictions open once both teams are known.'); return; }
           toast(isAdmin()
             ? 'Kickoff time has passed. Change the match time in Fixtures to reopen predictions.'
             : 'This match has kicked off, so predictions are closed.');
