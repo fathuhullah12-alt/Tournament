@@ -262,6 +262,7 @@ section.block { padding-block: 48px 8px; }
   border-bottom: 3px solid transparent;
 }
 .tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--teal); }
+.tab-count[hidden] { display: none; }
 .tab-count {
   min-width: 26px; height: 22px; padding: 0 8px; border-radius: 11px; display: inline-grid; place-items: center;
   background: var(--chip); color: var(--fg-muted); font-size: 13px; font-variant-numeric: tabular-nums;
@@ -1860,6 +1861,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <strong id="empty-title">No tournaments yet</strong>
         <p id="empty-text">Create your first tournament and it will show up here.</p>
         <button class="btn" type="button" data-new data-admin id="empty-new"><svg class="i"><use href="#ic-plus"/></svg>New tournament</button>
+        <button class="btn" type="button" id="empty-signin" hidden>Sign in</button>
       </div>
     </div>
   </section>
@@ -2153,7 +2155,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.3.6</span>
+    <span class="site-ver">Version 2.3.7</span>
   </div>
 </footer>
 
@@ -3209,15 +3211,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var current = seen.filter(function (t) { return !isArchived(t); });
     var archived = seen.filter(isArchived);
     // Members don't get a type tab (like Quiz) when nothing of that type is in the list they're looking at
-    var inTab = view.tab === 'archive' ? archived : current;
+    var inTab = view.tab === 'archive' ? (!auth.account && !isAdmin() ? [] : archived) : current;
     document.querySelectorAll('[data-type]').forEach(function (b) {
       var ty = b.dataset.type;
       b.hidden = ty !== 'all' && !isAdmin() && !inTab.some(function (t) { return typeOf(t.category).name === ty; });
       if (b.hidden && view.type === ty) view.type = 'all';
     });
     document.getElementById('count-current').textContent = current.length;
-    document.getElementById('count-archive').textContent = archived.length;
-    var shown = (view.tab === 'archive' ? archived : current).filter(function (t) {
+    // Visitors who aren't signed in don't see the archive's tournaments
+    var archLocked = !auth.account && !isAdmin();
+    var ca = document.getElementById('count-archive');
+    ca.textContent = archived.length; ca.hidden = archLocked;
+    var shown = (view.tab === 'archive' ? (archLocked ? [] : archived) : current).filter(function (t) {
       return view.type === 'all' || typeOf(t.category).name === view.type;
     });
     // Live tournaments first, then upcoming ones by date (soonest first)
@@ -3241,7 +3246,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     });
     empty.hidden = shown.length > 0;
     var kind = view.type === 'all' ? 'tournaments' : view.type.toLowerCase() + ' tournaments';
-    if (view.tab === 'archive') {
+    document.getElementById('empty-signin').hidden = !(view.tab === 'archive' && archLocked);
+    if (view.tab === 'archive' && archLocked) {
+      document.getElementById('empty-title').textContent = 'Sign in to see the archive';
+      document.getElementById('empty-text').textContent = 'Past tournaments are for club members. Sign in with your member ID to see them.';
+    } else if (view.tab === 'archive') {
       document.getElementById('empty-title').textContent = 'Nothing archived yet';
       document.getElementById('empty-text').textContent = isAdmin() ? 'Mark a tournament as Completed and it moves here.' : 'Finished tournaments will show up here.';
     } else {
@@ -7527,6 +7536,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     setTimeout(function () { document.getElementById('au-id').focus(); }, 0);
   }
   // Signed in already, or ask first and carry on afterwards
+  document.getElementById('empty-signin').addEventListener('click', function (e) {
+    needMember('Sign in to see past tournaments.', function () { render(); }, e.currentTarget);
+  });
   function needMember(reason, then, trigger) {
     if (auth.account) { then(); return; }
     openAuth(reason, then, trigger);
