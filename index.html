@@ -2155,7 +2155,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.3.7</span>
+    <span class="site-ver">Version 2.4</span>
   </div>
 </footer>
 
@@ -3778,6 +3778,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function renderDetail() {
     var t = current();
     if (!t) return;
+    needEntries(t.id);
     var type = typeOf(t.category), st = statusOf(t);
     var tag = document.getElementById('d-tag');
     tag.className = 'tag t-' + type.tone; tag.textContent = type.tag;
@@ -6380,6 +6381,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var hs = document.getElementById('pf-hs').value, as = document.getElementById('pf-as').value;
     if (!name || hs === '' || as === '') { document.getElementById('pf-err').textContent = 'Add your name and both scores.'; document.getElementById('pf-err').hidden = false; return; }
     var t = predState.t, m = predState.m;
+    // Wait until this tournament's picks have loaded, so a new pick never gets lost
+    if (FB_MODE && entryLoaded[t.id] !== true) { var pl = document.getElementById('pf-err'); pl.textContent = 'Still loading, try again in a moment.'; pl.hidden = false; needEntries(t.id); return; }
     if (!predOpen(m)) { var pe = document.getElementById('pf-err'); pe.textContent = 'This match has started, so predictions are closed.'; pe.hidden = false; return; }
     t.predictions = (t.predictions || []).filter(function (p) { return !(p.match === m.id && p.name.toLowerCase() === name.toLowerCase()); });
     t.predictions.push({ id: uid(), match: m.id, name: name, hs: Math.max(0, Math.floor(+hs)), as: Math.max(0, Math.floor(+as)) });
@@ -6498,6 +6501,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function renderQuiz() {
     var t = current();
     if (!t) return;
+    needEntries(t.id);
     var qs = t.questions || [];
     var st = statusOf(t);
     var status = document.getElementById('q-status');
@@ -6601,6 +6605,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         needMember('Sign in to answer and join the leaderboard.', function () {
           if (qRevealed(t, day)) { renderQuiz(); return; }
           if (canManage()) { toast('Admin and manager IDs can\'t answer the quiz.'); renderQuiz(); return; }
+          if (FB_MODE && entryLoaded[t.id] !== true) { needEntries(t.id); toast('Still loading, try again in a moment.'); return; }
           var already = (t.answers || []).some(function (a) { return a.member === auth.account.id && a.day === day; });
           if (!already) {
             t.answers = (t.answers || []).concat({ member: auth.account.id, name: auth.account.name, day: day, pick: pick });
@@ -6961,6 +6966,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     done.forEach(function (t) {
       var isQuiz = typeOf(t.category).quiz, rows = [];
       if (isQuiz) {
+        needEntries(t.id);
         var board = quizBoard(t).filter(function (r) { return r.correct > 0; });
         board.filter(function (r) { return r.rank === 1; }).forEach(function (r) { rows.push(['champ', 'Quiz winner', r.name, r.correct + ' right']); });
         board.filter(function (r) { return r.rank === 2; }).forEach(function (r) { rows.push(['', 'Runner-up', r.name, r.correct + ' right']); });
@@ -7362,7 +7368,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (local && JSON.stringify(stripT(local)) === json) return;
       var fresh = JSON.parse(json);
       if (FB_MODE) {
-        mergeEntries(fresh);
+        mergeEntries(fresh, local);
         if (local) harvestKeys(local);
         harvestKeys(fresh); mergeQuizKeys(fresh);
       }
@@ -8461,8 +8467,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
 
   // Predictions, picks and quiz answers: one record per member per tournament
-  var entries = {};
-  function mergeEntries(t) {
+  // Each tournament's entries load only when someone opens it (or the Hall of Fame needs it), to keep reads low
+  var entries = {}, entrySubs = {}, entryLoaded = {};
+  function needEntries(tid) {
+    if (!FB_MODE || !fb.db || entrySubs[tid]) return;
+    entrySubs[tid] = fb.db.collection('entries').where('t', '==', tid).onSnapshot(function (snap) { applyEntries(tid, snap); }, function () { delete entrySubs[tid]; });
+  }
+  function mergeEntries(t, prev) {
+    // Not loaded yet: keep what this phone already had, from its saved copy
+    if (!entryLoaded[t.id]) {
+      if (prev) { t.predictions = prev.predictions || []; t.bonus = prev.bonus || []; t.answers = prev.answers || []; }
+      return;
+    }
     var p = [], b = [], a = [];
     Object.keys(entries).forEach(function (k) {
       var e = entries[k];
@@ -8471,20 +8487,24 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     });
     t.predictions = p; t.bonus = b; t.answers = a;
   }
-  function applyEntries(snap) {
-    entries = {};
+  function applyEntries(tid, snap) {
+    Object.keys(entries).forEach(function (k) { if (entries[k].t === tid) delete entries[k]; });
     snap.docs.forEach(function (d) { entries[d.id] = JSON.parse(JSON.stringify(d.data())); });
-    if (!snap.metadata.fromCache) fb.entriesReady = true;
-    tournaments.forEach(mergeEntries);
+    if (!snap.metadata.fromCache) entryLoaded[tid] = true;
+    else if (!entryLoaded[tid] && snap.empty) return;
+    if (snap.metadata.fromCache && !entryLoaded[tid]) entryLoaded[tid] = 'cache';
+    tournaments.forEach(function (t) { if (t.id === tid) mergeEntries(t); });
     try { localStorage.setItem(KEY, JSON.stringify(tournaments)); } catch (e) {}
     render();
     if (/^#t-/.test(location.hash) && detailSection.hidden && quizSection.hidden) route();
     else refreshPage();
   }
   function pushEntries() {
-    if (!fb.user || !auth.account || !fb.entriesReady) return Promise.resolve();
+    if (!fb.user || !auth.account) return Promise.resolve();
     var me = auth.account, low = me.name.toLowerCase(), jobs = [];
     tournaments.forEach(function (t) {
+      // Only tournaments whose entries came from the server, so an old copy never overwrites newer picks
+      if (entryLoaded[t.id] !== true) return;
       var eid = t.id + '__' + me.id;
       var body = {
         t: t.id, member: me.id, uid: fb.user.uid, name: me.name,
@@ -8507,12 +8527,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     }).then(function () {
       firebase.initializeApp(FB_CONFIG);
       fb.db = firebase.firestore();
+      try { fb.db.enablePersistence({ synchronizeTabs: true }).catch(function () {}); } catch (e) {}
       fb.auth = firebase.auth();
       cloud = fb.db;
+      // Whatever page is already open gets its entries
+      var cur0 = current(); if (cur0) needEntries(cur0.id);
       document.documentElement.classList.add('online');
       fb.db.collection('tournaments').onSnapshot(applyTournaments, function () {});
       fb.db.doc('site/settings').onSnapshot(applySite, function () {});
-      fb.db.collection('entries').onSnapshot(applyEntries, function () {});
+      // Repeat visits read from the phone's cache instead of downloading everything again
       fb.db.doc('site/owner').onSnapshot(function (d) {
         if (d.metadata.fromCache) return;
         fb.ownerMissing = !d.exists;
