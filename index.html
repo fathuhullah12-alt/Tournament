@@ -435,6 +435,39 @@ section.block { padding-block: 48px 8px; }
 .next-kick { position: relative; z-index: 1; pointer-events: none; display: grid; gap: 10px; padding: 14px 16px; border-radius: 14px;
   background: linear-gradient(120deg, color-mix(in srgb, var(--teal) 12%, transparent), color-mix(in srgb, #d9a93a 12%, transparent)); border: 1px solid color-mix(in srgb, var(--teal) 22%, transparent); }
 .next-kick[hidden] { display: none; }
+/* Tournament start countdown, before any match has a time */
+.next-kick.nk-start .nk-label { color: var(--gold); }
+.nk-when { text-align: center; color: var(--fg-muted); font-size: 14px; font-weight: 600; }
+/* Today's matches: a swipeable strip at the top of the home page on match days */
+.card-tp { position: relative; z-index: 1; pointer-events: none; display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--gold) 35%, var(--line)); background: color-mix(in srgb, var(--gold) 8%, transparent); }
+.card-tp small { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+.card-tp ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.card-tp li { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.card-tp li i { font-style: normal; width: 22px; text-align: center; }
+.card-tp li b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.card-tp li.tp-first b { font-weight: 800; }
+.card-tp li span { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--fg-muted); }
+.d-invite { margin-top: -10px; }
+.today-strip { margin: 0 0 22px; }
+.today-strip[hidden] { display: none; }
+.ts-title { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font: 800 20px var(--font-display); text-transform: uppercase; letter-spacing: .02em; }
+.ts-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--live); animation: nk-pulse 1.4s ease-in-out infinite; }
+.ts-list { list-style: none; margin: 0 -16px; padding: 2px 16px 6px; scroll-padding-inline: 16px; display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.ts-list::-webkit-scrollbar { display: none; }
+.ts-list li { flex: none; scroll-snap-align: start; }
+.ts-item { display: grid; gap: 8px; width: 210px; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line); color: var(--fg); text-decoration: none;
+  background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--hc, var(--chip)) 18%, transparent), transparent 60%), radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--ac, var(--chip)) 18%, transparent), transparent 60%), var(--bg-raised); }
+.ts-item:active { transform: scale(.98); }
+.ts-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--fg-muted); }
+.ts-top span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-state { flex: none; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.ts-state.live { color: var(--live); }
+.ts-state.ft { color: var(--fg-dim); }
+.ts-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; }
+.ts-team { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 700; font-size: 15px; }
+.ts-team b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.ts-score { font: 800 18px/1 var(--font-display); font-variant-numeric: tabular-nums; text-align: right; }
+.ts-item.is-live { border-color: color-mix(in srgb, var(--live) 45%, var(--line)); }
 .nk-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
 .nk-label { color: var(--teal); font-weight: 800; letter-spacing: .1em; font-size: 13px; text-transform: uppercase; }
 .nk-stage { color: var(--fg-muted); font-size: 13px; font-weight: 600; }
@@ -544,7 +577,7 @@ html { -webkit-tap-highlight-color: transparent; }
 .meta-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .detail-desc { margin: 4px 0 24px; color: var(--fg-muted); max-width: 60ch; }
 .detail-kick { margin-bottom: 18px; }
-#detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-remind, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
+#detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-remind, #detail.pred-mode #d-invite, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
 .hi-bar { position: relative; }
 .hi-bar[hidden] { display: none; }
 .hi-bar .wrap { padding-top: 20px; }
@@ -1839,6 +1872,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   <!-- Tournaments -->
   <section class="block" id="tournaments">
     <div class="wrap">
+      <div class="today-strip" id="today-strip" hidden>
+        <h2 class="ts-title"><span class="ts-dot" aria-hidden="true"></span>Today's matches</h2>
+        <ul class="ts-list" id="ts-list"></ul>
+      </div>
       <div class="tabs" role="tablist" aria-label="Tournament list">
         <button class="tab" type="button" role="tab" id="tab-current" data-tab="current" aria-selected="true">Current <span class="tab-count" id="count-current">0</span></button>
         <button class="tab" type="button" role="tab" id="tab-archive" data-tab="archive" aria-selected="false">Archive <span class="tab-count" id="count-archive">0</span></button>
@@ -1880,6 +1917,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <div class="spons" id="d-spons" hidden aria-label="Sponsors"></div>
       <div class="next-kick detail-kick" id="d-kick" hidden></div>
       <button class="btn btn-ghost btn-sm remind-btn d-remind" type="button" id="d-remind" hidden><svg class="i"><use href="#ic-calendar"/></svg>Remind me</button>
+      <button class="btn btn-ghost btn-sm remind-btn d-remind d-invite" type="button" id="d-invite" hidden><svg class="i"><use href="#ic-whatsapp"/></svg>Invite friends on WhatsApp</button>
       <p class="lock-note" id="d-lock" hidden><svg class="i"><use href="#ic-lock"/></svg>This tournament is finished, so it's locked. Only the owner or an admin can change it.</p>
 
       <div class="awards" id="d-awards">
@@ -2155,7 +2193,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.3.7</span>
+    <span class="site-ver">Version 2.5</span>
   </div>
 </footer>
 
@@ -3126,6 +3164,23 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       nx.dataset.kick = t.id;
       if (fillNextKick(nx, t)) card.appendChild(nx);
     }
+    // Top 3 prediction players, for signed-in members once points are scored
+    if (!type.quiz && (auth.account || isAdmin())) {
+      var tp = topPredictors(t);
+      if (tp.length) {
+        var tb = el('div', 'card-tp');
+        tb.appendChild(el('small', null, 'Top predictors'));
+        var ol = el('ol');
+        tp.forEach(function (r, i) {
+          var li = el('li', i === 0 ? 'tp-first' : null);
+          li.appendChild(el('i', null, ['🥇', '🥈', '🥉'][i]));
+          li.appendChild(textDir(el('b', null, r.name), r.name));
+          li.appendChild(el('span', null, r.pts + (r.pts === 1 ? ' pt' : ' pts')));
+          ol.appendChild(li);
+        });
+        tb.appendChild(ol); card.appendChild(tb);
+      }
+    }
     return card;
   }
 
@@ -3145,7 +3200,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function fillNextKick(box, t) {
     var nk = nextKick(t);
     box.textContent = '';
-    if (!nk) { box.hidden = true; return false; }
+    box.classList.remove('nk-start');
+    if (!nk) {
+      // No match time yet: count down to the tournament's start date instead
+      var sd = !typeOf(t.category).quiz && statusOf(t) === 'upcoming' && t.date ? new Date(t.date + 'T00:00').getTime() : NaN;
+      if (isNaN(sd) || sd <= Date.now()) { box.hidden = true; return false; }
+      box.hidden = false; box.classList.add('nk-start'); box.dataset.state = 'soon';
+      var hd = el('div', 'nk-head'); hd.appendChild(el('span', 'nk-label', 'Tournament starts in')); box.appendChild(hd);
+      var s2 = Math.floor((sd - Date.now()) / 1000), d2 = Math.floor(s2 / 86400);
+      box.appendChild(el('div', 'nk-clock', (d2 ? d2 + 'd ' : '') + [Math.floor(s2 / 3600) % 24, Math.floor(s2 / 60) % 60, s2 % 60].map(pad2).join(':')));
+      return true;
+    }
     box.hidden = false;
     var left = nk.at - Date.now(), live = left <= 0;
     box.classList.toggle('is-playing', live);
@@ -3206,7 +3271,48 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   // Hidden tournaments are only for admins and managers
   function visibleTo(t) { return !t.hidden || isAdmin(); }
+  // Today's matches across the current tournaments, soonest first, with live state and scores
+  function renderToday() {
+    var box = document.getElementById('today-strip'), list = document.getElementById('ts-list');
+    if (!box) return;
+    var now = new Date(), key = now.getFullYear() + '-' + pad2(now.getMonth() + 1) + '-' + pad2(now.getDate()), items = [];
+    tournaments.forEach(function (t) {
+      if (!visibleTo(t) || isArchived(t) || typeOf(t.category).quiz) return;
+      (t.matches || []).forEach(function (m) {
+        if (!m.date || m.date.slice(0, 10) !== key || isBye(m)) return;
+        items.push({ t: t, m: m, at: new Date(m.date).getTime() });
+      });
+    });
+    items.sort(function (a, b) { return a.at - b.at; });
+    list.textContent = '';
+    box.hidden = !items.length;
+    items.forEach(function (x) {
+      var t = x.t, m = x.m, h = teamById(t, m.home), a = teamById(t, m.away);
+      var done = played(m), live = !done && x.at <= Date.now() && Date.now() < x.at + PLAYING_FOR;
+      var li = el('li'), link = el('a', 'ts-item' + (live ? ' is-live' : ''));
+      link.href = '#t-' + t.id;
+      link.addEventListener('click', function () { openOnTab = 'Fixtures'; });
+      if (h && h.c1) link.style.setProperty('--hc', h.c1);
+      if (a && a.c1) link.style.setProperty('--ac', a.c1);
+      var top = el('div', 'ts-top');
+      top.appendChild(el('span', null, t.name));
+      top.appendChild(el('span', 'ts-state' + (live ? ' live' : done ? ' ft' : ''), live ? '● Live' : done ? 'Full time' : m.date.slice(11, 16)));
+      link.appendChild(top);
+      var row = el('div', 'ts-row');
+      function side(team, slot, sc) {
+        var s = el('span', 'ts-team');
+        if (team) s.appendChild(crest(team, 'sm'));
+        s.appendChild(el('b', null, team ? team.name : slot ? slotLabel(t, slot) : 'TBD'));
+        row.appendChild(s); row.appendChild(el('span', 'ts-score', done ? String(sc) : ''));
+      }
+      side(h, m.homeSlot, m.hs); side(a, m.awaySlot, m.as);
+      link.appendChild(row);
+      li.appendChild(link); list.appendChild(li);
+    });
+  }
+  setInterval(function () { if (!listSection.hidden) renderToday(); }, 30000);
   function render() {
+    renderToday();
     var seen = tournaments.filter(visibleTo);
     var current = seen.filter(function (t) { return !isArchived(t); });
     var archived = seen.filter(isArchived);
@@ -3684,7 +3790,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 
   // Tournament page
   var DETAIL_TABS = ['Standings', 'Groups', 'Fixtures', 'Stats', 'Players', 'Teams'];
-  var detail = { id: null, tab: 'Standings' };
+  var detail = { id: null, tab: 'Standings' }, openOnTab = null;
   var listSection = document.getElementById('tournaments');
   var detailSection = document.getElementById('detail');
   var dTabs = document.getElementById('d-tabs');
@@ -3795,6 +3901,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     dk.dataset.kick = t.id; fillNextKick(dk, t);
     // Futsal tournaments have no match reminders
     document.getElementById('d-remind').hidden = true;
+    var di = document.getElementById('d-invite');
+    di.hidden = st === 'completed';
+    di.onclick = function () { openInvite(t, di); };
     var desc = document.getElementById('d-desc');
     desc.textContent = t.description || ''; desc.hidden = !t.description;
 
@@ -5290,7 +5399,102 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       });
     });
   }
+  // Invite poster for WhatsApp: logo, name, dates, teams and a call to predict
+  function invitePicture(t, withLogos) {
+    var FD = '"Barlow Condensed", "Noto Sans Thaana", sans-serif', FB = '"Barlow", "Noto Sans Thaana", sans-serif';
+    var teams = (t.squads || []).slice(0, 12);
+    var fonts = ['800 60px "Barlow Condensed"', '700 40px "Barlow Condensed"', '600 30px "Barlow"', '700 30px "Barlow"'].map(function (f) { return document.fonts ? document.fonts.load(f).catch(function () {}) : null; });
+    return Promise.all(fonts.concat([loadImg(withLogos && t.logo)], teams.map(function (tm) { return loadImg(withLogos && tm.logo); }))).then(function (r) {
+      var tLogo = r[fonts.length], tLogos = r.slice(fonts.length + 1);
+      // Drawn on a tall sheet, then trimmed to the content (at least 1080×1350)
+      var W = 1080, H = 1900, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      var x = cv.getContext('2d');
+      function hex(c, d) { return /^#[0-9a-f]{6}$/i.test(c || '') ? c : d; }
+      var accent = hex(t.color, '#e3b553');
+      x.fillStyle = '#101615'; x.fillRect(0, 0, W, H);
+      function wash(cx, cy, rad, col) { var g = x.createRadialGradient(cx, cy, 30, cx, cy, rad); g.addColorStop(0, col + '70'); g.addColorStop(1, col + '00'); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+      wash(180, 220, 700, accent); wash(940, 1150, 700, '#3d8a89');
+      x.textAlign = 'center';
+      function fit(text, font, size, max) { do { x.font = font.replace('#', size); size -= 2; } while (x.measureText(text).width > max && size > 20); }
+      function wrap(text, font, size, max, y, lh) {
+        x.font = font.replace('#', size);
+        var words = text.split(/\s+/), lines = [], cur = '';
+        words.forEach(function (w) { var tryL = cur ? cur + ' ' + w : w; if (x.measureText(tryL).width > max && cur) { lines.push(cur); cur = w; } else cur = tryL; });
+        if (cur) lines.push(cur);
+        lines.slice(0, 3).forEach(function (l, i) { x.fillText(l, W / 2, y + i * lh); });
+        return y + (Math.min(lines.length, 3) - 1) * lh;
+      }
+      var y = 120;
+      if (tLogo) {
+        var ls = 220, lr = Math.min(ls / tLogo.naturalWidth, ls / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr;
+        x.save(); x.shadowColor = accent; x.shadowBlur = 50;
+        x.drawImage(tLogo, (W - lw) / 2, y + (ls - lh) / 2, lw, lh); x.restore();
+        y += ls + 90;
+      } else y += 120;
+      x.fillStyle = accent; x.font = '700 40px ' + FD;
+      if (x.letterSpacing !== undefined) x.letterSpacing = '8px';
+      x.fillText((typeOf(t.category).quiz ? 'QUIZ' : (t.category || 'TOURNAMENT').toUpperCase()) + '  ·  YOU\u2019RE INVITED', W / 2, y);
+      if (x.letterSpacing !== undefined) x.letterSpacing = '0px';
+      x.fillStyle = '#f2f4f3';
+      y = wrap((t.name || '').toUpperCase(), '800 #px ' + FD, 118, W - 140, y + 130, 112);
+      // Date and place
+      var when = t.date ? (function (d) { return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); })(new Date(t.date + 'T00:00')) : '';
+      x.fillStyle = '#c9d0ce'; x.font = '600 44px ' + FB;
+      if (when) { y += 90; x.fillText(when, W / 2, y); }
+      if (t.location) { y += 62; x.fillStyle = '#9aa5a2'; x.font = '600 38px ' + FB; x.fillText(t.location, W / 2, y); }
+      // Team crests
+      if (teams.length) {
+        var per = Math.min(teams.length, 6), rowsN = Math.ceil(teams.length / per), rad = 46, gap = 26;
+        y += 70;
+        teams.forEach(function (tm, i) {
+          var row = Math.floor(i / per), inRow = Math.min(per, teams.length - row * per), col = i % per;
+          var cx = W / 2 + (col - (inRow - 1) / 2) * (rad * 2 + gap), cy = y + rad + row * (rad * 2 + 22);
+          var logo = tLogos[i];
+          x.save(); x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.closePath();
+          x.fillStyle = logo ? '#ffffff' : hex(tm.c1, '#346b4a'); x.fill();
+          x.lineWidth = 5; x.strokeStyle = tm.c2 || '#ffffff'; x.stroke();
+          if (logo) { x.clip(); var sc = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82; x.drawImage(logo, cx - logo.width * sc / 2, cy - logo.height * sc / 2, logo.width * sc, logo.height * sc); }
+          else { x.fillStyle = tm.c2 || '#ffffff'; x.font = '800 48px ' + FD; x.textBaseline = 'middle'; x.fillText((tm.name || 'T').trim().charAt(0).toUpperCase(), cx, cy + 3); x.textBaseline = 'alphabetic'; }
+          x.restore();
+        });
+        y += rowsN * (rad * 2 + 22);
+      }
+      // Call to action pill
+      var cta = typeOf(t.category).quiz ? 'Play the quiz & win' : 'Predict the scores & win';
+      var FH = Math.min(H, Math.max(1350, y + 80 + 96 + 170));
+      x.font = '700 46px ' + FB; var cw = x.measureText(cta).width + 110, cyp = FH - 280;
+      x.fillStyle = accent; x.beginPath(); if (x.roundRect) x.roundRect((W - cw) / 2, cyp, cw, 96, 48); else x.rect((W - cw) / 2, cyp, cw, 96); x.fill();
+      x.fillStyle = '#101615'; x.fillText(cta, W / 2, cyp + 64);
+      x.fillStyle = '#eef1ef'; x.font = '700 40px ' + FB; x.fillText('noonuprc.com', W / 2, FH - 80);
+      var out = document.createElement('canvas'); out.width = W; out.height = FH; out.getContext('2d').drawImage(cv, 0, 0);
+      cv = out;
+      return new Promise(function (ok, bad) { try { cv.toBlob(function (b) { b ? ok(b) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); } });
+    });
+  }
+  function openInvite(t, trigger) {
+    shText = 'Join ' + t.name + (t.date ? ' · ' + formatDate(t.date) : '') + (typeOf(t.category).quiz ? '. Play the quiz and win!' : '. Predict the scores and win!');
+    shLink = 'https://noonuprc.com/#t-' + t.id;
+    showSharePic(function (logos) { return invitePicture(t, logos); }, (t.name || 'invite').replace(/[^\wހ-޿-]+/g, '-') + '-invite.png', trigger, 'Invite friends', 'Send this poster to WhatsApp groups and your status.');
+  }
+  function showSharePic(make, name, trigger, title, sub) {
+    shFile = null;
+    document.getElementById('sh-title').textContent = title;
+    document.querySelector('#sh-modal .sheet-sub').textContent = sub;
+    var img = document.getElementById('sh-img'), wait = document.getElementById('sh-wait');
+    img.hidden = true; wait.hidden = false; wait.textContent = 'Making the picture…';
+    document.getElementById('sh-go').disabled = true; document.getElementById('sh-save').disabled = true;
+    shModal.returnFocus = trigger || null; shModal.hidden = false;
+    make(true).catch(function () { return make(false); }).then(function (blob) {
+      try { shFile = new File([blob], name, { type: 'image/png' }); } catch (e) { shFile = blob; shFile.name = name; }
+      if (shUrl) URL.revokeObjectURL(shUrl);
+      shUrl = URL.createObjectURL(blob);
+      img.src = shUrl; img.alt = shText; img.hidden = false; wait.hidden = true;
+      document.getElementById('sh-go').disabled = false; document.getElementById('sh-save').disabled = false;
+    }).catch(function () { wait.textContent = 'Could not make the picture. Try again.'; });
+  }
   function openShare(t, m, trigger) {
+    document.getElementById('sh-title').textContent = 'Share result';
+    document.querySelector('#sh-modal .sheet-sub').textContent = 'Send this picture to a WhatsApp chat, group or status.';
     var home = teamById(t, m.home), away = teamById(t, m.away);
     shText = (home ? home.name : '') + ' ' + m.hs + ' – ' + m.as + ' ' + (away ? away.name : '') + ' · ' + t.name;
     // The caption carries a link straight to this tournament
@@ -5659,6 +5863,25 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (played(f)) return true;
     var at = f.date ? new Date(f.date).getTime() : NaN;
     return !isNaN(at) && Date.now() >= at;
+  }
+  // Prediction points per player (match picks plus tournament picks), best first
+  function topPredictors(t) {
+    var byId = {}, board = {};
+    (t.matches || []).forEach(function (m) { byId[m.id] = m; });
+    (t.predictions || []).forEach(function (p) {
+      var m = byId[p.match]; if (!m || !p.name) return;
+      var k = p.name.toLowerCase(), pts = predPoints(p, m);
+      if (!board[k]) board[k] = { name: p.name, pts: 0 };
+      if (pts) board[k].pts += pts;
+    });
+    (t.bonus || []).forEach(function (b) {
+      if (!b.name) return;
+      var k = b.name.toLowerCase();
+      if (!board[k]) board[k] = { name: b.name, pts: 0 };
+      board[k].pts += bonusScore(t, b).pts;
+    });
+    return Object.keys(board).map(function (k) { return board[k]; }).filter(function (r) { return r.pts > 0; })
+      .sort(function (a, b) { return b.pts - a.pts || a.name.localeCompare(b.name); }).slice(0, 3);
   }
   function bonusScore(t, b) {
     var champ = championOf(t), prize = prizesOf(t), over = !!champ || statusOf(t) === 'completed';
@@ -7044,7 +7267,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       openAuth(why, function () { location.hash = '#t-' + quizId; });
     }
     if (t && !isQuiz) {
-      if (detailSection.hidden) detail.tab = 'Standings';
+      if (detailSection.hidden) { detail.tab = openOnTab || 'Standings'; openOnTab = null; }
       listSection.hidden = true; quizSection.hidden = true;
       detailSection.hidden = false;
       renderDetail();
