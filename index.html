@@ -1565,6 +1565,7 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pp-item b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pp-item small { font-size: 12px; color: var(--fg-muted); }
 .pp-item em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--fg-muted); }
+.pp-item em.pp-goals { color: var(--fg); white-space: nowrap; }
 .pp-item.pp-taken { opacity: .45; cursor: default; }
 .pp-item.pp-taken:hover { background: none; }
 .pp-empty { padding: 10px; color: var(--fg-muted); font-size: 14px; }
@@ -2193,7 +2194,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.5</span>
+    <span class="site-ver">Version 2.5.1</span>
   </div>
 </footer>
 
@@ -5964,12 +5965,22 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   var bp5 = Array.prototype.slice.call(bonusModal.querySelectorAll('[data-bp5]'));
 
   // Player picker: tapping a player box lists every player in the tournament; typing searches by name or team
-  function playerPicker(inputs, five, formEl, getT, takenNote) {
-    function players() {
+  function playerPicker(inputs, five, formEl, getT, takenNote, scorerInput) {
+    function players(input) {
       var out = [], t = getT();
       ((t && t.squads) || []).forEach(function (team) {
         sortedPlayers(team.players || []).forEach(function (p) { out.push({ name: p.name, number: p.number, team: team }); });
       });
+      // Top scorer box: most goals first, with each player's goal count
+      if (t && input === scorerInput) {
+        scorerRows(t).forEach(function (r) {
+          var hit = out.filter(function (p) { return p.team.id === r.team.id && sameName(p.name, r.player); })[0];
+          if (hit) hit.goals = r.goals; else out.push({ name: r.player, number: '', team: r.team, goals: r.goals });
+        });
+        out = out.map(function (p, i) { return { p: p, i: i }; })
+          .sort(function (a, b) { return (b.p.goals || 0) - (a.p.goals || 0) || a.i - b.i; })
+          .map(function (x) { return x.p; });
+      }
       return out;
     }
     function close() {
@@ -5978,7 +5989,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     }
     function render(input) {
       var list = input.parentNode.querySelector('.pp-list'), q = input.value.trim().toLowerCase();
-      var all = players(), hits = all.filter(function (p) { return !q || p.name.toLowerCase().indexOf(q) !== -1 || p.team.name.toLowerCase().indexOf(q) !== -1; });
+      var all = players(input), hits = all.filter(function (p) { return !q || p.name.toLowerCase().indexOf(q) !== -1 || p.team.name.toLowerCase().indexOf(q) !== -1; });
       list.textContent = '';
       if (!all.length) { list.appendChild(el('li', 'pp-empty', 'No players added to the teams yet. Type a name.')); }
       else if (!hits.length) { list.appendChild(el('li', 'pp-empty', 'No player matches "' + input.value.trim() + '"')); }
@@ -5990,6 +6001,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         b.appendChild(crest(p.team, 'sm'));
         var txt = el('span', 'pp-txt'); txt.appendChild(el('b', null, p.name)); txt.appendChild(el('small', null, p.team.name)); b.appendChild(txt);
         if (used) b.appendChild(el('em', null, takenNote));
+        else if (p.goals) b.appendChild(el('em', 'pp-goals', '⚽ ' + p.goals + (p.goals === 1 ? ' goal' : ' goals')));
         else if (p.number !== '' && p.number != null) b.appendChild(el('em', null, '#' + p.number));
         b.addEventListener('mousedown', function (e) { e.preventDefault(); });
         b.addEventListener('click', function () { input.value = p.name; input.classList.remove('bp-dup'); close(); });
@@ -6024,7 +6036,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   var ppClose = playerPicker([document.getElementById('bp-scorer'), document.getElementById('bp-player')].concat(bp5), bp5,
     document.getElementById('bonus-form'), function () { return bonusTarget; }, 'In your Best 5');
   aPickClose = playerPicker([aFields.player, aFields.scorer].concat(aFive), aFive,
-    document.getElementById('awards-form'), function () { return aTarget; }, 'Already in Best 5');
+    document.getElementById('awards-form'), function () { return aTarget; }, 'Already in Best 5', aFields.scorer);
   function fillBonus() {
     var name = document.getElementById('bp-name').value.trim().toLowerCase();
     var b = (bonusTarget.bonus || []).filter(function (x) { return x.name.toLowerCase() === name; })[0] || {};
