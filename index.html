@@ -1558,6 +1558,10 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pp-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; list-style: none; margin: 0; padding: 6px; max-height: 280px; overflow-y: auto;
   border-radius: 14px; border: 1px solid var(--line); background: var(--bg-raised); box-shadow: 0 14px 34px -12px rgba(0, 0, 0, .35); }
 .pp-list[hidden] { display: none; }
+.pp > input { padding-right: 44px; }
+.pp-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--chip); color: var(--fg-muted); font-size: 20px; line-height: 1; cursor: pointer; }
+.pp-clear[hidden] { display: none; }
+.pp-item.pp-current { background: var(--chip); }
 .pp-item { width: 100%; display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: 0; border-radius: 10px; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
 .pp-item:hover, .pp-item:focus-visible { background: var(--chip); outline: none; }
 .pp-item .pp-txt { display: grid; flex: 1; min-width: 0; }
@@ -2194,7 +2198,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.5.1</span>
+    <span class="site-ver">Version 2.5.2</span>
   </div>
 </footer>
 
@@ -2927,9 +2931,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <input data-best5 id="a-five-5" type="text" maxlength="40" placeholder="Player 5" aria-label="Best 5, player 5">
       </fieldset>
       <em class="err" id="a-err" role="alert" hidden></em>
-      <label class="field"><span>Best coach</span><input id="a-coach" type="text" maxlength="40" placeholder="Coach name" list="a-coach-list"></label>
-      <label class="field"><span>Best manager</span><input id="a-manager" type="text" maxlength="40" placeholder="Manager name" list="a-manager-list"></label>
-      <datalist id="a-coach-list"></datalist><datalist id="a-manager-list"></datalist>
+      <label class="field"><span>Best coach</span><input id="a-coach" type="text" maxlength="40" placeholder="Coach name" data-officials="coach"></label>
+      <label class="field"><span>Best manager</span><input id="a-manager" type="text" maxlength="40" placeholder="Manager name" data-officials="manager"></label>
     </div>
     <div class="sheet-actions">
       <button class="btn btn-ghost" type="button" data-close>Cancel</button>
@@ -3684,16 +3687,6 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var p = prizesOf(t);
     document.getElementById('a-name').textContent = t.name;
     aFields.player.value = p.player; aFields.scorer.value = p.scorer; aFields.coach.value = p.coach; aFields.manager.value = p.manager;
-    // Suggest the team officials typed into each team
-    [['a-coach-list', /coach/i], ['a-manager-list', /manager|official/i]].forEach(function (x) {
-      var dl = document.getElementById(x[0]); dl.textContent = '';
-      (t.squads || []).forEach(function (team) {
-        (team.officials || []).forEach(function (o) {
-          if (!x[1].test(o.role)) return;
-          var op = el('option'); op.value = o.name; op.label = o.role + ' · ' + team.name; dl.appendChild(op);
-        });
-      });
-    });
     aFive.forEach(function (input, i) { input.value = p.best5[i]; input.classList.remove('bp-dup'); });
     document.getElementById('a-err').hidden = true;
     if (aPickClose) aPickClose();
@@ -5968,6 +5961,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function playerPicker(inputs, five, formEl, getT, takenNote, scorerInput) {
     function players(input) {
       var out = [], t = getT();
+      if (input && input.dataset.officials) {
+        var re = input.dataset.officials === 'coach' ? /coach/i : /manager|official/i;
+        ((t && t.squads) || []).forEach(function (team) {
+          (team.officials || []).forEach(function (o) { if (re.test(o.role || '')) out.push({ name: o.name, number: '', team: team, sub: o.role + ' · ' + team.name }); });
+        });
+        return out;
+      }
       ((t && t.squads) || []).forEach(function (team) {
         sortedPlayers(team.players || []).forEach(function (p) { out.push({ name: p.name, number: p.number, team: team }); });
       });
@@ -5987,11 +5987,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       inputs.forEach(function (i) { i.parentNode.querySelector('.pp-list').hidden = true; i.setAttribute('aria-expanded', 'false'); });
       formEl.classList.remove('pp-open');
     }
-    function render(input) {
-      var list = input.parentNode.querySelector('.pp-list'), q = input.value.trim().toLowerCase();
+    function render(input, showAll) {
+      var list = input.parentNode.querySelector('.pp-list'), q = showAll ? '' : input.value.trim().toLowerCase();
       var all = players(input), hits = all.filter(function (p) { return !q || p.name.toLowerCase().indexOf(q) !== -1 || p.team.name.toLowerCase().indexOf(q) !== -1; });
       list.textContent = '';
-      if (!all.length) { list.appendChild(el('li', 'pp-empty', 'No players added to the teams yet. Type a name.')); }
+      if (!all.length) { list.appendChild(el('li', 'pp-empty', input.dataset.officials ? 'No ' + input.dataset.officials + 's added to the teams yet. Type a name.' : 'No players added to the teams yet. Type a name.')); }
       else if (!hits.length) { list.appendChild(el('li', 'pp-empty', 'No player matches "' + input.value.trim() + '"')); }
       var taken = five.indexOf(input) === -1 ? [] : five.filter(function (i) { return i !== input && i.value.trim(); }).map(function (i) { return i.value.trim(); });
       hits.forEach(function (p) {
@@ -5999,12 +5999,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         var used = taken.some(function (n) { return sameName(n, p.name); });
         if (used) { b.disabled = true; b.classList.add('pp-taken'); }
         b.appendChild(crest(p.team, 'sm'));
-        var txt = el('span', 'pp-txt'); txt.appendChild(el('b', null, p.name)); txt.appendChild(el('small', null, p.team.name)); b.appendChild(txt);
+        var txt = el('span', 'pp-txt'); txt.appendChild(el('b', null, p.name)); txt.appendChild(el('small', null, p.sub || p.team.name)); b.appendChild(txt);
+        if (sameName(p.name, input.value)) b.classList.add('pp-current');
         if (used) b.appendChild(el('em', null, takenNote));
         else if (p.goals) b.appendChild(el('em', 'pp-goals', '⚽ ' + p.goals + (p.goals === 1 ? ' goal' : ' goals')));
         else if (p.number !== '' && p.number != null) b.appendChild(el('em', null, '#' + p.number));
         b.addEventListener('mousedown', function (e) { e.preventDefault(); });
-        b.addEventListener('click', function () { input.value = p.name; input.classList.remove('bp-dup'); close(); });
+        b.addEventListener('click', function () { input.value = p.name; input.classList.remove('bp-dup'); syncClear(input); close(); });
         li.appendChild(b); list.appendChild(li);
       });
       list.hidden = false;
@@ -6012,16 +6013,22 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       formEl.classList.add('pp-open');
       setTimeout(function () { list.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 50);
     }
+    function syncClear(input) { var c = input.parentNode.querySelector('.pp-clear'); if (c) c.hidden = !input.value; }
     inputs.forEach(function (input) {
       var wrap = el('div', 'pp'), list = el('ul', 'pp-list');
       list.hidden = true; list.setAttribute('role', 'listbox');
       input.parentNode.insertBefore(wrap, input);
       wrap.appendChild(input); wrap.appendChild(list);
+      // Clear button: empties the box so a wrong pick can be changed
+      var clr = el('button', 'pp-clear', '×'); clr.type = 'button'; clr.setAttribute('aria-label', 'Clear'); clr.hidden = true;
+      clr.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      clr.addEventListener('click', function () { input.value = ''; input.classList.remove('bp-dup'); syncClear(input); input.focus(); render(input, true); });
+      wrap.appendChild(clr);
       input.setAttribute('autocomplete', 'off');
       input.setAttribute('aria-expanded', 'false');
       input.placeholder = input.placeholder === 'Player name' ? 'Search or pick a player' : input.placeholder;
-      input.addEventListener('focus', function () { close(); render(input); });
-      input.addEventListener('input', function () { render(input); });
+      input.addEventListener('focus', function () { close(); syncClear(input); render(input, true); });
+      input.addEventListener('input', function () { syncClear(input); render(input); });
       input.addEventListener('blur', function () { setTimeout(function () { if (document.activeElement !== input && inputs.indexOf(document.activeElement) === -1) close(); }, 150); });
       input.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && !list.hidden) { e.stopPropagation(); close(); }
@@ -6031,11 +6038,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         }
       });
     });
-    return close;
+    return function () { close(); inputs.forEach(syncClear); };
   }
   var ppClose = playerPicker([document.getElementById('bp-scorer'), document.getElementById('bp-player')].concat(bp5), bp5,
     document.getElementById('bonus-form'), function () { return bonusTarget; }, 'In your Best 5');
-  aPickClose = playerPicker([aFields.player, aFields.scorer].concat(aFive), aFive,
+  aPickClose = playerPicker([aFields.player, aFields.scorer].concat(aFive, [aFields.coach, aFields.manager]), aFive,
     document.getElementById('awards-form'), function () { return aTarget; }, 'Already in Best 5', aFields.scorer);
   function fillBonus() {
     var name = document.getElementById('bp-name').value.trim().toLowerCase();
