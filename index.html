@@ -478,6 +478,9 @@ section.block { padding-block: 48px 8px; }
 .nk-away { flex-direction: column-reverse; }
 .nk-clock { text-align: center; font: 500 26px/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
 .nk-label.nk-final { color: var(--live); font-size: 15px; letter-spacing: .14em; }
+.stage-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -4px; }
+.stage-chip { border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 14px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; }
+.stage-chip.on { background: var(--teal); border-color: var(--teal); color: var(--on-teal); }
 .nk-wait { text-align: center; font-size: 13px; color: var(--fg-muted); }
 .next-kick .nk-kickoff { background: var(--live); color: #fff; font-weight: 700; padding: 9px 22px; }
 .nk-kickoff { position: relative; z-index: 2; pointer-events: auto; justify-self: center; align-self: center; margin: 2px auto 0; display: flex; }
@@ -2201,7 +2204,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.6</span>
+    <span class="site-ver">Version 2.6.1</span>
   </div>
 </footer>
 
@@ -2793,6 +2796,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <label class="field"><span>Match number</span><input id="mf-no" type="number" min="1" inputmode="numeric"></label>
         <label class="field"><span>Stage</span><input id="mf-stage" type="text" maxlength="30" list="mf-stages" placeholder="e.g. Group A"></label>
       </div>
+      <div class="stage-chips" id="mf-stage-chips" role="group" aria-label="Pick the stage"></div>
       <label class="field"><span>Kick-off</span><input id="mf-date" type="datetime-local"></label>
       <label class="stay" id="mf-started-row"><input id="mf-started" type="checkbox"><span class="stay-box"><svg class="i" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>Match has started (shows "Playing now")</span></label>
       <datalist id="mf-stages"></datalist>
@@ -5710,6 +5714,20 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         });
         root.appendChild(quick);
       }
+      if (!hasKo) {
+        // One tap: the top two in the table meet in the final
+        var qf = el('button', 'fx-add-ko fx-quick'); qf.type = 'button'; qf.setAttribute('data-admin', '');
+        qf.appendChild(icon('ic-trophy'));
+        var qft = el('span'); qft.appendChild(el('b', null, 'Add final (1st vs 2nd)'));
+        qft.appendChild(el('small', null, 'The top two teams in the table play the final.'));
+        qf.appendChild(qft);
+        qf.addEventListener('click', function () {
+          var fi = newMatch(null, null, 'Final', true); fi.homeSlot = { pos: 1 }; fi.awaySlot = { pos: 2 };
+          t.matches = ms.concat([fi]); resolveBracket(t); save(tournaments); renderDetail();
+          toast('Added the final. Tap it to set its date.');
+        });
+        root.appendChild(qf);
+      }
       root.appendChild(addKo);
     }
     return true;
@@ -6367,7 +6385,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var t = matchState.t, h = sideTeam('home'), a = sideTeam('away');
     document.getElementById('mf-hs-label').textContent = (h ? h.name : 'Home') + ' goals';
     document.getElementById('mf-as-label').textContent = (a ? a.name : 'Away') + ' goals';
-    var ko = isKo(t, mf.stage.value.trim());
+    var ko = isKo(t, fixStage(t, mf.stage.value));
     var level = mf.hs.value !== '' && mf.as.value !== '' && +mf.hs.value === +mf.as.value;
     document.getElementById('mf-pens-row').hidden = !(ko && level && h && a);
     var keep = mf.pens.value;
@@ -6502,6 +6520,29 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); add(); } });
   });
   [mf.home, mf.away, mf.stage, mf.hs, mf.as].forEach(function (i) { i.addEventListener('input', syncMatch); });
+  function syncStageChips() {
+    var v = fixStage(matchState.t, mf.stage.value);
+    Array.prototype.forEach.call(document.querySelectorAll('#mf-stage-chips .stage-chip'), function (c) {
+      var on = c.dataset.stage === v; c.classList.toggle('on', on); c.setAttribute('aria-pressed', String(on));
+    });
+  }
+  mf.stage.addEventListener('input', syncStageChips);
+  // A typed stage that is close to a known one (any case, a small typo like "Fainal") becomes that stage
+  function fixStage(t, typed) {
+    var v = (typed || '').trim(); if (!v || !t) return v;
+    var known = (t.format === 'knockout' ? [] : t.format === 'groups' ? groupNames(t) : ['League']).concat(['Playoff', 'Quarter-finals', 'Semi-finals', 'Third place', 'Final']);
+    function norm(x) { return x.toLowerCase().replace(/[^a-z0-9]/g, ''); }
+    function dist(a, b) {
+      var d = []; for (var i = 0; i <= a.length; i++) { d[i] = [i]; for (var j = 1; j <= b.length; j++) d[i][j] = i ? Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)) : j; }
+      return d[a.length][b.length];
+    }
+    var nv = norm(v), best = null, bd = 99;
+    known.forEach(function (k) { var x = dist(nv, norm(k)); if (x < bd) { bd = x; best = k; } });
+    if (best && (bd === 0 || (bd <= 2 && nv.length >= 4))) return best;
+    if (/^semi/.test(nv)) return 'Semi-finals';
+    if (/^quarter/.test(nv)) return 'Quarter-finals';
+    return v;
+  }
 
   function openMatch(t, m, trigger, presetStage) {
     goalBoxes.forEach(function (box) { box.dataset.other = ''; });
@@ -6519,7 +6560,16 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var dl = document.getElementById('mf-stages');
     dl.textContent = '';
     var names = t.format === 'knockout' ? [] : t.format === 'groups' ? groupNames(t) : ['League'];
-    names.concat(['Playoff', 'Quarter-finals', 'Semi-finals', 'Third place', 'Final']).forEach(function (s) { var o = el('option'); o.value = s; dl.appendChild(o); });
+    var allStages = names.concat(['Playoff', 'Quarter-finals', 'Semi-finals', 'Third place', 'Final']);
+    allStages.forEach(function (s) { var o = el('option'); o.value = s; dl.appendChild(o); });
+    // One tap stage buttons, so nobody has to type the stage name
+    var chipBox = document.getElementById('mf-stage-chips');
+    chipBox.textContent = '';
+    allStages.forEach(function (s) {
+      var c = el('button', 'stage-chip', s); c.type = 'button'; c.dataset.stage = s;
+      c.addEventListener('click', function () { mf.stage.value = s; mf.stage.dispatchEvent(new Event('input')); });
+      chipBox.appendChild(c);
+    });
     var teams = t.squads || [];
     // Places still to be decided: league table spots, and winners or losers of knockout matches
     var slots = [];
@@ -6550,6 +6600,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     mf.away.value = m ? (m.away || m.awaySlot ? cur('away') : isBye(m) ? (teams[1] || teams[0]).id : '') : lg ? 'slot:' + JSON.stringify({ pos: 2 }) : (teams[1] || teams[0]).id;
     mf.away.disabled = !!(m && isBye(m));
     mf.stage.value = m ? m.stage : presetStage || names[0] || roundName(teams.length);
+    syncStageChips();
     var count = (t.matches || []).length;
     mf.no.max = m ? count : count + 1;
     mf.no.value = m ? t.matches.indexOf(m) + 1 : count + 1;
@@ -6575,7 +6626,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var hp = pickOf(t, mf.home.value), ap = bye ? { id: null, slot: null } : pickOf(t, mf.away.value);
     var home = hp.id, away = ap.id;
     if (!bye && home && away && home === away) return fail('Pick two different teams.');
-    var stage = mf.stage.value.trim();
+    var stage = fixStage(t, mf.stage.value);
     if (!stage) return fail('Give the match a stage, like Group A or Final.');
     var hsRaw = mf.hs.value, asRaw = mf.as.value;
     if ((hsRaw === '') !== (asRaw === '')) return fail('Enter both scores, or leave both empty.');
