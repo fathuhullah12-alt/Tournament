@@ -2264,7 +2264,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.5</span>
+    <span class="site-ver">Version 2.7.6</span>
   </div>
 </footer>
 
@@ -3518,7 +3518,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var inTab = view.tab === 'archive' ? (!auth.account && !isAdmin() ? [] : archived) : current;
     document.querySelectorAll('[data-type]').forEach(function (b) {
       var ty = b.dataset.type;
-      b.hidden = ty !== 'all' && !isAdmin() && !inTab.some(function (t) { return typeOf(t.category).name === ty; });
+      b.hidden = ty !== 'all' && ty !== 'Quiz' && !isAdmin() && !inTab.some(function (t) { return typeOf(t.category).name === ty; });
       if (b.hidden && view.type === ty) view.type = 'all';
     });
     document.getElementById('count-current').textContent = current.length;
@@ -3558,8 +3558,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       document.getElementById('empty-title').textContent = 'Nothing archived yet';
       document.getElementById('empty-text').textContent = isAdmin() ? 'Mark a tournament as Completed and it moves here.' : 'Finished tournaments will show up here.';
     } else {
-      document.getElementById('empty-title').textContent = 'No ' + kind + ' yet';
-      document.getElementById('empty-text').textContent = isAdmin() ? 'Create one and it will show up here.' : 'New tournaments will show up here. Check back soon.';
+      var qz = view.type === 'Quiz';
+      document.getElementById('empty-title').textContent = qz ? 'No quiz running right now' : 'No ' + kind + ' yet';
+      document.getElementById('empty-text').textContent = isAdmin() ? 'Create one and it will show up here.' : qz ? 'The next quiz will show up here. Check back soon.' : 'New tournaments will show up here. Check back soon.';
     }
     document.getElementById('empty-new').hidden = view.tab === 'archive';
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tab === view.tab ? 'true' : 'false'); });
