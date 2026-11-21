@@ -478,6 +478,7 @@ section.block { padding-block: 48px 8px; }
 .nk-away { flex-direction: column-reverse; }
 .nk-clock { text-align: center; font: 500 26px/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
 .nk-label.nk-final { color: var(--live); font-size: 15px; letter-spacing: .14em; }
+.pens-box { display: grid; gap: 10px; padding: 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--gold, #d9a93a) 40%, var(--line)); }
 .stage-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -4px; }
 .stage-chip { border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 14px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; }
 .stage-chip.on { background: var(--teal); border-color: var(--teal); color: var(--on-teal); }
@@ -952,6 +953,13 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 }
 .fx .home { justify-content: flex-end; text-align: right; }
 .fx .won b { font-weight: 800; }
+.fx.fx-pens .side:not(.won) { opacity: .5; }
+.fx.fx-pens .side.won .crest { box-shadow: 0 0 0 2px var(--bg-raised), 0 0 0 4px var(--gold, #d9a93a); }
+.fx .fx-pk { grid-column: 1 / -1; justify-self: center; display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; padding: 5px 12px; border-radius: 999px;
+  background: color-mix(in srgb, var(--gold, #d9a93a) 16%, transparent); border: 1px solid color-mix(in srgb, var(--gold, #d9a93a) 40%, transparent); }
+.fx .fx-pk small { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--amber-fg); }
+.fx .fx-pk b { font: 800 16px var(--font-display); font-variant-numeric: tabular-nums; }
+.fx .fx-pk .fx-pk-win { font-size: 13px; font-weight: 700; }
 .fx .score { min-width: 66px; padding: 5px 10px; border-radius: 10px; background: var(--chip); text-align: center; font: 800 22px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
 .fx .score.vs { font: 600 14px var(--font-body); color: var(--fg-muted); padding: 8px 10px; }
 .fx .fx-no { grid-column: 1 / -1; text-align: center; color: var(--fg-dim); font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
@@ -2204,7 +2212,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.6.1</span>
+    <span class="site-ver">Version 2.6.2</span>
   </div>
 </footer>
 
@@ -2806,10 +2814,16 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <label class="field"><span id="mf-as-label">Away goals</span><input id="mf-as" type="number" min="0" max="99" inputmode="numeric" placeholder="–"></label>
       </div>
       <small class="hint">Leave the score empty until the match is played.</small>
-      <label class="field" id="mf-pens-row" hidden>
-        <span>Won on penalties</span>
-        <select id="mf-pens"></select>
-      </label>
+      <div class="field pens-box" id="mf-pens-row" hidden>
+        <span>Penalty shootout</span>
+        <div class="score-row">
+          <label class="field"><span id="mf-ph-label">Home</span><input id="mf-ph" type="number" min="0" max="99" inputmode="numeric" placeholder="–"></label>
+          <span>:</span>
+          <label class="field"><span id="mf-pa-label">Away</span><input id="mf-pa" type="number" min="0" max="99" inputmode="numeric" placeholder="–"></label>
+        </div>
+        <label class="field"><span>Won on penalties</span><select id="mf-pens"></select></label>
+        <small class="hint">Enter the shootout score, and the winner is picked for you.</small>
+      </div>
       <div class="field goal-box" data-side="home">
         <span data-goal-label>Home scorers</span>
         <select data-goal-pick aria-label="Pick the scorer"></select>
@@ -5121,11 +5135,20 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var score = played(m) ? el('span', 'score', m.hs + ' – ' + m.as) : el('span', 'score vs', isBye(m) ? 'bye' : 'vs');
     b.appendChild(score);
     b.appendChild(side(away, 'away'));
+    // Penalty shootout: winner tagged, loser faded, shootout score under the result
+    var penWin = played(m) && m.ko && m.hs === m.as && m.pens ? teamById(t, m.pens) : null;
+    if (penWin) {
+      b.classList.add('fx-pens');
+      var pp = el('span', 'fx-pk');
+      pp.appendChild(el('small', null, 'Penalties'));
+      if (m.ph != null && m.pa != null) pp.appendChild(el('b', null, m.ph + ' – ' + m.pa));
+      pp.appendChild(el('span', 'fx-pk-win', '✓ ' + penWin.name + ' won'));
+      b.appendChild(pp);
+    }
     var meta = [];
     if (isBye(m)) meta.push((home ? home.name : 'Team') + ' goes through');
     else if (played(m)) {
       b.appendChild(el('span', 'fx-ft', 'Full time'));
-      if (m.ko && m.hs === m.as && m.pens) { var pw = teamById(t, m.pens); if (pw) meta.push(pw.name + ' won on penalties'); }
     } else meta.push(formatKickoff(m.date));
     if (played(m) && !isBye(m)) { var ev = matchEvents(m, home, away); if (ev) b.appendChild(ev); }
     var metaEl = el('span', 'meta', meta.join(' · '));
@@ -5374,7 +5397,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       x.fillText('FULL TIME', W / 2, 470);
       if (m.ko && m.hs === m.as && m.pens) {
         var pw = teamById(t, m.pens);
-        if (pw) { x.fillStyle = '#9aa5a2'; x.font = '600 26px ' + FB; x.fillText(pw.name + ' won on penalties', W / 2, 590); }
+        if (pw) { x.fillStyle = '#9aa5a2'; x.font = '600 26px ' + FB; x.fillText(pw.name + ' won ' + (m.ph != null && m.pa != null ? Math.max(m.ph, m.pa) + '–' + Math.min(m.ph, m.pa) + ' ' : '') + 'on penalties', W / 2, 590); }
       }
       // Scorers and cards
       if (lines) {
@@ -6370,7 +6393,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     stage: document.getElementById('mf-stage'), date: document.getElementById('mf-date'), no: document.getElementById('mf-no'),
     hs: document.getElementById('mf-hs'), as: document.getElementById('mf-as'),
     pens: document.getElementById('mf-pens'), err: document.getElementById('mf-err'),
-    started: document.getElementById('mf-started')
+    started: document.getElementById('mf-started'),
+    ph: document.getElementById('mf-ph'), pa: document.getElementById('mf-pa')
   };
   var matchState = { t: null, m: null, goals: [], cards: [] };
   var goalBoxes = Array.prototype.slice.call(matchModal.querySelectorAll('.goal-box'));
@@ -6395,6 +6419,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var opt = el('option', null, o[1]); opt.value = o[0]; mf.pens.appendChild(opt);
     });
     mf.pens.value = keep === (h && h.id) || keep === (a && a.id) ? keep : '';
+    document.getElementById('mf-ph-label').textContent = h ? h.name : 'Home';
+    document.getElementById('mf-pa-label').textContent = a ? a.name : 'Away';
+    // A shootout score picks the winner
+    if (mf.ph.value !== '' && mf.pa.value !== '' && +mf.ph.value !== +mf.pa.value && h && a) mf.pens.value = +mf.ph.value > +mf.pa.value ? h.id : a.id;
     // Player of the match: anyone from either squad, plus anyone who scored
     var potm = document.getElementById('mf-potm'), keepPotm = potm.value;
     potm.textContent = '';
@@ -6519,7 +6547,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     });
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); add(); } });
   });
-  [mf.home, mf.away, mf.stage, mf.hs, mf.as].forEach(function (i) { i.addEventListener('input', syncMatch); });
+  [mf.home, mf.away, mf.stage, mf.hs, mf.as, mf.ph, mf.pa].forEach(function (i) { i.addEventListener('input', syncMatch); });
   function syncStageChips() {
     var v = fixStage(matchState.t, mf.stage.value);
     Array.prototype.forEach.call(document.querySelectorAll('#mf-stage-chips .stage-chip'), function (c) {
@@ -6610,6 +6638,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     mf.as.value = m && played(m) ? m.as : '';
     mf.pens.value = '';
     document.getElementById('mf-potm').value = '';
+    mf.ph.value = m && m.ph != null ? m.ph : '';
+    mf.pa.value = m && m.pa != null ? m.pa : '';
     syncMatch();
     if (m && m.pens) mf.pens.value = m.pens;
     if (m && m.potm) { document.getElementById('mf-potm').value = m.potm.team + '|' + m.potm.player; syncMatch(); }
@@ -6641,9 +6671,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var ko = isKo(t, stage);
     var pens = ko && hs != null && hs === as ? mf.pens.value || null : null;
     if (ko && hs != null && hs === as && !pens && !bye) return fail('Knockout matches need a winner. Choose who won on penalties.');
+    var ph = null, pa = null;
+    if (pens) {
+      if ((mf.ph.value === '') !== (mf.pa.value === '')) return fail('Enter both penalty scores, or leave both empty.');
+      if (mf.ph.value !== '') {
+        ph = Math.max(0, Math.floor(+mf.ph.value)); pa = Math.max(0, Math.floor(+mf.pa.value));
+        if (ph === pa) return fail('A penalty shootout can\'t end level. Check the penalty score.');
+        if ((ph > pa ? home : away) !== pens) return fail('The penalty score and the winner don\'t match.');
+      }
+    }
     var pv = document.getElementById('mf-potm').value, cut = pv.indexOf('|');
     var potm = hs != null && pv && (pv.slice(0, cut) === home || pv.slice(0, cut) === away) ? { team: pv.slice(0, cut), player: pv.slice(cut + 1) } : null;
-    var data = { home: home, away: away, stage: stage, ko: ko, date: mf.date.value, hs: hs, as: as, pens: pens, goals: goals, cards: cards, potm: potm, started: mf.started.checked || goals.length > 0 };
+    var data = { home: home, away: away, stage: stage, ko: ko, date: mf.date.value, hs: hs, as: as, pens: pens, goals: goals, cards: cards, potm: potm, ph: ph, pa: pa, started: mf.started.checked || goals.length > 0 };
     if (hp.slot) data.homeSlot = hp.slot;
     if (ap.slot) data.awaySlot = ap.slot;
     if (m) {
