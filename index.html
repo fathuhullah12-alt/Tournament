@@ -426,6 +426,17 @@ section.block { padding-block: 48px 8px; }
 .card-champ { position: relative; z-index: 1; pointer-events: none; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 14px;
   background: linear-gradient(120deg, color-mix(in srgb, #e3b53c 28%, transparent), color-mix(in srgb, var(--tc) 14%, transparent));
   border: 1px solid color-mix(in srgb, #e3b53c 55%, transparent); }
+.card-champ { overflow: hidden; }
+.card-champ::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .45) 50%, transparent 65%); transform: translateX(-100%); animation: cc-shine 4.5s ease-in-out infinite; pointer-events: none; }
+@keyframes cc-shine { 0%, 55% { transform: translateX(-100%); } 85%, 100% { transform: translateX(100%); } }
+.cc-how { font-size: 13px; color: var(--fg-muted); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cc-spark { position: absolute; width: 8px; height: 8px; background: #e3b53c; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation: cc-tw 2.4s ease-in-out infinite; }
+.cc-s0 { top: 10px; right: 22px; } .cc-s1 { bottom: 12px; right: 60px; width: 6px; height: 6px; animation-delay: .8s; } .cc-s2 { top: 22px; right: 96px; width: 5px; height: 5px; animation-delay: 1.6s; }
+@keyframes cc-tw { 0%, 100% { opacity: .2; transform: scale(.6); } 50% { opacity: 1; transform: scale(1.2); } }
+.cc-cup { animation: cc-glow 2.6s ease-in-out infinite; }
+@keyframes cc-glow { 50% { box-shadow: 0 0 0 6px rgba(227, 181, 60, .18), 0 4px 18px -2px rgba(227, 181, 60, .9); } }
+@media (prefers-reduced-motion: reduce) { .card-champ::after, .cc-spark, .cc-cup { animation: none; } }
+.confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 9999; pointer-events: none; }
 .cc-cup { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #e3b53c; color: #2b2103; box-shadow: 0 4px 12px -4px rgba(227, 181, 60, .7); }
 .cc-cup svg.i { width: 24px; height: 24px; }
 .card-champ > div { display: grid; gap: 4px; min-width: 0; }
@@ -2253,7 +2264,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.3</span>
+    <span class="site-ver">Version 2.7.4</span>
   </div>
 </footer>
 
@@ -3224,7 +3235,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       cb.appendChild(ic);
       var txt = el('div'); txt.appendChild(el('small', null, 'Champions'));
       var nm = el('span', 'cc-team'); nm.appendChild(crest(champ, 'sm')); nm.appendChild(el('b', null, champ.name));
-      txt.appendChild(nm); cb.appendChild(txt);
+      txt.appendChild(nm);
+      txt.appendChild(el('span', 'cc-how', championLine(t, champ)));
+      cb.appendChild(txt);
+      for (var sp = 0; sp < 3; sp++) cb.appendChild(el('i', 'cc-spark cc-s' + sp));
       card.appendChild(cb);
     } else {
       var nx = el('div', 'next-kick');
@@ -4058,6 +4072,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function renderDetail() {
     var t = current();
     if (!t) return;
+    setTimeout(function () { if (!detailSection.hidden && current() === t) celebrate(t); }, 500);
     var type = typeOf(t.category), st = statusOf(t);
     var tag = document.getElementById('d-tag');
     tag.className = 'tag t-' + type.tone; tag.textContent = type.tag;
@@ -5263,6 +5278,50 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     });
     if (ids.length < 2) return null;
     return { label: 'Make ' + roundName(ids.length).toLowerCase(), ids: ids };
+  }
+  // How the champion won: the final score, or League winners
+  function championLine(t, champ) {
+    var finals = (t.matches || []).filter(function (m) { return m.ko && m.stage === 'Final' && played(m); });
+    var f = finals[finals.length - 1];
+    if (!f) return 'League winners';
+    var opp = teamById(t, f.home === champ.id ? f.away : f.home);
+    var mine = f.home === champ.id ? f.hs : f.as, theirs = f.home === champ.id ? f.as : f.hs;
+    var pens = f.hs === f.as && f.pens ? (f.ph != null && f.pa != null ? ' (' + Math.max(f.ph, f.pa) + '–' + Math.min(f.ph, f.pa) + ' pens)' : ' (pens)') : '';
+    return 'Won the final ' + mine + '–' + theirs + pens + (opp ? ' vs ' + opp.name : '');
+  }
+  // Confetti once per phone for each tournament's champion, when the tournament is opened
+  function celebrate(t) {
+    var champ = championOf(t);
+    if (!champ || isArchived(t)) return;
+    var key = t.id + '|' + champ.id, seen = [];
+    try { seen = JSON.parse(localStorage.getItem('celebrated.v1') || '[]'); } catch (e) {}
+    if (seen.indexOf(key) !== -1) return;
+    seen.push(key);
+    try { localStorage.setItem('celebrated.v1', JSON.stringify(seen.slice(-50))); } catch (e) {}
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var cv = document.createElement('canvas'), dpr = Math.min(2, window.devicePixelRatio || 1);
+    var W = window.innerWidth, H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.className = 'confetti';
+    document.body.appendChild(cv);
+    var x = cv.getContext('2d'); x.scale(dpr, dpr);
+    var cols = ['#e3b553', '#f2d27a', '#ffffff', champ.c1 || '#3d8a89', champ.c2 || '#e3b553', '#3d8a89'];
+    var ps = [];
+    for (var i = 0; i < 150; i++) ps.push({ x: W / 2 + (Math.random() - .5) * 80, y: H * .35, vx: (Math.random() - .5) * 13, vy: -6 - Math.random() * 9,
+      r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3, w: 6 + Math.random() * 6, h: 8 + Math.random() * 8, c: cols[i % cols.length] });
+    var start = performance.now();
+    function frame(now) {
+      var el2 = now - start;
+      x.clearRect(0, 0, W, H);
+      ps.forEach(function (p) {
+        p.vy += .28; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.globalAlpha = Math.max(0, 1 - el2 / 3200);
+        x.fillStyle = p.c; x.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); x.restore();
+      });
+      if (el2 < 3200) requestAnimationFrame(frame); else cv.remove();
+    }
+    requestAnimationFrame(frame);
+    toast('🏆 ' + champ.name + ' are the champions!');
   }
   function championOf(t) {
     var ms = t.matches || [];
