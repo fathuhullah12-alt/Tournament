@@ -482,6 +482,15 @@ section.block { padding-block: 48px 8px; }
 .stage-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -4px; }
 .stage-chip { border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 14px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; }
 .stage-chip.on { background: var(--teal); border-color: var(--teal); color: var(--on-teal); }
+.nk-live-score { font: 800 26px var(--font-display) !important; color: var(--fg) !important; padding: 4px 12px !important; font-variant-numeric: tabular-nums; }
+.nk-goals { position: relative; z-index: 2; pointer-events: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.nk-goal-grp { display: flex; gap: 6px; min-width: 0; }
+.nk-goal { border: 0; border-radius: 10px; padding: 9px 12px; font: inherit; font-size: 14px; font-weight: 800; color: #fff; background: var(--teal); cursor: pointer; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nk-undo { flex: none; border: 1px solid var(--line); border-radius: 10px; width: 36px; font: 700 18px/1 var(--font-body); color: var(--fg-muted); background: var(--bg-raised); cursor: pointer; }
+.nk-undo:disabled { opacity: .35; cursor: default; }
+.next-kick .nk-ft { position: relative; z-index: 2; pointer-events: auto; justify-self: center; background: var(--bg-raised); color: var(--fg); border: 1px solid var(--line); font-weight: 700; padding: 9px 22px; }
+.fx .fx-ft.fx-live { color: var(--live); }
+.fx .score.fx-live-score { color: var(--live); }
 .nk-wait { text-align: center; font-size: 13px; color: var(--fg-muted); }
 .next-kick .nk-kickoff { background: var(--live); color: #fff; font-weight: 700; padding: 9px 22px; }
 .nk-kickoff { position: relative; z-index: 2; pointer-events: auto; justify-self: center; align-self: center; margin: 2px auto 0; display: flex; }
@@ -2212,7 +2221,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.6.2</span>
+    <span class="site-ver">Version 2.7</span>
   </div>
 </footer>
 
@@ -3256,8 +3265,25 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     function tbd(side) { var sl = nk.m[side + 'Slot']; return sl ? slotLabel(t, sl) : 'TBD'; }
     var hs = el('span', 'nk-team'); if (h) hs.appendChild(crest(h, 'sm')); hs.appendChild(el('b', null, h ? h.name : tbd('home')));
     var as = el('span', 'nk-team nk-away'); as.appendChild(el('b', null, a ? a.name : tbd('away'))); if (a) as.appendChild(crest(a, 'sm'));
-    vs.appendChild(hs); vs.appendChild(el('i', null, 'vs')); vs.appendChild(as);
+    var lscore = live ? el('i', 'nk-live-score', (nk.m.lh || 0) + ' – ' + (nk.m.la || 0)) : el('i', null, 'vs');
+    vs.appendChild(hs); vs.appendChild(lscore); vs.appendChild(as);
     box.appendChild(vs);
+    // Admin: live goal buttons while the match is playing, and Full time to finish it
+    if (live && h && a) {
+      var lg = el('div', 'nk-goals'); lg.setAttribute('data-admin', '');
+      [['h', h], ['a', a]].forEach(function (x, i) {
+        var grp = el('span', 'nk-goal-grp');
+        var plus = el('button', 'nk-goal', '⚽ +1'); plus.type = 'button'; plus.setAttribute('aria-label', 'Goal for ' + x[1].name); plus.dataset.liveGoal = t.id + '|' + nk.m.id + '|' + x[0] + '|1';
+        var minus = el('button', 'nk-undo', '−'); minus.type = 'button'; minus.dataset.liveGoal = t.id + '|' + nk.m.id + '|' + x[0] + '|-1';
+        minus.setAttribute('aria-label', 'Remove a goal from ' + x[1].name); minus.disabled = !(nk.m['l' + x[0]] > 0);
+        if (i === 0) { grp.appendChild(minus); grp.appendChild(plus); } else { grp.appendChild(plus); grp.appendChild(minus); }
+        lg.appendChild(grp);
+      });
+      box.appendChild(lg);
+      var ft = el('button', 'btn btn-sm nk-ft', 'Full time'); ft.type = 'button'; ft.setAttribute('data-admin', '');
+      ft.dataset.fullTime = t.id + '|' + nk.m.id;
+      box.appendChild(ft);
+    }
     if (waiting) {
       box.appendChild(el('div', 'nk-wait', 'Kick-off was set for ' + nk.m.date.slice(11, 16) + '. Waiting for the match to start.'));
     }
@@ -3290,6 +3316,33 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     render();
     if (!document.getElementById('detail').hidden) renderDetail();
     toast('Match started. It now shows "Playing now".');
+  }, true);
+  // Live goal and Full time buttons on the playing match
+  function findMatch(ref) {
+    var ids = ref.split('|'), t = tournaments.filter(function (x) { return x.id === ids[0]; })[0];
+    return { t: t, m: t && (t.matches || []).filter(function (x) { return x.id === ids[1]; })[0], ids: ids };
+  }
+  document.addEventListener('click', function (e) {
+    var g = e.target.closest && e.target.closest('[data-live-goal]');
+    var f = e.target.closest && e.target.closest('[data-full-time]');
+    if ((!g && !f) || !isAdmin()) return;
+    e.preventDefault(); e.stopPropagation();
+    if (g) {
+      var x = findMatch(g.dataset.liveGoal); if (!x.m) return;
+      var key = 'l' + x.ids[2], n = Math.max(0, (x.m[key] || 0) + (+x.ids[3]));
+      x.m[key] = n; x.m.started = true;
+      save(tournaments);
+      render();
+      if (!document.getElementById('detail').hidden) renderDetail();
+      var team = teamById(x.t, x.ids[2] === 'h' ? x.m.home : x.m.away);
+      toast((+x.ids[3] > 0 ? 'Goal for ' : 'Goal removed from ') + (team ? team.name : 'team') + '. Now ' + (x.m.lh || 0) + ' – ' + (x.m.la || 0));
+    } else {
+      var y = findMatch(f.dataset.fullTime); if (!y.m) return;
+      openMatch(y.t, y.m, f);
+      mf.hs.value = y.m.lh || 0; mf.as.value = y.m.la || 0;
+      mf.hs.dispatchEvent(new Event('input'));
+      toast('Check the score, add scorers if you like, then Save.');
+    }
   }, true);
   setInterval(function () {
     Array.prototype.forEach.call(document.querySelectorAll('[data-kick]'), function (box) {
@@ -3358,9 +3411,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         var s = el('span', 'ts-team');
         if (team) s.appendChild(crest(team, 'sm'));
         s.appendChild(el('b', null, team ? team.name : slot ? slotLabel(t, slot) : 'TBD'));
-        row.appendChild(s); row.appendChild(el('span', 'ts-score', done ? String(sc) : ''));
+        row.appendChild(s); row.appendChild(el('span', 'ts-score', done ? String(sc) : live ? String(sc || 0) : ''));
       }
-      side(h, m.homeSlot, m.hs); side(a, m.awaySlot, m.as);
+      side(h, m.homeSlot, done ? m.hs : m.lh); side(a, m.awaySlot, done ? m.as : m.la);
       link.appendChild(row);
       li.appendChild(link); list.appendChild(li);
     });
@@ -5132,7 +5185,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       return s;
     }
     b.appendChild(side(home, 'home'));
-    var score = played(m) ? el('span', 'score', m.hs + ' – ' + m.as) : el('span', 'score vs', isBye(m) ? 'bye' : 'vs');
+    var liveNow = !played(m) && !isBye(m) && hasStarted(m);
+    var score = played(m) ? el('span', 'score', m.hs + ' – ' + m.as) : liveNow ? el('span', 'score fx-live-score', (m.lh || 0) + ' – ' + (m.la || 0)) : el('span', 'score vs', isBye(m) ? 'bye' : 'vs');
+    if (liveNow) b.appendChild(el('span', 'fx-ft fx-live', '● Live'));
     b.appendChild(score);
     b.appendChild(side(away, 'away'));
     // Penalty shootout: winner tagged, loser faded, shootout score under the result
