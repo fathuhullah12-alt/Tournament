@@ -462,6 +462,15 @@ section.block { padding-block: 48px 8px; }
 .ts-top span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ts-state { flex: none; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .ts-state.live { color: var(--live); }
+.pred-nudge { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; padding: 12px 12px 12px 14px; border-radius: 16px;
+  background: color-mix(in srgb, var(--gold, #d9a93a) 14%, var(--bg-raised)); border: 1px solid color-mix(in srgb, var(--gold, #d9a93a) 45%, var(--line)); }
+.pred-nudge[hidden] { display: none; }
+.pn-icon { font-size: 22px; flex: none; }
+.pn-txt { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.pn-txt b { font-size: 15px; }
+.pn-txt span { font-size: 13px; color: var(--fg-muted); }
+.pred-nudge .pn-go { flex: none; background: var(--teal); color: var(--on-teal); font-weight: 700; padding: 8px 12px; font-size: 14px; text-decoration: none; }
+.pn-close { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: none; color: var(--fg-muted); font-size: 20px; cursor: pointer; }
 .ts-state.ft { color: var(--fg-dim); }
 .ts-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; }
 .ts-team { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 700; font-size: 15px; }
@@ -1900,6 +1909,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   <!-- Tournaments -->
   <section class="block" id="tournaments">
     <div class="wrap">
+      <div class="pred-nudge" id="pred-nudge" role="status" hidden></div>
       <div class="today-strip" id="today-strip" hidden>
         <h2 class="ts-title"><span class="ts-dot" aria-hidden="true"></span>Today's matches</h2>
         <ul class="ts-list" id="ts-list"></ul>
@@ -2221,7 +2231,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7</span>
+    <span class="site-ver">Version 2.7.1</span>
   </div>
 </footer>
 
@@ -3418,9 +3428,49 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       li.appendChild(link); list.appendChild(li);
     });
   }
-  setInterval(function () { if (!listSection.hidden) renderToday(); }, 30000);
+  // Signed-in members: a reminder when a match closes for predictions within a day and they have not picked yet
+  var nudgeClosed = false;
+  function renderNudge() {
+    var box = document.getElementById('pred-nudge');
+    if (!box) return;
+    var acc = auth.account, now = Date.now(), DAY = 24 * 60 * 60 * 1000, todo = [];
+    if (acc && !nudgeClosed) {
+      var myName = (acc.name || '').trim().toLowerCase();
+      tournaments.forEach(function (t) {
+        if (!visibleTo(t) || isArchived(t) || typeOf(t.category).quiz) return;
+        (t.matches || []).forEach(function (m) {
+          if (!m.home || !m.away || isBye(m) || !predOpen(m) || !m.date) return;
+          var at = new Date(m.date).getTime();
+          if (isNaN(at) || at - now > DAY) return;
+          var mine = (t.predictions || []).some(function (p) { return p.match === m.id && ((p.member && p.member === acc.id) || (myName && (p.name || '').trim().toLowerCase() === myName)); });
+          if (!mine) todo.push({ t: t, m: m, at: at });
+        });
+      });
+    }
+    todo.sort(function (a, b) { return a.at - b.at; });
+    box.textContent = '';
+    box.hidden = !todo.length;
+    if (!todo.length) return;
+    var first = todo[0], h = teamById(first.t, first.m.home), a = teamById(first.t, first.m.away);
+    var mins = Math.max(1, Math.round((first.at - now) / 60000));
+    var left = mins >= 60 ? Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm' : mins + ' min';
+    var txt = el('div', 'pn-txt');
+    txt.appendChild(el('b', null, todo.length === 1 ? 'Not predicted yet' : todo.length + ' matches not predicted'));
+    txt.appendChild(el('span', null, (h ? h.name : '') + ' vs ' + (a ? a.name : '') + ' closes in ' + left));
+    box.appendChild(el('span', 'pn-icon', '⏰'));
+    box.appendChild(txt);
+    var go = el('a', 'btn btn-sm pn-go', 'Predict now');
+    go.href = '#t-' + first.t.id;
+    go.addEventListener('click', function () { openOnTab = 'Predictions'; });
+    box.appendChild(go);
+    var x = el('button', 'pn-close', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Hide this reminder');
+    x.addEventListener('click', function () { nudgeClosed = true; renderNudge(); });
+    box.appendChild(x);
+  }
+  setInterval(function () { if (!listSection.hidden) { renderToday(); renderNudge(); } }, 30000);
   function render() {
     renderToday();
+    renderNudge();
     var seen = tournaments.filter(visibleTo);
     var current = seen.filter(function (t) { return !isArchived(t); });
     var archived = seen.filter(isArchived);
