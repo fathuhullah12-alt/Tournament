@@ -471,6 +471,11 @@ section.block { padding-block: 48px 8px; }
 .pn-txt span { font-size: 13px; color: var(--fg-muted); }
 .pred-nudge .pn-go { flex: none; background: var(--teal); color: var(--on-teal); font-weight: 700; padding: 8px 12px; font-size: 14px; text-decoration: none; }
 .pn-close { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: none; color: var(--fg-muted); font-size: 20px; cursor: pointer; }
+.ts-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.ts-head .ts-title { margin: 0; }
+.ts-share { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.ts-share[hidden] { display: none; }
+.ts-share .i { width: 16px; height: 16px; }
 .ts-state.ft { color: var(--fg-dim); }
 .ts-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; }
 .ts-team { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 700; font-size: 15px; }
@@ -1172,6 +1177,23 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pc-off-team ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .pc-off-team li { display: flex; gap: 10px; align-items: baseline; }
 .pc-off-team li small { flex: none; width: 118px; color: var(--fg-muted); font-size: 13px; }
+.team-sum { margin: 10px 0 12px; padding: 14px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--tc) 35%, var(--line));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--tc) 14%, var(--bg-raised)), var(--bg-raised)); display: grid; gap: 12px; }
+.ts-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.ts-stat { display: grid; justify-items: center; gap: 2px; padding: 8px 2px; border-radius: 12px; background: var(--bg-raised); border: 1px solid var(--line); }
+.ts-stat b { font: 800 22px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.ts-stat small { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-muted); }
+.ts-line { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.ts-bit { display: inline-flex; align-items: center; gap: 8px; }
+.ts-bit small, .ts-next small { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--fg-muted); }
+.ts-results { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ts-results li { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; background: var(--bg-raised); }
+.ts-results .fm { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font: 800 11px/1 var(--font-body); font-style: normal; color: #fff; }
+.ts-results .ts-sc { font: 800 17px var(--font-display); font-variant-numeric: tabular-nums; }
+.ts-results .ts-opp { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-results small { color: var(--fg-muted); font-size: 12px; }
+.ts-next { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding-top: 2px; }
+.ts-next span { color: var(--fg-muted); font-size: 14px; }
 .squad-off { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
 .squad-off h4 { margin: 0 0 6px; font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--fg-muted); }
 .squad-off ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
@@ -1911,7 +1933,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <div class="wrap">
       <div class="pred-nudge" id="pred-nudge" role="status" hidden></div>
       <div class="today-strip" id="today-strip" hidden>
-        <h2 class="ts-title"><span class="ts-dot" aria-hidden="true"></span>Today's matches</h2>
+        <div class="ts-head"><h2 class="ts-title"><span class="ts-dot" aria-hidden="true"></span>Today's matches</h2><button class="ts-share" type="button" id="ts-share" hidden><svg class="i" aria-hidden="true"><use href="#ic-whatsapp"/></svg>Share results</button></div>
         <ul class="ts-list" id="ts-list"></ul>
       </div>
       <div class="tabs" role="tablist" aria-label="Tournament list">
@@ -2231,7 +2253,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.1</span>
+    <span class="site-ver">Version 2.7.3</span>
   </div>
 </footer>
 
@@ -3403,6 +3425,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     items.sort(function (a, b) { return a.at - b.at; });
     list.textContent = '';
     box.hidden = !items.length;
+    var doneToday = items.filter(function (x) { return played(x.m); }).map(function (x) { return { t: x.t, m: x.m, h: teamById(x.t, x.m.home), a: teamById(x.t, x.m.away) }; });
+    var shareBtn = document.getElementById('ts-share');
+    shareBtn.hidden = !doneToday.length;
+    shareBtn.onclick = function () { openDayShare(doneToday, shareBtn); };
     items.forEach(function (x) {
       var t = x.t, m = x.m, h = teamById(t, m.home), a = teamById(t, m.away);
       var done = played(m), live = !done && hasStarted(m) && Date.now() < x.at + matchWindow(m);
@@ -4202,6 +4228,62 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     f.forEach(function (x) { box.appendChild(el('i', 'fm fm-' + x, x.toUpperCase())); });
     return box;
   }
+  // Team page: record, form, top scorer, every result and the next match
+  function teamSummary(t, team, tally) {
+    var ms = (t.matches || []).filter(function (m) { return !isBye(m) && (m.home === team.id || m.away === team.id); });
+    ms = ms.map(function (m, i) { return { m: m, i: i, d: m.date ? +new Date(m.date) : NaN }; })
+      .sort(function (a, b) { return (isNaN(a.d) || isNaN(b.d)) ? a.i - b.i : a.d - b.d || a.i - b.i; }).map(function (x) { return x.m; });
+    var done = ms.filter(played), next = ms.filter(function (m) { return !played(m); })[0];
+    if (!done.length && !next) return null;
+    var w = 0, d = 0, l = 0, gf = 0, ga = 0;
+    function res(m) {
+      var mine = m.home === team.id ? m.hs : m.as, theirs = m.home === team.id ? m.as : m.hs;
+      if (mine === theirs && m.ko && m.pens) return m.pens === team.id ? 'w' : 'l';
+      return mine > theirs ? 'w' : mine < theirs ? 'l' : 'd';
+    }
+    done.forEach(function (m) {
+      gf += m.home === team.id ? m.hs : m.as; ga += m.home === team.id ? m.as : m.hs;
+      var r = res(m); if (r === 'w') w++; else if (r === 'l') l++; else d++;
+    });
+    var box = el('div', 'team-sum');
+    box.style.setProperty('--tc', team.c1 || '#346b4a');
+    var stats = el('div', 'ts-stats');
+    [['Played', done.length], ['Won', w], ['Drawn', d], ['Lost', l], ['Goals', gf + ':' + ga]].forEach(function (x) {
+      var c = el('span', 'ts-stat'); c.appendChild(el('b', null, String(x[1]))); c.appendChild(el('small', null, x[0])); stats.appendChild(c);
+    });
+    box.appendChild(stats);
+    var line = el('div', 'ts-line');
+    var fm = formDots(t, team.id);
+    if (fm) { var fw = el('span', 'ts-bit'); fw.appendChild(el('small', null, 'Form')); fw.appendChild(fm); line.appendChild(fw); }
+    var best = null;
+    (team.players || []).forEach(function (p) { var g = tally[team.id + '|' + p.name] || 0; if (g && (!best || g > best.g)) best = { n: p.name, g: g }; });
+    Object.keys(tally).forEach(function (k) { var parts = k.split('|'); if (parts[0] === team.id && (!best || tally[k] > best.g)) best = { n: parts.slice(1).join('|'), g: tally[k] }; });
+    if (best) { var sb = el('span', 'ts-bit'); sb.appendChild(el('small', null, 'Top scorer')); sb.appendChild(el('b', null, '⚽ ' + best.n + ' · ' + best.g)); line.appendChild(sb); }
+    if (line.childNodes.length) box.appendChild(line);
+    if (done.length) {
+      var ul = el('ul', 'ts-results');
+      done.slice().reverse().forEach(function (m) {
+        var r = res(m), opp = teamById(t, m.home === team.id ? m.away : m.home);
+        var mine = m.home === team.id ? m.hs : m.as, theirs = m.home === team.id ? m.as : m.hs;
+        var li = el('li');
+        li.appendChild(el('i', 'fm fm-' + r, r.toUpperCase()));
+        li.appendChild(el('b', 'ts-sc', mine + '–' + theirs + (m.ko && m.hs === m.as && m.pens ? ' (pens)' : '')));
+        li.appendChild(el('span', 'ts-opp', 'vs ' + (opp ? opp.name : '?')));
+        li.appendChild(el('small', null, m.stage || ''));
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+    }
+    if (next) {
+      var opp2 = teamById(t, next.home === team.id ? next.away : next.home);
+      var nx = el('div', 'ts-next');
+      nx.appendChild(el('small', null, 'Next match'));
+      nx.appendChild(el('b', null, 'vs ' + (opp2 ? opp2.name : 'TBD')));
+      nx.appendChild(el('span', null, next.date ? formatKickoff(next.date) : 'Date to be set'));
+      box.appendChild(nx);
+    }
+    return box;
+  }
   // Earlier meetings of two teams, in this tournament and in past ones (matched by team name)
   function headToHead(t, home, away) {
     var a = home.name.trim().toLowerCase(), b = away.name.trim().toLowerCase(), r = { h: 0, a: 0, d: 0 };
@@ -4307,6 +4389,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         });
         head.appendChild(add);
         li.appendChild(head);
+        if (isOpen) { var tsum = teamSummary(t, team, tally); if (tsum) li.appendChild(tsum); }
         if (!isOpen) {}
         else if (!n) li.appendChild(el('p', 'squad-empty', 'No players yet. Use the add player button to add one.'));
         else {
@@ -5628,6 +5711,81 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       cv = out;
       return new Promise(function (ok, bad) { try { cv.toBlob(function (b) { b ? ok(b) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); } });
     });
+  }
+  // All of a day's results on one picture: every finished match with its scorers
+  function dayPicture(items, dayLabel, withLogos) {
+    var FD = '"Barlow Condensed", "Noto Sans Thaana", sans-serif', FB = '"Barlow", "Noto Sans Thaana", sans-serif';
+    var fonts = ['800 60px "Barlow Condensed"', '700 40px "Barlow Condensed"', '600 30px "Barlow"', '700 30px "Barlow"'].map(function (f) { return document.fonts ? document.fonts.load(f).catch(function () {}) : null; });
+    var srcs = [];
+    items.forEach(function (it) { srcs.push(withLogos && it.h && it.h.logo, withLogos && it.a && it.a.logo); });
+    return Promise.all(fonts.concat(srcs.map(loadImg))).then(function (r) {
+      var logos = r.slice(fonts.length);
+      function hex(c, d) { return /^#[0-9a-f]{6}$/i.test(c || '') ? c : d; }
+      function scorers(m, team) {
+        if (!team) return '';
+        var order = [], n = {};
+        (m.goals || []).forEach(function (g) { if (g.team !== team.id) return; if (!n[g.player]) { n[g.player] = 0; order.push(g.player); } n[g.player]++; });
+        return order.map(function (p) { return p + (n[p] > 1 ? ' ×' + n[p] : ''); }).join(', ');
+      }
+      var W = 1080, H = 400 + items.length * 300 + 200;
+      var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      var x = cv.getContext('2d');
+      x.fillStyle = '#101615'; x.fillRect(0, 0, W, H);
+      function wash(cx, cy, rad, col) { var g = x.createRadialGradient(cx, cy, 30, cx, cy, rad); g.addColorStop(0, col + '60'); g.addColorStop(1, col + '00'); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+      wash(160, 160, 640, '#e3b553'); wash(960, H - 200, 700, '#3d8a89');
+      x.textAlign = 'center';
+      function fit(text, font, size, max) { do { x.font = font.replace('#', size); size -= 2; } while (x.measureText(text).width > max && size > 16); }
+      x.fillStyle = '#e3b553'; x.font = '700 40px ' + FD;
+      if (x.letterSpacing !== undefined) x.letterSpacing = '8px';
+      x.fillText('MATCH DAY', W / 2, 120);
+      if (x.letterSpacing !== undefined) x.letterSpacing = '0px';
+      x.fillStyle = '#f2f4f3'; x.font = '800 104px ' + FD; x.fillText('RESULTS', W / 2, 225);
+      x.fillStyle = '#9aa5a2'; x.font = '600 38px ' + FB; x.fillText(dayLabel, W / 2, 285);
+      var y = 350;
+      function crestAt(team, logo, cx, cy, rad) {
+        x.save(); x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.closePath();
+        x.fillStyle = logo ? '#ffffff' : hex(team && team.c1, '#346b4a'); x.fill();
+        x.lineWidth = 5; x.strokeStyle = (team && team.c2) || '#ffffff'; x.stroke();
+        if (logo) { x.clip(); var sc = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82; x.drawImage(logo, cx - logo.width * sc / 2, cy - logo.height * sc / 2, logo.width * sc, logo.height * sc); }
+        else { x.fillStyle = (team && team.c2) || '#ffffff'; x.font = '800 50px ' + FD; x.textBaseline = 'middle'; x.fillText(((team && team.name) || 'T').trim().charAt(0).toUpperCase(), cx, cy + 3); x.textBaseline = 'alphabetic'; }
+        x.restore();
+      }
+      items.forEach(function (it, i) {
+        var m = it.m, sh = scorers(m, it.h), sa = scorers(m, it.a), extra = sh || sa ? 52 : 0;
+        var pens = m.ko && m.hs === m.as && m.pens ? teamById(it.t, m.pens) : null;
+        var boxH = 205 + extra + (pens ? 40 : 0);
+        x.fillStyle = 'rgba(255,255,255,.06)'; x.strokeStyle = 'rgba(255,255,255,.12)'; x.lineWidth = 2;
+        x.beginPath(); if (x.roundRect) x.roundRect(60, y, W - 120, boxH, 28); else x.rect(60, y, W - 120, boxH); x.fill(); x.stroke();
+        x.fillStyle = '#9aa5a2'; fit(it.t.name + (m.stage ? '  ·  ' + m.stage : ''), '600 #px ' + FB, 28, W - 200);
+        x.fillText(it.t.name + (m.stage ? '  ·  ' + m.stage : ''), W / 2, y + 50);
+        var cy = y + 125;
+        crestAt(it.h, logos[i * 2], 150, cy, 44); crestAt(it.a, logos[i * 2 + 1], W - 150, cy, 44);
+        x.fillStyle = '#f2f4f3';
+        x.textAlign = 'left'; fit(it.h ? it.h.name : '', '700 #px ' + FD, 46, 260); x.fillText(it.h ? it.h.name : '', 212, cy + 16);
+        x.textAlign = 'right'; fit(it.a ? it.a.name : '', '700 #px ' + FD, 46, 260); x.fillText(it.a ? it.a.name : '', W - 212, cy + 16);
+        x.textAlign = 'center'; x.fillStyle = '#ffffff'; x.font = '800 84px ' + FD; x.fillText(m.hs + ' – ' + m.as, W / 2, cy + 30);
+        var ly = cy + 82;
+        if (pens) { x.fillStyle = '#e0aa4d'; x.font = '700 28px ' + FB; x.fillText(pens.name + ' won ' + (m.ph != null && m.pa != null ? Math.max(m.ph, m.pa) + '–' + Math.min(m.ph, m.pa) + ' ' : '') + 'on penalties', W / 2, ly); ly += 40; }
+        if (extra) {
+          x.fillStyle = '#c9d0ce'; x.font = '600 26px ' + FB;
+          x.textAlign = 'left'; if (sh) { fit('⚽ ' + sh, '600 #px ' + FB, 26, 420); x.fillText('⚽ ' + sh, 106, ly); }
+          x.textAlign = 'right'; if (sa) { fit(sa + ' ⚽', '600 #px ' + FB, 26, 420); x.fillText(sa + ' ⚽', W - 106, ly); }
+          x.textAlign = 'center';
+        }
+        y += boxH + 26;
+      });
+      var FH = Math.max(1350, y + 130);
+      x.fillStyle = '#eef1ef'; x.font = '700 40px ' + FB; x.fillText('noonuprc.com', W / 2, FH - 70);
+      var out = document.createElement('canvas'); out.width = W; out.height = FH;
+      var ox = out.getContext('2d'); ox.fillStyle = '#101615'; ox.fillRect(0, 0, W, FH); ox.drawImage(cv, 0, 0);
+      return new Promise(function (ok, bad) { try { out.toBlob(function (b) { b ? ok(b) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); } });
+    });
+  }
+  function openDayShare(items, trigger) {
+    var d = new Date(), label = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
+    shText = 'Results · ' + label + '\n' + items.map(function (it) { return (it.h ? it.h.name : '') + ' ' + it.m.hs + ' – ' + it.m.as + ' ' + (it.a ? it.a.name : ''); }).join('\n');
+    shLink = 'https://noonuprc.com/';
+    showSharePic(function (logos) { return dayPicture(items, label, logos); }, 'results-' + d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + '.png', trigger, 'Share today\'s results', 'All of today\'s results in one picture, for WhatsApp groups and status.');
   }
   function openInvite(t, trigger) {
     shText = 'Join ' + t.name + (t.date ? ' · ' + formatDate(t.date) : '') + (typeOf(t.category).quiz ? '. Play the quiz and win!' : '. Predict the scores and win!');
