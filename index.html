@@ -2284,7 +2284,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.11</span>
+    <span class="site-ver">Version 2.7.12</span>
   </div>
 </footer>
 
@@ -3890,6 +3890,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   });
   document.getElementById('s-confirm-yes').addEventListener('click', function () {
     var t = sTarget;
+    tomb[t.id] = Date.now(); saveTomb();
     tournaments = tournaments.filter(function (x) { return x.id !== t.id; });
     save(tournaments);
     settings.hidden = true;
@@ -8123,6 +8124,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   var cloud = null, assetStore = null, readOnly = false, cloudReady = false;
   var synced = {};   // id -> JSON last confirmed by the store
   var pending = {};  // ids with a write in flight
+  // Tournaments deleted on this device: kept until the store confirms, so a slow or failed delete can't bring them back
+  var tomb = (function () { try { return JSON.parse(localStorage.getItem('tournaments.deleted')) || {}; } catch (e) { return {}; } })();
+  function saveTomb() { try { localStorage.setItem('tournaments.deleted', JSON.stringify(tomb)); } catch (e) {} }
+  Object.keys(tomb).forEach(function (id) { if (Date.now() - tomb[id] > 30 * 86400000) delete tomb[id]; });
   var syncing = Promise.resolve();
   function save(list) {
     try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
@@ -8147,7 +8152,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (ids[id]) return;
       jobs.push(function () {
         pending[id] = true;
-        return col.doc(id).delete().then(function () { delete synced[id]; })
+        return col.doc(id).delete().then(function () { delete synced[id]; if (tomb[id]) { delete tomb[id]; saveTomb(); } })
           .finally(function () { delete pending[id]; });
       });
     });
@@ -8185,6 +8190,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     Object.keys(server).forEach(function (id) {
       var json = JSON.stringify(server[id]);
       if (pending[id]) return;
+      // Deleted on this device but still online: delete it again instead of showing it
+      if (tomb[id]) { synced[id] = json; if (canManage()) push = true; return; }
       var prev = synced[id];
       var local = null;
       for (var i = 0; i < tournaments.length; i++) if (tournaments[i].id === id) local = tournaments[i];
@@ -8202,12 +8209,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       changed = true;
     });
     if (definitive) {
-      var serverEmpty = snap.empty;
+      Object.keys(tomb).forEach(function (id) { if (!server[id] && !pending[id]) { delete tomb[id]; saveTomb(); } });
       tournaments = tournaments.filter(function (t) {
         if (server[t.id] || pending[t.id]) return true;
         if (synced[t.id] !== undefined) { delete synced[t.id]; changed = true; return false; } // deleted elsewhere
         // Never saved online: made this visit, or an older copy on this device
-        if (!cachedIds[t.id] || (firstDefinitive && serverEmpty)) { push = true; return true; }
+        // (an old copy kept on a phone is never uploaded again, even when the store is empty)
+        if (!cachedIds[t.id]) { push = true; return true; }
         if (firstDefinitive) { changed = true; return false; }
         return true;
       });
