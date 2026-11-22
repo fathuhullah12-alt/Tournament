@@ -1374,6 +1374,7 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
   .nav { gap: 16px; }
   .account-btn .ac-label { display: none; }
   .account-btn:not(.signed-out) { padding: 0 4px; }
+  .account-btn.signed-out { padding: 0 11px; font-size: 14px; }
 }
 
 .member-add { display: grid; gap: 10px; justify-items: start; padding: 4px 18px 14px; }
@@ -2283,7 +2284,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.10</span>
+    <span class="site-ver">Version 2.7.11</span>
   </div>
 </footer>
 
@@ -3087,8 +3088,22 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   ];
   var prefs = (function () { try { return JSON.parse(localStorage.getItem('prefs')) || {}; } catch (e) { return {}; } })();
   function savePrefs() { saveSite(); }
+  // The big line of the club name shrinks to fit the header instead of being cut off
+  function fitBrand() {
+    var m = document.querySelector('.site-header .bn-main');
+    if (!m) return;
+    m.style.fontSize = '';
+    var size = parseFloat(getComputedStyle(m).fontSize), min = size * 0.6;
+    while (m.scrollWidth > m.clientWidth && size > min) { size -= 0.5; m.style.fontSize = size + 'px'; }
+  }
+  if (window.ResizeObserver) {
+    var brandRO = new ResizeObserver(function () { requestAnimationFrame(fitBrand); });
+    var brandEl = document.querySelector('.site-header .brand');
+    if (brandEl) brandRO.observe(brandEl);
+  } else window.addEventListener('resize', fitBrand);
   function applyBrand() {
     document.querySelectorAll('[data-brand]').forEach(function (n) { n.textContent = prefs.name || 'Brandname'; });
+    // (fitBrand shrinks the big line until it fits beside the buttons)
     // Header: a long club name splits in two, a small coloured line on top and the last two words big underneath
     var hb = document.querySelector('.site-header [data-brand]'), words = (prefs.name || '').trim().split(/\s+/);
     if (hb && words.length >= 3) {
@@ -3096,6 +3111,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       hb.classList.add('bn-split');
       hb.appendChild(el('span', 'bn-top', words.slice(0, -2).join(' ')));
       hb.appendChild(el('span', 'bn-main', words.slice(-2).join(' ')));
+      fitBrand();
     } else if (hb) hb.classList.remove('bn-split');
     document.querySelectorAll('[data-logo]').forEach(function (n) {
       n.textContent = '';
