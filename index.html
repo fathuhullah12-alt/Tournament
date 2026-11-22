@@ -64,6 +64,7 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
+    --brand-accent: #1f4f99;
   --bg: #eff1ef;
   --bg-raised: #ffffff;
   --card: #ffffff;
@@ -97,6 +98,7 @@
 }
 :root[data-theme="light"] {
   color-scheme: light;
+  --brand-accent: #1f4f99;
   --bg: #eff1ef;
   --bg-raised: #ffffff;
   --card: #ffffff;
@@ -196,6 +198,12 @@ svg.i { width: 22px; height: 22px; flex: none; fill: none; stroke: currentColor;
 /* Header: square logo beside the club name, the name balanced over at most two lines */
 .brand { min-width: 0; line-height: 1.05; }
 .brand [data-brand] { text-wrap: balance; }
+.brand .bn-split { display: grid; gap: 3px; min-width: 0; }
+.brand .bn-top { font-size: .6em; font-weight: 700; letter-spacing: .16em; color: var(--brand-accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand .bn-main { font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.site-header .logo-mark.has-logo { border-radius: 50%; }
+@media (max-width: 820px) { .site-header .logo-mark.has-logo { width: 42px; height: 42px; } }
+:root { --brand-accent: #86b2e6; }
 .site-header .logo-mark { flex: none; width: 44px; height: 44px; border-radius: 10px; }
 /* On phones the logo is as tall as the two lines of the name, top to bottom */
 @media (max-width: 820px) {
@@ -1247,12 +1255,23 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pp-ev .bk { width: 9px; height: 12px; }
 .pp-potm { color: #b8860b; font-weight: 600; }
 .pp-none { color: var(--fg-muted); margin: 4px 0 0; }
+.pp-career .pp-score { font-size: 15px; color: var(--teal); }
+.pp-career .pp-ev { padding-left: 34px; color: var(--fg-muted); }
+.pp-career .pp-hon { color: var(--fg); font-weight: 700; }
+.pp-career .pp-here { border-color: var(--teal); }
+.pp-career .pp-link { cursor: pointer; }
+.pp-career .pp-link:hover { background: var(--chip); }
 #pp-edit { margin-top: 16px; width: 100%; justify-content: center; }
 .standings .st-name { display: grid; gap: 3px; min-width: 0; }
 .st-form { display: inline-flex; gap: 3px; }
 .st-form .fm { width: 15px; height: 15px; border-radius: 4px; display: grid; place-items: center; font: 800 9px/1 var(--font-body); font-style: normal; color: #fff; }
 .fm-w { background: #2e9d5b; } .fm-d { background: #9aa39f; } .fm-l { background: #d64545; }
 .fx .fx-h2h { grid-column: 1 / -1; display: grid; gap: 3px; justify-items: center; margin-top: 2px; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); font-size: 13px; }
+.fx .fx-susp { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: center; align-items: center; margin-top: 2px; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); font-size: 13px; }
+.fx .fx-susp small { width: 100%; text-align: center; color: var(--danger, #c0392b); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.fx .fx-susp span { display: inline-flex; align-items: center; gap: 6px; color: var(--fg-muted); }
+.fx .fx-susp b { color: var(--fg); }
+.p-susp { display: inline-block; margin-top: 3px; padding: 1px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; color: #fff; background: #c62f2f; width: fit-content; }
 .fx .fx-h2h small { color: var(--fg-muted); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .fx .h2h-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; }
 .fx .h2h-row span { color: var(--fg-muted); }
@@ -2264,7 +2283,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.6</span>
+    <span class="site-ver">Version 2.7.9</span>
   </div>
 </footer>
 
@@ -2744,6 +2763,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </div>
     <div class="sheet-body">
       <div class="m-stats pp-stats" id="pp-stats"></div>
+      <div id="pp-career" hidden>
+        <h3 class="pp-h" id="pp-career-h">All tournaments</h3>
+        <ul class="pp-games pp-career" id="pp-career-list"></ul>
+      </div>
       <h3 class="pp-h">Match by match</h3>
       <ul class="pp-games" id="pp-games"></ul>
       <p class="pp-none" id="pp-none" hidden>No goals, cards or awards yet.</p>
@@ -3066,6 +3089,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function savePrefs() { saveSite(); }
   function applyBrand() {
     document.querySelectorAll('[data-brand]').forEach(function (n) { n.textContent = prefs.name || 'Brandname'; });
+    // Header: a long club name splits in two, a small coloured line on top and the last two words big underneath
+    var hb = document.querySelector('.site-header [data-brand]'), words = (prefs.name || '').trim().split(/\s+/);
+    if (hb && words.length >= 3) {
+      hb.textContent = '';
+      hb.classList.add('bn-split');
+      hb.appendChild(el('span', 'bn-top', words.slice(0, -2).join(' ')));
+      hb.appendChild(el('span', 'bn-main', words.slice(-2).join(' ')));
+    } else if (hb) hb.classList.remove('bn-split');
     document.querySelectorAll('[data-logo]').forEach(function (n) {
       n.textContent = '';
       n.classList.toggle('has-logo', !!prefs.logo);
@@ -4409,9 +4440,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         if (!isOpen) {}
         else if (!n) li.appendChild(el('p', 'squad-empty', 'No players yet. Use the add player button to add one.'));
         else {
-          var grid = el('ul', 'squad-grid');
+          var grid = el('ul', 'squad-grid'), banned = suspendedSet(t);
           sortedPlayers(team.players).forEach(function (p) {
             var item = el('li'), b = playerButton(team, p, tally[team.id + '|' + p.name]);
+            if (banned[team.id + '|' + p.name]) b.querySelector('.p-info').appendChild(el('span', 'p-susp', 'Suspended · misses next match'));
             if (!canEdit()) b.setAttribute('aria-label', 'Open ' + p.name + "'s profile");
             b.addEventListener('click', function () {
               if (canEdit()) openPlayer(team, team.players, p, b, function () { save(tournaments); renderDetail(); });
@@ -4832,9 +4864,68 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var d = el('div'); d.appendChild(el('strong', null, String(x[0]))); d.appendChild(el('small', null, x[1])); st.appendChild(d);
     });
     document.getElementById('pp-none').hidden = !!list.childNodes.length;
+    renderCareer(t, p);
     ppEditFn = onEdit && canEdit() ? onEdit : null;
     document.getElementById('pp-edit').hidden = !ppEditFn;
     ppModal.hidden = false;
+  }
+  // The same player name across every tournament: team, goals, cards and awards in each
+  function renderCareer(cur, p) {
+    var key = p.name.trim().toLowerCase(), rows = [];
+    tournaments.forEach(function (t) {
+      if (!visibleTo(t) || typeOf(t.category).quiz) return;
+      (t.squads || []).forEach(function (team) {
+        if (!(team.players || []).some(function (x) { return x.name.trim().toLowerCase() === key; })) return;
+        var r = { t: t, team: team, games: 0, goals: 0, y: 0, r: 0, potm: 0, honours: [] };
+        (t.matches || []).forEach(function (m) {
+          if ((m.home !== team.id && m.away !== team.id) || !played(m) || isBye(m)) return;
+          r.games++;
+          (m.goals || []).forEach(function (g) { if (g.team === team.id && g.player.trim().toLowerCase() === key) r.goals++; });
+          (m.cards || []).forEach(function (c) { if (c.team === team.id && c.player.trim().toLowerCase() === key) r[c.c === 'r' ? 'r' : 'y']++; });
+          if (m.potm && m.potm.team === team.id && m.potm.player.trim().toLowerCase() === key) r.potm++;
+        });
+        var champ = statusOf(t) === 'completed' ? championOf(t) : null;
+        if (champ && champ.id === team.id) r.honours.push('🏆 Champions');
+        var pz = prizesOf(t), same = function (n) { return n && n.trim().toLowerCase() === key; };
+        if (same(pz.player)) r.honours.push('⭐ Best player');
+        if (same(pz.scorer)) r.honours.push('👟 Top scorer');
+        if (pz.best5.some(same)) r.honours.push('🖐 Best 5');
+        rows.push(r);
+      });
+    });
+    var box = document.getElementById('pp-career'), list = document.getElementById('pp-career-list');
+    list.textContent = '';
+    // Only worth showing once the player has been in more than one tournament
+    box.hidden = rows.length < 2;
+    if (box.hidden) return;
+    rows.sort(function (a, b) { return (b.t.date || '').localeCompare(a.t.date || ''); });
+    var tg = rows.reduce(function (n, r) { return n + r.goals; }, 0);
+    document.getElementById('pp-career-h').textContent = 'All tournaments · ' + rows.length + ' played · ' + tg + (tg === 1 ? ' goal' : ' goals');
+    rows.forEach(function (r) {
+      var li = el('li', r.t === cur ? 'pp-here' : null), top = el('div', 'pp-g-top');
+      top.appendChild(crest(r.team, 'sm'));
+      var vs = el('span', 'pp-vs');
+      vs.appendChild(el('b', null, r.t.name));
+      vs.appendChild(el('small', null, r.team.name + ((r.t.date || '').slice(0, 4) ? ' · ' + r.t.date.slice(0, 4) : '') + (r.t === cur ? ' · this one' : '')));
+      top.appendChild(vs);
+      top.appendChild(el('span', 'pp-score', r.goals + (r.goals === 1 ? ' goal' : ' goals')));
+      li.appendChild(top);
+      var ev = el('div', 'pp-ev');
+      ev.appendChild(el('span', null, r.games + (r.games === 1 ? ' match' : ' matches')));
+      if (r.potm) ev.appendChild(el('span', 'pp-potm', '★ ' + r.potm + '× Player of the Match'));
+      if (r.y) { var y = el('span'); y.appendChild(el('i', 'bk bk-y')); y.appendChild(document.createTextNode(String(r.y))); ev.appendChild(y); }
+      if (r.r) { var rd = el('span'); rd.appendChild(el('i', 'bk bk-r')); rd.appendChild(document.createTextNode(String(r.r))); ev.appendChild(rd); }
+      r.honours.forEach(function (h) { ev.appendChild(el('span', 'pp-hon', h)); });
+      li.appendChild(ev);
+      if (r.t !== cur) {
+        li.classList.add('pp-link'); li.tabIndex = 0; li.setAttribute('role', 'link');
+        li.setAttribute('aria-label', 'Open ' + r.t.name);
+        var go = function () { ppModal.hidden = true; location.hash = 't-' + r.t.id; };
+        li.addEventListener('click', go);
+        li.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
+      }
+      list.appendChild(li);
+    });
   }
   document.getElementById('pp-edit').addEventListener('click', function () {
     var fn = ppEditFn; ppModal.hidden = true; if (fn) fn();
@@ -4943,6 +5034,28 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   function sortedOfficials(list) {
     return (list || []).slice().sort(function (a, b) { return OFFICIAL_ROLES.indexOf(a.role) - OFFICIAL_ROLES.indexOf(b.role); });
+  }
+  // Red card: the player misses their team's next match. Returns { matchId: [{ team, player }] } for matches not yet played
+  function suspensions(t) {
+    var out = {}, ms = t.matches || [];
+    ms.forEach(function (m, mi) {
+      if (!played(m)) return;
+      (m.cards || []).forEach(function (c) {
+        if (c.c !== 'r') return;
+        for (var j = mi + 1; j < ms.length; j++) {
+          var n = ms[j];
+          if (isBye(n) || (n.home !== c.team && n.away !== c.team)) continue;
+          if (!played(n)) (out[n.id] = out[n.id] || []).push({ team: c.team, player: c.player });
+          break;
+        }
+      });
+    });
+    return out;
+  }
+  function suspendedSet(t) {
+    var set = {}, s = suspensions(t);
+    Object.keys(s).forEach(function (k) { s[k].forEach(function (x) { set[x.team + '|' + x.player] = true; }); });
+    return set;
   }
   function playerButton(team, p, goals) {
     var b = el('button'); b.type = 'button';
@@ -5420,7 +5533,20 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         b.appendChild(h2);
       }
     }
-    b.setAttribute('aria-label', (home ? home.name : '') + ' against ' + (away ? away.name : 'bye') + (played(m) ? ', ' + m.hs + ' to ' + m.as : ''));
+    var out = !played(m) ? suspensions(t)[m.id] : null;
+    if (out) {
+      var sp = el('span', 'fx-susp');
+      sp.appendChild(el('small', null, 'Suspended'));
+      out.forEach(function (x) {
+        var tm = teamById(t, x.team), row = el('span');
+        row.appendChild(el('i', 'bk bk-r'));
+        row.appendChild(el('b', null, x.player));
+        if (tm) row.appendChild(document.createTextNode(' · ' + tm.name));
+        sp.appendChild(row);
+      });
+      b.appendChild(sp);
+    }
+    b.setAttribute('aria-label', (home ? home.name : '') + ' against ' + (away ? away.name : 'bye') + (played(m) ? ', ' + m.hs + ' to ' + m.as : '') + (out ? ', suspended: ' + out.map(function (x) { return x.player; }).join(', ') : ''));
     return b;
   }
   // Scorers with goal counts, then yellow and red cards, for each side of a played match
