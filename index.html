@@ -527,11 +527,24 @@ section.block { padding-block: 48px 8px; }
 .nk-mclock.ht { color: var(--gold); text-transform: uppercase; letter-spacing: .1em; font-size: 13px; }
 .nk-events { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px; color: var(--fg-muted); }
 .nk-events ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; align-content: start; min-width: 0; }
-.nk-events li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nk-events .nk-ev-away { text-align: right; }
+.nk-events ul { gap: 6px; }
+.nk-ev { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.nk-ev b { font-weight: 600; color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.nk-ev small { flex: none; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; padding: 2px 6px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 9%, transparent); color: var(--fg-muted); }
+.nk-ev-ic { flex: none; display: grid; place-items: center; width: 18px; height: 18px; font-size: 14px; line-height: 1; }
+.nk-ev-y .nk-ev-ic, .nk-ev-r .nk-ev-ic { width: 11px; height: 15px; margin: 0 3px 0 4px; border-radius: 2px; transform: rotate(8deg); box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+.nk-ev-y .nk-ev-ic { background: linear-gradient(160deg, #ffe066, #f2b705); }
+.nk-ev-r .nk-ev-ic { background: linear-gradient(160deg, #ff5a4e, #c81e1e); }
+.nk-ev-g b { font-weight: 700; }
+.nk-events .nk-ev-away .nk-ev { flex-direction: row-reverse; }
+.nk-events .nk-ev-away .nk-ev-y .nk-ev-ic, .nk-events .nk-ev-away .nk-ev-r .nk-ev-ic { transform: rotate(-8deg); margin: 0 4px 0 3px; }
 .nk-ctl { position: relative; z-index: 2; pointer-events: auto; display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; }
 .nk-ctl button { border: 1px solid var(--line); border-radius: 10px; padding: 9px 6px; font: inherit; font-size: 13px; font-weight: 700; color: var(--fg); background: var(--bg-raised); cursor: pointer; white-space: nowrap; }
 .nk-ctl .nk-half { color: var(--gold); }
+.nk-ctl .nk-card { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.nk-card-ic { width: 12px; height: 16px; border-radius: 2px; transform: rotate(8deg); box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+.nk-card-y .nk-card-ic { background: linear-gradient(160deg, #ffe066, #f2b705); }
+.nk-card-r .nk-card-ic { background: linear-gradient(160deg, #ff5a4e, #c81e1e); }
 .nk-ctl button:disabled { opacity: .45; cursor: default; }
 .lp-team { margin: 6px 0 8px; font: 800 16px var(--font-display); text-transform: uppercase; letter-spacing: .04em; color: var(--fg-muted); }
 .lp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
@@ -2311,7 +2324,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.22</span>
+    <span class="site-ver">Version 2.7.23</span>
   </div>
 </footer>
 
@@ -3409,7 +3422,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         var ev = el('div', 'nk-events');
         [evs.h, evs.a].forEach(function (list, i) {
           var col = el('ul', i ? 'nk-ev-away' : null);
-          list.forEach(function (x) { col.appendChild(el('li', null, x)); });
+          list.forEach(function (x) {
+            var li = el('li', 'nk-ev nk-ev-' + x.k);
+            var ic = el('span', 'nk-ev-ic'); ic.setAttribute('aria-label', x.k === 'g' ? 'Goal' : x.k === 'r' ? 'Red card' : 'Yellow card');
+            if (x.k === 'g') ic.textContent = '⚽';
+            li.appendChild(ic); li.appendChild(el('b', null, x.name));
+            if (x.min) li.appendChild(el('small', null, x.min + '\''));
+            col.appendChild(li);
+          });
           ev.appendChild(col);
         });
         box.appendChild(ev);
@@ -3428,8 +3448,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       });
       box.appendChild(lg);
       var row2 = el('div', 'nk-ctl'); row2.setAttribute('data-admin', '');
-      [['y', '🟨 Yellow'], ['r', '🟥 Red']].forEach(function (c) {
-        var cb = el('button', 'nk-card nk-card-' + c[0], c[1]); cb.type = 'button'; cb.dataset.liveCard = t.id + '|' + nk.m.id + '|' + c[0];
+      [['y', 'Yellow'], ['r', 'Red']].forEach(function (c) {
+        var cb = el('button', 'nk-card nk-card-' + c[0]); cb.type = 'button'; cb.dataset.liveCard = t.id + '|' + nk.m.id + '|' + c[0];
+        cb.appendChild(el('span', 'nk-card-ic')); cb.appendChild(document.createTextNode(c[1]));
         row2.appendChild(cb);
       });
       var hb = el('button', 'nk-half', nk.m.half === 'ht' ? '▶ 2nd half' : nk.m.half === '2' ? '2nd half' : '⏸ Half time'); hb.type = 'button';
@@ -3508,8 +3529,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function liveEvents(m) {
     var out = { h: [], a: [] };
     function put(team, txt) { if (team === m.home) out.h.push(txt); else if (team === m.away) out.a.push(txt); }
-    (m.lgoals || []).forEach(function (q) { put(q.team, '⚽ ' + q.player + (q.min ? ' ' + q.min + '\'' : '')); });
-    (m.lcards || []).forEach(function (q) { put(q.team, (q.c === 'r' ? '🟥 ' : '🟨 ') + q.player + (q.min ? ' ' + q.min + '\'' : '')); });
+    (m.lgoals || []).forEach(function (q) { put(q.team, { k: 'g', name: q.player, min: q.min }); });
+    (m.lcards || []).forEach(function (q) { put(q.team, { k: q.c === 'r' ? 'r' : 'y', name: q.player, min: q.min }); });
+    function byMin(a, b) { return (a.min || 0) - (b.min || 0); }
+    out.h.sort(byMin); out.a.sort(byMin);
     return out;
   }
   // Pick a player: after a goal (one team) or for a card (both teams)
