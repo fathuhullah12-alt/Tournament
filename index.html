@@ -2333,7 +2333,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.25</span>
+    <span class="site-ver">Version 2.7.26</span>
   </div>
 </footer>
 
@@ -6008,7 +6008,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       // Tournament logo (when it has one), name and stage
       var ty = 0;
       if (tLogo) {
-        var ls = 76, lr = Math.min(ls / tLogo.naturalWidth, ls / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr;
+        var ls = 76, lr = Math.min((ls - 12) / tLogo.naturalWidth, (ls - 12) / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr;
+        x.save(); x.beginPath(); if (x.roundRect) x.roundRect((W - ls) / 2, 26, ls, ls, 16); else x.rect((W - ls) / 2, 26, ls, ls);
+        x.fillStyle = '#ffffff'; x.fill(); x.lineWidth = 4; x.strokeStyle = '#e3b553'; x.stroke(); x.restore();
         x.drawImage(tLogo, (W - lw) / 2, 26 + (ls - lh) / 2, lw, lh);
         ty = 48;
       }
@@ -6126,10 +6128,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       }
       var y = 120;
       if (tLogo) {
-        var ls = 220, lr = Math.min(ls / tLogo.naturalWidth, ls / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr;
-        x.save(); x.shadowColor = accent; x.shadowBlur = 50;
-        x.drawImage(tLogo, (W - lw) / 2, y + (ls - lh) / 2, lw, lh); x.restore();
-        y += ls + 90;
+        // Logo on a white tile with a gold edge, so dark logos stay clear on the dark poster
+        var ls = 250, pad = 24, lr = Math.min((ls - pad * 2) / tLogo.naturalWidth, (ls - pad * 2) / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr, bx = (W - ls) / 2;
+        x.save(); x.shadowColor = 'rgba(227, 181, 83, .55)'; x.shadowBlur = 46;
+        x.beginPath(); if (x.roundRect) x.roundRect(bx, y, ls, ls, 44); else x.rect(bx, y, ls, ls);
+        x.fillStyle = '#ffffff'; x.fill(); x.restore();
+        x.save(); x.lineWidth = 8; x.strokeStyle = '#e3b553'; x.beginPath(); if (x.roundRect) x.roundRect(bx, y, ls, ls, 44); else x.rect(bx, y, ls, ls); x.stroke(); x.restore();
+        x.drawImage(tLogo, (W - lw) / 2, y + (ls - lh) / 2, lw, lh);
+        y += ls + 80;
       } else y += 120;
       x.fillStyle = accent; x.font = '700 40px ' + FD;
       if (x.letterSpacing !== undefined) x.letterSpacing = '8px';
@@ -6194,7 +6200,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         var pens = m.ko && m.hs === m.as && m.pens ? teamById(it.t, m.pens) : null;
         return { it: it, sh: sh, sa: sa, pens: pens, h: Math.round((215 + (k > 1 ? 70 : 0) + (sh || sa ? 56 : 0) + (pens ? 42 : 0)) * k) };
       });
-      var W = 1080, GAP = 28, headH = clubLogo ? 430 : 330, footH = 190;
+      // Top: the tournament's logo (first one if the day has several); bottom: the club logo above the club name
+      var oneT = items.every(function (it2) { return it2.t === items[0].t; }), topLogo = logos[2] || null;
+      var W = 1080, GAP = 28, headH = topLogo ? 450 : 330, footH = clubLogo ? 330 : 190;
       var listH = rows.reduce(function (s2, rw) { return s2 + rw.h + GAP; }, 0) - GAP;
       var H = Math.max(1350, headH + listH + footH + 60);
       var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
@@ -6212,7 +6220,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       }
       // Header: club logo, MATCH DAY, RESULTS, date
       var hy = 0;
-      if (clubLogo) { roundImg(clubLogo, W / 2, 118, 62, 5); hy = 112; }
+      if (topLogo) {
+        var ts = 150, tp = 16, tr = Math.min((ts - tp * 2) / topLogo.width, (ts - tp * 2) / topLogo.height), tbx = (W - ts) / 2;
+        x.save(); x.shadowColor = 'rgba(227, 181, 83, .5)'; x.shadowBlur = 36;
+        x.beginPath(); if (x.roundRect) x.roundRect(tbx, 50, ts, ts, 30); else x.rect(tbx, 50, ts, ts); x.fillStyle = '#ffffff'; x.fill(); x.restore();
+        x.save(); x.lineWidth = 6; x.strokeStyle = '#e3b553'; x.beginPath(); if (x.roundRect) x.roundRect(tbx, 50, ts, ts, 30); else x.rect(tbx, 50, ts, ts); x.stroke(); x.restore();
+        x.drawImage(topLogo, (W - topLogo.width * tr) / 2, 50 + (ts - topLogo.height * tr) / 2, topLogo.width * tr, topLogo.height * tr);
+        hy = 132;
+      }
       x.fillStyle = '#e3b553'; x.font = '700 40px ' + FD;
       if (x.letterSpacing !== undefined) x.letterSpacing = '8px';
       x.fillText('MATCH DAY', W / 2, 130 + hy);
@@ -6230,11 +6245,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         x.restore();
       }
       rows.forEach(function (rw, i) {
-        var it = rw.it, m = it.m, boxH = rw.h, tLogo = logos[i * 3 + 2];
+        var it = rw.it, m = it.m, boxH = rw.h, tLogo = oneT ? null : logos[i * 3 + 2];
         x.fillStyle = 'rgba(255,255,255,.06)'; x.strokeStyle = 'rgba(255,255,255,.12)'; x.lineWidth = 2;
         x.beginPath(); if (x.roundRect) x.roundRect(60, y, W - 120, boxH, 30); else x.rect(60, y, W - 120, boxH); x.fill(); x.stroke();
         // Tournament line, with its logo when it has one
-        var tl = it.t.name + (m.stage ? '  ·  ' + m.stage : ''), ty = y + Math.round(56 * k);
+        var tl = it.t.name + '  ·  Match ' + ((it.t.matches || []).indexOf(m) + 1) + (m.ko && m.stage ? ' · ' + m.stage : ''), ty = y + Math.round(56 * k);
         fit(tl, '600 #px ' + FB, Math.round(28 * k), W - 260);
         var tw = x.measureText(tl).width, lr = Math.round(22 * k);
         if (tLogo) { roundImg(tLogo, W / 2 - tw / 2 - lr - 8, ty - lr * .7, lr, 0); x.textAlign = 'left'; x.fillStyle = '#b3bcb9'; x.fillText(tl, W / 2 - tw / 2 + lr / 2, ty); x.textAlign = 'center'; }
@@ -6269,6 +6284,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       });
       // Footer: club name and website
       x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(120, H - footH + 30, W - 240, 2);
+      if (clubLogo) roundImg(clubLogo, W / 2, H - 212, 50, 4);
       x.fillStyle = '#eef1ef'; fit((prefs.name || 'Our club').toUpperCase(), '800 #px ' + FD, 44, W - 200); x.fillText((prefs.name || 'Our club').toUpperCase(), W / 2, H - 92);
       x.fillStyle = '#e3b553'; x.font = '700 34px ' + FB; x.fillText('noonuprc.com', W / 2, H - 44);
       return new Promise(function (ok, bad) { try { cv.toBlob(function (b) { b ? ok(b) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); } });
