@@ -2287,7 +2287,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.17</span>
+    <span class="site-ver">Version 2.7.18</span>
   </div>
 </footer>
 
@@ -3161,6 +3161,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   };
   // Saved status wins; older tournaments fall back to their date
   function statusOf(t) {
+    // Once the first match has kicked off (or has a result) the tournament is Live until it is marked Completed
+    if (t.status !== 'completed' && (t.matches || []).some(function (m) { return m.started || (m.goals || []).length || (m.hs != null && m.as != null); })) return 'live';
     if (t.status && STATUSES[t.status]) return t.status;
     var today = todayISO();
     return t.date < today ? 'completed' : t.date > today ? 'upcoming' : 'live';
@@ -3408,6 +3410,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var m = t && (t.matches || []).filter(function (x) { return x.id === ids[1]; })[0];
     if (!m) return;
     m.started = true;
+    if (t.status === 'upcoming' || !t.status) t.status = 'live';
     save(tournaments);
     render();
     if (!document.getElementById('detail').hidden) renderDetail();
