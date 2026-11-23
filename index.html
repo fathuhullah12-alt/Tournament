@@ -482,7 +482,9 @@ section.block { padding-block: 48px 8px; }
 .ts-top { min-width: 0; }
 .ts-top span:first-child { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ts-state { flex: none; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
-.ts-state.live { color: var(--live); }
+.ts-state.live { color: var(--live); font-variant-numeric: tabular-nums; }
+.ts-state.live.ht { color: var(--gold); }
+.ts-last { font-size: 12px; font-weight: 600; color: var(--fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: -2px; }
 .pred-nudge { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; padding: 12px 12px 12px 14px; border-radius: 16px;
   background: color-mix(in srgb, var(--gold, #d9a93a) 14%, var(--bg-raised)); border: 1px solid color-mix(in srgb, var(--gold, #d9a93a) 45%, var(--line)); }
 .pred-nudge[hidden] { display: none; }
@@ -536,6 +538,13 @@ section.block { padding-block: 48px 8px; }
 .nk-ev-y .nk-ev-ic { background: linear-gradient(160deg, #ffe066, #f2b705); }
 .nk-ev-r .nk-ev-ic { background: linear-gradient(160deg, #ff5a4e, #c81e1e); }
 .nk-ev-g b { font-weight: 700; }
+.nk-ev-del { position: relative; z-index: 2; pointer-events: auto; flex: none; width: 20px; height: 20px; margin-left: auto; border: 0; border-radius: 50%; background: color-mix(in srgb, var(--fg) 10%, transparent); color: var(--fg-muted); font: 700 13px/1 var(--font-body); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.nk-ev-del::before { content: ""; position: absolute; inset: -8px; }
+.nk-events { gap: 14px; }
+.nk-ev { gap: 5px; }
+.nk-ev small { padding: 2px 5px; }
+.nk-events .nk-ev-away .nk-ev-del { margin-left: 0; margin-right: auto; }
+.nk-ev-del:active { transform: scale(.9); }
 .nk-events .nk-ev-away .nk-ev { flex-direction: row-reverse; }
 .nk-events .nk-ev-away .nk-ev-y .nk-ev-ic, .nk-events .nk-ev-away .nk-ev-r .nk-ev-ic { transform: rotate(-8deg); margin: 0 4px 0 3px; }
 .nk-ctl { position: relative; z-index: 2; pointer-events: auto; display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 8px; }
@@ -2324,7 +2333,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.23</span>
+    <span class="site-ver">Version 2.7.25</span>
   </div>
 </footer>
 
@@ -3428,6 +3437,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
             if (x.k === 'g') ic.textContent = '⚽';
             li.appendChild(ic); li.appendChild(el('b', null, x.name));
             if (x.min) li.appendChild(el('small', null, x.min + '\''));
+            // Admin: take a wrong goal or card off
+            var del = el('button', 'nk-ev-del', '×'); del.type = 'button'; del.setAttribute('data-admin', '');
+            del.setAttribute('aria-label', 'Remove ' + (x.k === 'g' ? 'goal' : 'card') + ' for ' + x.name);
+            del.dataset.liveDel = t.id + '|' + nk.m.id + '|' + x.ref;
+            li.appendChild(del);
             col.appendChild(li);
           });
           ev.appendChild(col);
@@ -3529,8 +3543,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function liveEvents(m) {
     var out = { h: [], a: [] };
     function put(team, txt) { if (team === m.home) out.h.push(txt); else if (team === m.away) out.a.push(txt); }
-    (m.lgoals || []).forEach(function (q) { put(q.team, { k: 'g', name: q.player, min: q.min }); });
-    (m.lcards || []).forEach(function (q) { put(q.team, { k: q.c === 'r' ? 'r' : 'y', name: q.player, min: q.min }); });
+    (m.lgoals || []).forEach(function (q, i) { put(q.team, { k: 'g', name: q.player, min: q.min, ref: 'g|' + i }); });
+    (m.lcards || []).forEach(function (q, i) { put(q.team, { k: q.c === 'r' ? 'r' : 'y', name: q.player, min: q.min, ref: 'c|' + i }); });
     function byMin(a, b) { return (a.min || 0) - (b.min || 0); }
     out.h.sort(byMin); out.a.sort(byMin);
     return out;
@@ -3570,8 +3584,26 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   document.addEventListener('click', function (e) {
     var c = e.target.closest && e.target.closest('[data-live-card]');
     var h = e.target.closest && e.target.closest('[data-live-half]');
-    if ((!c && !h) || !isAdmin()) return;
+    var dl = e.target.closest && e.target.closest('[data-live-del]');
+    if ((!c && !h && !dl) || !isAdmin()) return;
     e.preventDefault(); e.stopPropagation();
+    if (dl) {
+      var z = findMatch(dl.dataset.liveDel), kind = z.ids[2], at = +z.ids[3]; if (!z.m) return;
+      if (kind === 'g') {
+        var gq = (z.m.lgoals || [])[at]; if (!gq) return;
+        z.m.lgoals = z.m.lgoals.filter(function (q, i) { return i !== at; });
+        // A removed goal comes off the score too
+        var sk = gq.team === z.m.home ? 'lh' : 'la'; z.m[sk] = Math.max(0, (z.m[sk] || 0) - 1);
+        toast('Goal removed (' + gq.player + '). Now ' + (z.m.lh || 0) + ' – ' + (z.m.la || 0));
+      } else {
+        var cq = (z.m.lcards || [])[at]; if (!cq) return;
+        z.m.lcards = z.m.lcards.filter(function (q, i) { return i !== at; });
+        toast((cq.c === 'r' ? 'Red' : 'Yellow') + ' card removed (' + cq.player + ')');
+      }
+      save(tournaments); render();
+      if (!document.getElementById('detail').hidden) renderDetail();
+      return;
+    }
     if (c) { var x = findMatch(c.dataset.liveCard); if (x.m) openLivePick(x.t, x.m, x.ids[2], null, c); return; }
     var y = findMatch(h.dataset.liveHalf); if (!y.m) return;
     if (!y.m.kickAt) y.m.kickAt = Date.now();
@@ -3616,6 +3648,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     }
   }, true);
   setInterval(function () {
+    // Keep the minute on the Today strip ticking
+    Array.prototype.forEach.call(document.querySelectorAll('[data-ts-live]'), function (s2) {
+      var f = findMatch(s2.dataset.tsLive); if (f.m) { var v = tsLive(f.m); if (s2.textContent !== v) s2.textContent = v; }
+    });
     Array.prototype.forEach.call(document.querySelectorAll('[data-kick]'), function (box) {
       var t = null;
       for (var i = 0; i < tournaments.length; i++) if (tournaments[i].id === box.dataset.kick) t = tournaments[i];
@@ -3649,6 +3685,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   // Hidden tournaments are only for admins and managers
   function visibleTo(t) { return !t.hidden || isAdmin(); }
+  // Live label on the Today strip: minute of play, or HT
+  function tsLive(m) {
+    if (!m.kickAt) return '● Live';
+    if (m.half === 'ht') return 'Half time';
+    var mn = liveMinute(m);
+    return '● ' + (m.half === '2' ? '2nd · ' : '1st · ') + mn + '\'';
+  }
   // Today's matches across the current tournaments, soonest first, with live state and scores
   function renderToday() {
     var box = document.getElementById('today-strip'), list = document.getElementById('ts-list');
@@ -3679,7 +3722,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (a && a.c1) link.style.setProperty('--ac', a.c1);
       var top = el('div', 'ts-top');
       top.appendChild(el('span', null, t.name));
-      top.appendChild(el('span', 'ts-state' + (live ? ' live' : done ? ' ft' : ''), live ? '● Live' : done ? 'Full time' : waiting ? 'Starting soon' : m.date.slice(11, 16)));
+      var stt = el('span', 'ts-state' + (live ? ' live' : done ? ' ft' : '') + (live && m.half === 'ht' ? ' ht' : ''), live ? tsLive(m) : done ? 'Full time' : waiting ? 'Starting soon' : m.date.slice(11, 16));
+      if (live) stt.dataset.tsLive = t.id + '|' + m.id;
+      top.appendChild(stt);
       link.appendChild(top);
       var row = el('div', 'ts-row');
       function side(team, slot, sc) {
@@ -3690,6 +3735,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       }
       side(h, m.homeSlot, done ? m.hs : m.lh); side(a, m.awaySlot, done ? m.as : m.la);
       link.appendChild(row);
+      // Latest goal while the match is playing
+      var lastG = live ? (m.lgoals || []).slice().sort(function (p, q) { return (p.min || 0) - (q.min || 0); }).pop() : null;
+      if (lastG) link.appendChild(el('div', 'ts-last', '⚽ ' + lastG.player + (lastG.min ? ' ' + lastG.min + '\'' : '')));
       li.appendChild(link); list.appendChild(li);
     });
   }
