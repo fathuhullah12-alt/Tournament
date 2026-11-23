@@ -2284,7 +2284,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.13</span>
+    <span class="site-ver">Version 2.7.14</span>
   </div>
 </footer>
 
@@ -7925,12 +7925,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     });
   }
   window.addEventListener('hashchange', function () { route(); window.scrollTo(0, 0); });
-  // Club logo: back to the home page and load it fresh
+  // Club logo: back to the home page, Current tab, top of the page (no reload, no flash)
   document.querySelector('.site-header .brand').addEventListener('click', function (ev) {
     ev.preventDefault();
-    try { history.replaceState(null, '', location.pathname + location.search + '#top'); } catch (e) {}
-    window.scrollTo(0, 0);
-    location.reload();
+    view.tab = 'current'; view.type = 'all';
+    if (location.hash && location.hash !== '#top') { location.hash = '#top'; render(); return; }
+    route(); render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
   // Visitors tapping a card get the sign-in box right where they are, without the page moving underneath
   document.getElementById('grid').addEventListener('click', function (e) {
