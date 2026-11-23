@@ -478,7 +478,9 @@ section.block { padding-block: 48px 8px; }
   background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--hc, var(--chip)) 18%, transparent), transparent 60%), radial-gradient(120% 140% at 100% 100%, color-mix(in srgb, var(--ac, var(--chip)) 18%, transparent), transparent 60%), var(--bg-raised); }
 .ts-item:active { transform: scale(.98); }
 .ts-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--fg-muted); }
-.ts-top span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-item { grid-template-columns: minmax(0, 1fr); }
+.ts-top { min-width: 0; }
+.ts-top span:first-child { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ts-state { flex: none; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
 .ts-state.live { color: var(--live); }
 .pred-nudge { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; padding: 12px 12px 12px 14px; border-radius: 16px;
@@ -2284,7 +2286,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.14</span>
+    <span class="site-ver">Version 2.7.15</span>
   </div>
 </footer>
 
