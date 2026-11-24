@@ -2333,7 +2333,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.26</span>
+    <span class="site-ver">Version 2.7.27</span>
   </div>
 </footer>
 
@@ -5974,10 +5974,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   function resultPicture(t, m, withLogos) {
     var home = teamById(t, m.home), away = teamById(t, m.away);
+    var star = m.potm ? teamById(t, m.potm.team) : null;
     var FD = '"Barlow Condensed", "Noto Sans Thaana", sans-serif', FB = '"Barlow", "Noto Sans Thaana", sans-serif';
     var fonts = ['800 60px "Barlow Condensed"', '700 40px "Barlow Condensed"', '600 30px "Barlow"', '700 30px "Barlow"'].map(function (f) { return document.fonts ? document.fonts.load(f).catch(function () {}) : null; });
-    return Promise.all(fonts.concat([loadImg(withLogos && t.logo), loadImg(withLogos && home && home.logo), loadImg(withLogos && away && away.logo)])).then(function (r) {
-      var logos = [r[r.length - 2], r[r.length - 1]], tLogo = r[r.length - 3];
+    var srcs = [withLogos && t.logo, withLogos && home && home.logo, withLogos && away && away.logo, withLogos && prefs.logo];
+    return Promise.all(fonts.concat(srcs.map(loadImg))).then(function (r) {
+      var im = r.slice(fonts.length), tLogo = im[0], logos = [im[1], im[2]], clubLogo = im[3];
+      var starLogo = star ? (star === home ? logos[0] : star === away ? logos[1] : null) : null;
       function rows(team) {
         var out = [];
         if (!team) return out;
@@ -5987,73 +5990,82 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         ['y', 'r'].forEach(function (c) { (m.cards || []).forEach(function (x) { if (x.team === team.id && x.c === c) out.push({ k: c, name: x.player }); }); });
         return out;
       }
-      var hr = rows(home), ar = rows(away), lines = Math.max(hr.length, ar.length);
-      var W = 1080, top = 640, rowH = 54;
-      var bottom = top + (lines ? 40 + lines * rowH : 0) + (m.potm ? 130 : 0) + 130;
-      var H = Math.max(1080, bottom);
+      function hex(c, d) { return /^#[0-9a-f]{6}$/i.test(c || '') ? c : (d || '#346b4a'); }
+      var hr = rows(home), ar = rows(away), lines = Math.max(hr.length, ar.length), rowH = 54;
+      var pensW = m.ko && m.hs === m.as && m.pens ? teamById(t, m.pens) : null;
+      // Measure first, so the picture is always at least 1080×1350 with nothing cut off
+      var W = 1080, headH = tLogo ? 400 : 230, matchH = 410 + (pensW ? 60 : 0), listH = lines ? 60 + lines * rowH : 0;
+      var starH = m.potm ? 300 : 0, footH = clubLogo ? 330 : 190;
+      var body = matchH + listH + starH, H = Math.max(1350, headH + body + footH + 40);
       var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       var x = cv.getContext('2d');
-      x.fillStyle = '#121817'; x.fillRect(0, 0, W, H);
-      function wash(cx, col) {
-        var g = x.createRadialGradient(cx, 360, 40, cx, 360, 620);
-        g.addColorStop(0, col + '66'); g.addColorStop(1, col + '00');
-        x.fillStyle = g; x.fillRect(0, 0, W, H);
-      }
-      function hex(c) { return /^#[0-9a-f]{6}$/i.test(c || '') ? c : '#346b4a'; }
-      wash(240, hex(home && home.c1)); wash(840, hex(away && away.c1));
+      x.fillStyle = '#101615'; x.fillRect(0, 0, W, H);
+      function wash(cx, cy, rad, col) { var g = x.createRadialGradient(cx, cy, 40, cx, cy, rad); g.addColorStop(0, col + '66'); g.addColorStop(1, col + '00'); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+      wash(220, headH + 200, 620, hex(home && home.c1)); wash(860, headH + 200, 620, hex(away && away.c1));
+      if (m.potm) wash(W / 2, H - footH - 120, 560, '#e3b553');
       x.textAlign = 'center'; x.textBaseline = 'alphabetic';
-      function fit(text, font, size, max) {
-        do { x.font = font.replace('#', size); size -= 2; } while (x.measureText(text).width > max && size > 14);
+      function fit(text, font, size, max) { do { x.font = font.replace('#', size); size -= 2; } while (x.measureText(text).width > max && size > 14); }
+      function rr(bx, by, bw, bh, rad) { x.beginPath(); if (x.roundRect) x.roundRect(bx, by, bw, bh, rad); else x.rect(bx, by, bw, bh); }
+      function roundImg(img, cx, cy, rad, ring) {
+        x.save(); x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.closePath(); x.fillStyle = '#ffffff'; x.fill();
+        if (ring) { x.lineWidth = ring; x.strokeStyle = '#e3b553'; x.stroke(); }
+        x.clip(); var sc = Math.max((rad * 2) / img.width, (rad * 2) / img.height) * .9;
+        x.drawImage(img, cx - img.width * sc / 2, cy - img.height * sc / 2, img.width * sc, img.height * sc); x.restore();
       }
-      // Tournament logo (when it has one), name and stage
-      var ty = 0;
-      if (tLogo) {
-        var ls = 76, lr = Math.min((ls - 12) / tLogo.naturalWidth, (ls - 12) / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr;
-        x.save(); x.beginPath(); if (x.roundRect) x.roundRect((W - ls) / 2, 26, ls, ls, 16); else x.rect((W - ls) / 2, 26, ls, ls);
-        x.fillStyle = '#ffffff'; x.fill(); x.lineWidth = 4; x.strokeStyle = '#e3b553'; x.stroke(); x.restore();
-        x.drawImage(tLogo, (W - lw) / 2, 26 + (ls - lh) / 2, lw, lh);
-        ty = 48;
-      }
-      x.fillStyle = '#eef1ef'; fit((t.name || '').toUpperCase(), '800 #px ' + FD, tLogo ? 52 : 60, W - 120);
-      x.fillText((t.name || '').toUpperCase(), W / 2, 120 + ty);
-      var no = (t.matches || []).indexOf(m) + 1;
-      x.fillStyle = '#9aa5a2'; x.font = '600 30px ' + FB;
-      x.fillText('Match ' + no + (m.stage ? ' · ' + m.stage : ''), W / 2, 172 + ty * .6);
-      // Crests
-      function crestAt(team, logo, cx) {
-        var cy = 360, rad = 116;
+      function crestAt(team, logo, cx, cy, rad, ring) {
         x.save(); x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.closePath();
         x.fillStyle = logo ? '#ffffff' : hex(team && team.c1); x.fill();
-        x.lineWidth = 8; x.strokeStyle = (team && team.c2) || '#ffffff'; x.stroke();
+        x.lineWidth = ring; x.strokeStyle = (team && team.c2) || '#ffffff'; x.stroke();
         if (logo) {
           x.clip();
-          var s = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82;
-          x.drawImage(logo, cx - logo.width * s / 2, cy - logo.height * s / 2, logo.width * s, logo.height * s);
+          var sc = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82;
+          x.drawImage(logo, cx - logo.width * sc / 2, cy - logo.height * sc / 2, logo.width * sc, logo.height * sc);
         } else {
-          x.fillStyle = (team && team.c2) || '#ffffff'; x.font = '800 120px ' + FD; x.textBaseline = 'middle';
-          x.fillText(((team && team.name) || 'T').trim().charAt(0).toUpperCase(), cx, cy + 6);
+          x.fillStyle = (team && team.c2) || '#ffffff'; x.font = '800 ' + Math.round(rad * 1.05) + 'px ' + FD; x.textBaseline = 'middle';
+          x.fillText(((team && team.name) || 'T').trim().charAt(0).toUpperCase(), cx, cy + rad * .05);
           x.textBaseline = 'alphabetic';
         }
         x.restore();
-        x.fillStyle = '#eef1ef'; fit((team && team.name) || '', '700 #px ' + FD, 50, 400);
-        x.fillText((team && team.name) || '', cx, 540);
       }
-      crestAt(home, logos[0], 240); crestAt(away, logos[1], 840);
-      // Score
-      x.fillStyle = '#ffffff'; x.font = '800 170px ' + FD;
-      x.fillText(m.hs + ' – ' + m.as, W / 2, 410);
+      // Header: tournament logo on a white tile, name, match number
+      var hy = 0;
+      if (tLogo) {
+        var ts = 150, tp = 16, tr = Math.min((ts - tp * 2) / tLogo.width, (ts - tp * 2) / tLogo.height), tbx = (W - ts) / 2;
+        x.save(); x.shadowColor = 'rgba(227, 181, 83, .5)'; x.shadowBlur = 36; rr(tbx, 50, ts, ts, 30); x.fillStyle = '#ffffff'; x.fill(); x.restore();
+        x.save(); x.lineWidth = 6; x.strokeStyle = '#e3b553'; rr(tbx, 50, ts, ts, 30); x.stroke(); x.restore();
+        x.drawImage(tLogo, (W - tLogo.width * tr) / 2, 50 + (ts - tLogo.height * tr) / 2, tLogo.width * tr, tLogo.height * tr);
+        hy = 170;
+      }
+      x.fillStyle = '#eef1ef'; fit((t.name || '').toUpperCase(), '800 #px ' + FD, 56, W - 140);
+      x.fillText((t.name || '').toUpperCase(), W / 2, 110 + hy);
+      var no = (t.matches || []).indexOf(m) + 1;
+      x.fillStyle = '#e3b553'; x.font = '700 34px ' + FD;
+      if (x.letterSpacing !== undefined) x.letterSpacing = '6px';
+      x.fillText(('Match ' + no + (m.ko && m.stage ? ' · ' + m.stage : '')).toUpperCase(), W / 2, 164 + hy);
+      if (x.letterSpacing !== undefined) x.letterSpacing = '0px';
+      // Spare height goes evenly above and below the match
+      var y = headH + Math.max(0, (H - headH - footH - 40 - body) / 2);
+      // Crests, names and score
+      var cy = y + 140;
+      crestAt(home, logos[0], 230, cy, 120, 8); crestAt(away, logos[1], 850, cy, 120, 8);
+      x.fillStyle = '#eef1ef';
+      fit((home && home.name) || '', '700 #px ' + FD, 48, 380); x.fillText((home && home.name) || '', 230, cy + 190);
+      fit((away && away.name) || '', '700 #px ' + FD, 48, 380); x.fillText((away && away.name) || '', 850, cy + 190);
+      x.fillStyle = '#ffffff'; x.font = '800 160px ' + FD;
+      x.fillText(m.hs + ' – ' + m.as, W / 2, cy + 50);
       x.fillStyle = '#e0aa4d'; x.font = '700 30px ' + FD;
-      x.fillText('FULL TIME', W / 2, 470);
-      if (m.ko && m.hs === m.as && m.pens) {
-        var pw = teamById(t, m.pens);
-        if (pw) { x.fillStyle = '#9aa5a2'; x.font = '600 26px ' + FB; x.fillText(pw.name + ' won ' + (m.ph != null && m.pa != null ? Math.max(m.ph, m.pa) + '–' + Math.min(m.ph, m.pa) + ' ' : '') + 'on penalties', W / 2, 590); }
-      }
+      if (x.letterSpacing !== undefined) x.letterSpacing = '4px';
+      x.fillText('FULL TIME', W / 2, cy + 110);
+      if (x.letterSpacing !== undefined) x.letterSpacing = '0px';
+      if (pensW) { x.fillStyle = '#9aa5a2'; x.font = '600 28px ' + FB; x.fillText(pensW.name + ' won ' + (m.ph != null && m.pa != null ? Math.max(m.ph, m.pa) + '–' + Math.min(m.ph, m.pa) + ' ' : '') + 'on penalties', W / 2, cy + 260); }
+      y += matchH;
       // Scorers and cards
       if (lines) {
+        var top = y;
         x.strokeStyle = 'rgba(255,255,255,.12)'; x.lineWidth = 2;
         x.beginPath(); x.moveTo(90, top); x.lineTo(W - 90, top); x.stroke();
         x.beginPath(); x.moveTo(W / 2, top + 30); x.lineTo(W / 2, top + 30 + lines * rowH - 10); x.stroke();
-        function list(rs, cx) {
+        var list = function (rs, cx) {
           // One left edge per column, so the names line up under each other
           x.font = '600 30px ' + FB;
           var names = rs.map(function (r0) {
@@ -6064,38 +6076,51 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           var widest = Math.max.apply(null, names.map(function (n) { return x.measureText(n).width; }).concat([0]));
           var ix = cx - (widest + 40) / 2;
           rs.forEach(function (r0, i) {
-            var y = top + 40 + i * rowH + 30, name = names[i];
+            var ly = top + 40 + i * rowH + 30, name = names[i];
             x.font = '600 30px ' + FB;
             if (r0.k === 'g') {
-              x.beginPath(); x.arc(ix + 12, y - 10, 12, 0, Math.PI * 2); x.fillStyle = '#eef1ef'; x.fill();
-              x.beginPath(); x.arc(ix + 12, y - 10, 5, 0, Math.PI * 2); x.fillStyle = '#121817'; x.fill();
+              x.beginPath(); x.arc(ix + 12, ly - 10, 12, 0, Math.PI * 2); x.fillStyle = '#eef1ef'; x.fill();
+              x.beginPath(); x.arc(ix + 12, ly - 10, 5, 0, Math.PI * 2); x.fillStyle = '#101615'; x.fill();
             } else {
               x.fillStyle = r0.k === 'y' ? '#f2c230' : '#e2493a';
-              x.beginPath(); if (x.roundRect) x.roundRect(ix + 2, y - 28, 20, 28, 3); else x.rect(ix + 2, y - 28, 20, 28); x.fill();
+              rr(ix + 2, ly - 28, 20, 28, 3); x.fill();
             }
-            x.fillStyle = '#eef1ef'; x.textAlign = 'left'; x.fillText(name, ix + 40, y); x.textAlign = 'center';
+            x.fillStyle = '#eef1ef'; x.textAlign = 'left'; x.fillText(name, ix + 40, ly); x.textAlign = 'center';
           });
-        }
+        };
         list(hr, 270); list(ar, 810);
+        y += listH;
       }
-      var y2 = top + (lines ? 40 + lines * rowH : 0) + 30;
-      // Player of the match
+      // Man of the Match: a gold card with the player's team crest
       if (m.potm) {
-        var label = 'PLAYER OF THE MATCH', pn = '★ ' + m.potm.player;
-        x.font = '700 26px ' + FD; var lw = x.measureText(label).width;
-        x.font = '700 34px ' + FB; var nw = Math.min(x.measureText(pn).width, 560);
-        var pwid = lw + nw + 90, px = (W - pwid) / 2;
-        x.fillStyle = 'rgba(227,181,60,.2)'; x.strokeStyle = 'rgba(227,181,60,.55)'; x.lineWidth = 2;
-        x.beginPath(); if (x.roundRect) x.roundRect(px, y2, pwid, 76, 38); else x.rect(px, y2, pwid, 76); x.fill(); x.stroke();
+        var bw = 880, bh = 230, bx = (W - bw) / 2, by = y + 30;
+        x.save(); x.shadowColor = 'rgba(227, 181, 83, .45)'; x.shadowBlur = 40;
+        var gf = x.createLinearGradient(bx, by, bx + bw, by + bh); gf.addColorStop(0, '#3a2e12'); gf.addColorStop(1, '#1a1a12');
+        rr(bx, by, bw, bh, 34); x.fillStyle = gf; x.fill(); x.restore();
+        var gs = x.createLinearGradient(bx, by, bx + bw, by + bh); gs.addColorStop(0, '#f6d77a'); gs.addColorStop(.5, '#e3b553'); gs.addColorStop(1, '#a8781f');
+        x.lineWidth = 5; x.strokeStyle = gs; rr(bx, by, bw, bh, 34); x.stroke();
+        var ccx = bx + 140, ccy = by + bh / 2;
+        crestAt(star, starLogo, ccx, ccy, 82, 6);
+        // Gold star badge on the crest
+        x.save(); x.translate(ccx + 62, ccy - 60); x.beginPath();
+        for (var si = 0; si < 10; si++) { var ra = si % 2 ? 14 : 32, an = -Math.PI / 2 + si * Math.PI / 5; x.lineTo(Math.cos(an) * ra, Math.sin(an) * ra); }
+        x.closePath(); x.fillStyle = '#f6d77a'; x.fill(); x.lineWidth = 4; x.strokeStyle = '#101615'; x.stroke(); x.restore();
+        var tx = bx + 260, tw = bw - 300;
         x.textAlign = 'left';
-        x.fillStyle = '#e0aa4d'; x.font = '700 26px ' + FD; x.fillText(label, px + 34, y2 + 48);
-        x.fillStyle = '#ffffff'; x.font = '700 34px ' + FB; x.fillText(pn, px + 34 + lw + 22, y2 + 50, 560);
+        x.fillStyle = '#f0c35a'; x.font = '700 32px ' + FD;
+        if (x.letterSpacing !== undefined) x.letterSpacing = '6px';
+        x.fillText('MAN OF THE MATCH', tx, by + 72);
+        if (x.letterSpacing !== undefined) x.letterSpacing = '0px';
+        x.fillStyle = '#ffffff'; fit(m.potm.player.toUpperCase(), '800 #px ' + FD, 70, tw); x.fillText(m.potm.player.toUpperCase(), tx, by + 148);
+        if (star) { x.fillStyle = '#c9cfcc'; fit(star.name, '600 #px ' + FB, 30, tw); x.fillText(star.name, tx, by + 194); }
         x.textAlign = 'center';
       }
-      // Footer
-      x.fillStyle = '#6f7a77'; x.font = '600 28px ' + FB;
+      // Footer: club logo above the club name, date and website
+      x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(120, H - footH + 30, W - 240, 2);
+      if (clubLogo) roundImg(clubLogo, W / 2, H - 212, 50, 4);
+      x.fillStyle = '#eef1ef'; fit((prefs.name || 'Our club').toUpperCase(), '800 #px ' + FD, 44, W - 200); x.fillText((prefs.name || 'Our club').toUpperCase(), W / 2, H - 92);
       var when = m.date && !isNaN(new Date(m.date)) ? (function (d) { return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); })(new Date(m.date)) : '';
-      x.fillText((when ? when + '  ·  ' : '') + 'noonuprc.com', W / 2, H - 60);
+      x.fillStyle = '#e3b553'; x.font = '700 32px ' + FB; x.fillText((when ? when + '  ·  ' : '') + 'noonuprc.com', W / 2, H - 44);
       return new Promise(function (ok, bad) {
         try { cv.toBlob(function (b) { b ? ok(b) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); }
       });
