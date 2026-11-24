@@ -1729,7 +1729,7 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
   background-image: linear-gradient(120deg, color-mix(in srgb, var(--tc, var(--teal)) 12%, transparent), transparent 70%); color: var(--fg); min-width: 0; }
 .aw-gold { border-color: color-mix(in srgb, #e3b53c 60%, transparent); }
 .aw-label { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--amber-fg); }
-.aw-gold .aw-label::before { content: "★ "; color: #e3b53c; }
+.aw-gold .aw-label::before { content: "👑 "; color: #e3b53c; }
 .aw-silver .aw-label::before { content: "⚽ "; }
 .aw-champ { border-color: #e3b53c; background-image: linear-gradient(120deg, color-mix(in srgb, #e3b53c 18%, transparent), color-mix(in srgb, var(--tc, var(--teal)) 10%, transparent) 60%, transparent); }
 .aw-champ .aw-label::before { content: "🏆 "; }
@@ -2333,7 +2333,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.27</span>
+    <span class="site-ver">Version 2.7.28</span>
   </div>
 </footer>
 
@@ -2449,7 +2449,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       </div>
       <div class="menu-list">
         <button type="button" id="s-edit"><strong>Edit details</strong><small>Name, date, venue, format and description</small></button>
-        <button type="button" id="s-awards-row" class="awards-row"><strong id="s-awards">Add awards</strong><small>Best player, top scorer, best 5, best coach and best manager</small></button>
+        <button type="button" id="s-awards-row" class="awards-row"><strong id="s-awards">Add awards</strong><small>King of the Tournament, top scorer, best 5, best coach and best manager</small></button>
         <button type="button" id="s-spons-row"><strong>Sponsors</strong><small>Logos that slide under the tournament name</small></button>
         <button type="button" id="s-delete" class="danger"><strong>Delete tournament</strong><small>Removes its teams, players, matches and results</small></button>
         <div class="confirm" id="s-confirm" hidden>
@@ -3046,7 +3046,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <h3>Main picks</h3>
         <label class="field"><span>Champion team · 10 pts</span><select id="bp-champ"></select></label>
         <label class="field"><span>Top scorer · 5 pts</span><input id="bp-scorer" type="text" maxlength="40" placeholder="Player name"></label>
-        <label class="field"><span>Best player · 5 pts</span><input id="bp-player" type="text" maxlength="40" placeholder="Player name"></label>
+        <label class="field"><span>King of the Tournament · 5 pts</span><input id="bp-player" type="text" maxlength="40" placeholder="Player name"></label>
       </section>
       <section class="bp-sec bp-five">
         <h3>Best 5</h3>
@@ -3078,7 +3078,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
     </div>
     <div class="sheet-body">
-      <label class="field"><span>Best player</span><input id="a-player" type="text" maxlength="40" placeholder="Player name"></label>
+      <label class="field"><span>King of the Tournament</span><input id="a-player" type="text" maxlength="40" placeholder="Player name"></label>
       <label class="field"><span>Top scorer</span><input id="a-scorer" type="text" maxlength="40" placeholder="Player name"></label>
       <fieldset class="field five">
         <legend>Best 5</legend>
@@ -4173,7 +4173,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function awardRows(t) {
     var p = prizesOf(t), rows = [];
     var five = p.best5.filter(Boolean);
-    if (p.player) rows.push(['Best player', p.player]);
+    if (p.player) rows.push(['King of the Tournament', p.player]);
     if (p.scorer) rows.push(['Top scorer', p.scorer]);
     if (five.length) rows.push(['Best 5', five.join(', ')]);
     if (p.coach) rows.push(['Best coach', p.coach]);
@@ -4444,7 +4444,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       ctxt.appendChild(el('span', 'aw-team', t.format === 'league' && !(t.matches || []).some(function (m) { return m.ko && m.stage === 'Final'; }) ? 'League winners' : 'Won the final'));
       cbody.appendChild(ctxt); cb.appendChild(cbody); list.appendChild(cb);
     }
-    if (prize.player) tile('Best player', prize.player, 'aw-gold');
+    if (prize.player) tile('King of the Tournament', prize.player, 'aw-gold');
     if (prize.scorer) {
       var goals = (scorerRows(t).filter(function (x) { return sameName(x.player, prize.scorer); })[0] || {}).goals;
       tile('Top scorer', prize.scorer, 'aw-silver', goals ? goals + (goals === 1 ? ' goal' : ' goals') : '');
@@ -5160,7 +5160,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         var champ = statusOf(t) === 'completed' ? championOf(t) : null;
         if (champ && champ.id === team.id) r.honours.push('🏆 Champions');
         var pz = prizesOf(t), same = function (n) { return n && n.trim().toLowerCase() === key; };
-        if (same(pz.player)) r.honours.push('⭐ Best player');
+        if (same(pz.player)) r.honours.push('👑 King of the Tournament');
         if (same(pz.scorer)) r.honours.push('👟 Top scorer');
         if (pz.best5.some(same)) r.honours.push('🖐 Best 5');
         rows.push(r);
@@ -6757,7 +6757,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var items = [
       { label: 'Champion', pick: champTeam ? champTeam.name : '', done: !!champ, pts: champ && b.champion === champ.id ? 10 : 0, answer: champ ? champ.name : '' },
       { label: 'Top scorer', pick: b.scorer || '', done: !!tops.length, pts: tops.some(function (n) { return sameName(n, b.scorer); }) ? 5 : 0, answer: tops.join(', ') },
-      { label: 'Best player', pick: b.player || '', done: !!prize.player, pts: sameName(prize.player, b.player) ? 5 : 0, answer: prize.player },
+      { label: 'King of the Tournament', pick: b.player || '', done: !!prize.player, pts: sameName(prize.player, b.player) ? 5 : 0, answer: prize.player },
       { label: 'Best 5', pick: (b.best5 || []).filter(Boolean).join(', '), done: !!five.length,
         pts: 2 * five.filter(function (f) { return (b.best5 || []).some(function (n) { return sameName(f, n); }); }).length, answer: five.join(', ') }
     ];
@@ -8141,7 +8141,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           }
         }
         var p = prizesOf(t), sc = scorerRows(t)[0];
-        if (p.player) rows.push(['', 'Best player', p.player, '']);
+        if (p.player) rows.push(['', 'King of the Tournament', p.player, '']);
         if (p.scorer) rows.push(['', 'Top scorer', p.scorer, '']);
         else if (sc) rows.push(['', 'Top scorer', sc.player, sc.goals + (sc.goals === 1 ? ' goal' : ' goals') + ' · ' + sc.team.name]);
         if (p.coach) rows.push(['', 'Best coach', p.coach, '']);
