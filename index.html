@@ -2333,7 +2333,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.28</span>
+    <span class="site-ver">Version 2.7.29</span>
   </div>
 </footer>
 
@@ -6701,6 +6701,46 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     return wrap;
   }
 
+  // Late picks: every saved pick carries the database server's time (see the entries rules).
+  // A pick saved after its match kicked off, after the final started, or after a quiz answer
+  // was revealed earns nothing, even if someone gets past the app's own lock.
+  var latePick = {}, LATE_GRACE = 2 * 60 * 1000;
+  function stampMs(v) { return v && v.seconds != null ? v.seconds * 1000 + Math.floor((v.nanoseconds || 0) / 1e6) : null; }
+  function lockOfMatch(m, noWait) {
+    var at = m.date ? new Date(m.date).getTime() : NaN, c = [];
+    if (!isNaN(at)) c.push(at + (noWait ? 0 : 30 * 60 * 1000));
+    if (m.kickAt) c.push(+m.kickAt);
+    if (m.doneAt) c.push(+m.doneAt);
+    return c.length ? Math.min.apply(null, c) : null;
+  }
+  function lockOfQuiz(t, day) {
+    var q = (t.questions || [])[day], c = [];
+    if (!q) return null;
+    var r = q.revealAt ? new Date(q.revealAt).getTime() : NaN;
+    if (!isNaN(r)) c.push(r);
+    if (q.revealedAt) c.push(+q.revealedAt);
+    var on = q.shownOn || (q.showAt ? String(q.showAt).slice(0, 10) : '');
+    if (on && !q.revealAt) { var nd = new Date(on + 'T00:00').getTime(); if (!isNaN(nd)) c.push(nd + 86400000); }
+    return c.length ? Math.min.apply(null, c) : null;
+  }
+  function markLate(t, e) {
+    var st = e.stamps || {}, byId = {}, box = latePick[t.id] || (latePick[t.id] = {});
+    function late(at, lock) { return at != null && lock != null && at > lock + LATE_GRACE; }
+    (t.matches || []).forEach(function (m) { byId[m.id] = m; });
+    (e.predictions || []).forEach(function (p) {
+      var m = byId[p.match];
+      if (m && late(stampMs(st['p_' + p.match]), lockOfMatch(m))) box['p|' + p.match + '|' + (p.name || '').toLowerCase()] = true;
+    });
+    var f = finalMatch(t);
+    if (f && late(stampMs(st.b), lockOfMatch(f, true))) (e.bonus || []).forEach(function (b) { box['b|' + (b.name || '').toLowerCase()] = true; });
+    (e.answers || []).forEach(function (a) {
+      if (late(stampMs(st['q_' + a.day]), lockOfQuiz(t, a.day))) box['q|' + a.member + '|' + a.day] = true;
+    });
+  }
+  function isLate(key) {
+    for (var k in latePick) if (latePick[k][key]) return true;
+    return false;
+  }
   // A match takes score predictions until its kickoff time (or until a result is entered)
   function predOpen(m) {
     if (played(m) || hasStarted(m)) return false;
@@ -6710,6 +6750,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   function predPoints(p, m) {
     if (!played(m)) return null;
+    if (isLate('p|' + p.match + '|' + (p.name || '').toLowerCase())) return 0;
     if (p.hs === m.hs && p.as === m.as) return 3;
     return Math.sign(p.hs - p.as) === Math.sign(m.hs - m.as) ? 1 : 0;
   }
@@ -6761,7 +6802,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       { label: 'Best 5', pick: (b.best5 || []).filter(Boolean).join(', '), done: !!five.length,
         pts: 2 * five.filter(function (f) { return (b.best5 || []).some(function (n) { return sameName(f, n); }); }).length, answer: five.join(', ') }
     ];
-    items.forEach(function (it) { if (!it.done || !it.pick) it.pts = 0; });
+    var lateB = latePick[t.id] && latePick[t.id]['b|' + (b.name || '').toLowerCase()];
+    items.forEach(function (it) { if (!it.done || !it.pick || lateB) it.pts = 0; });
     return { items: items, pts: items.reduce(function (s, it) { return s + it.pts; }, 0) };
   }
   function bonusCard(t, me) {
@@ -7102,8 +7144,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           var li = el('li', 'yr-card yr-' + kind);
           var top = el('div', 'yr-top');
           var tag = el('span', 'yr-tag');
-          tag.appendChild(icon(kind === 'exact' ? 'ic-target' : kind === 'right' ? 'ic-check' : off <= 1 ? 'ic-near' : 'ic-miss'));
-          tag.appendChild(document.createTextNode(kind === 'exact' ? 'Spot on!' : kind === 'right' ? 'Nice call' : off <= 1 ? 'So close!' : 'Not this time'));
+          var tooLate = isLate('p|' + x.p.match + '|' + (x.p.name || '').toLowerCase());
+          tag.appendChild(icon(tooLate ? 'ic-miss' : kind === 'exact' ? 'ic-target' : kind === 'right' ? 'ic-check' : off <= 1 ? 'ic-near' : 'ic-miss'));
+          tag.appendChild(document.createTextNode(tooLate ? 'Saved after kick-off' : kind === 'exact' ? 'Spot on!' : kind === 'right' ? 'Nice call' : off <= 1 ? 'So close!' : 'Not this time'));
           top.appendChild(tag);
           top.appendChild(el('span', 'yr-pts', '+' + x.pts + (x.pts === 1 ? ' pt' : ' pts')));
           li.appendChild(top);
@@ -7483,6 +7526,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var data = { home: home, away: away, stage: stage, ko: ko, date: mf.date.value, hs: hs, as: as, pens: pens, goals: goals, cards: cards, potm: potm, ph: ph, pa: pa, started: mf.started.checked || goals.length > 0 };
     if (hp.slot) data.homeSlot = hp.slot;
     if (ap.slot) data.awaySlot = ap.slot;
+    // When the result first goes in, and when the match was marked started (late-pick checks)
+    if (hs != null && !(m && played(m))) data.doneAt = Date.now();
+    if (data.started && !(m && m.kickAt)) data.kickAt = Date.now();
     if (m) {
       Object.assign(m, data);
       // Picking a team by hand replaces the placeholder
@@ -7651,7 +7697,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var key = a.member || a.email;
       if (!by[key]) by[key] = { member: key, name: a.name, played: 0, correct: 0 };
       by[key].played++;
-      if (qRight(t, a)) by[key].correct++;
+      if (qRight(t, a) && !(latePick[t.id] && latePick[t.id]['q|' + a.member + '|' + a.day])) by[key].correct++;
     });
     var list = Object.keys(by).map(function (k) { return by[k]; })
       .sort(function (a, b) { return b.correct - a.correct || a.played - b.played || a.name.localeCompare(b.name); });
@@ -7818,6 +7864,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       rv.classList.toggle('btn-ghost', !!q.revealed);
       rv.onclick = function () {
         q.revealed = !q.revealed;
+        if (q.revealed && !q.revealedAt) q.revealedAt = Date.now();
         save(tournaments);
         renderQuiz();
         toast(q.revealed ? 'Answer revealed. Scores updated.' : 'Answer hidden again');
@@ -7947,7 +7994,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         rv.type = 'button';
         rv.setAttribute('aria-label', (item.revealed ? 'Hide' : 'Reveal') + ' question ' + (i + 1) + ' answer');
         rv.addEventListener('click', function () {
-          item.revealed = !item.revealed; save(tournaments); render(); renderQuiz();
+          item.revealed = !item.revealed; if (item.revealed && !item.revealedAt) item.revealedAt = Date.now(); save(tournaments); render(); renderQuiz();
           toast(item.revealed ? 'Question ' + (i + 1) + ' answer revealed. Scores added.' : 'Question ' + (i + 1) + ' answer hidden again');
         });
         btns.appendChild(rv);
@@ -9643,9 +9690,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   var entries = {};
   function mergeEntries(t) {
     var p = [], b = [], a = [];
+    latePick[t.id] = {};
     Object.keys(entries).forEach(function (k) {
       var e = entries[k];
       if (e.t !== t.id) return;
+      markLate(t, e);
       p = p.concat(e.predictions || []); b = b.concat(e.bonus || []); a = a.concat(e.answers || []);
     });
     t.predictions = p; t.bonus = b; t.answers = a;
@@ -9660,9 +9709,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (/^#t-/.test(location.hash) && detailSection.hidden && quizSection.hidden) route();
     else refreshPage();
   }
+  function pickKey(kind, x) { return kind === 'predictions' ? 'p_' + x.match : kind === 'bonus' ? 'b' : 'q_' + x.day; }
+  var entryWrites = Promise.resolve();
   function pushEntries() {
     if (!fb.user || !auth.account || !fb.entriesReady) return Promise.resolve();
-    var me = auth.account, low = me.name.toLowerCase(), jobs = [];
+    var me = auth.account, low = me.name.toLowerCase(), KINDS = ['predictions', 'bonus', 'answers'];
     tournaments.forEach(function (t) {
       var eid = t.id + '__' + me.id;
       var body = {
@@ -9673,11 +9724,50 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       };
       var had = entries[eid];
       if (!had && !body.predictions.length && !body.bonus.length && !body.answers.length) return;
-      if (had && stable(had) === stable(body)) return;
-      entries[eid] = JSON.parse(JSON.stringify(body));
-      jobs.push(fb.db.collection('entries').doc(eid).set(body));
+      function core(o) { return stable({ name: o.name, predictions: o.predictions || [], bonus: o.bonus || [], answers: o.answers || [] }); }
+      if (had && core(had) === core(body)) return;
+      // Steps: removals go first; then at most one new or changed pick of each kind per write
+      var cur = { name: me.name }, queue = {}, steps = [];
+      KINDS.forEach(function (k) {
+        var old = (had && had[k]) || [], oldS = old.map(stable), newS = body[k].map(stable);
+        cur[k] = old.filter(function (x, i) { return newS.indexOf(oldS[i]) !== -1; });
+        queue[k] = body[k].filter(function (x, i) { return oldS.indexOf(newS[i]) === -1; });
+      });
+      do {
+        var step = { name: me.name, keys: [] };
+        KINDS.forEach(function (k) {
+          var x = queue[k].shift();
+          if (x) { cur[k] = cur[k].concat(x); step.keys.push(pickKey(k, x)); }
+          step[k] = cur[k];
+        });
+        steps.push(step);
+      } while (KINDS.some(function (k) { return queue[k].length; }));
+      // The last write keeps the app's own order
+      KINDS.forEach(function (k) { steps[steps.length - 1][k] = body[k]; });
+      var local = JSON.parse(JSON.stringify(body)); local.stamps = (had && had.stamps) || {};
+      entries[eid] = local;
+      var ref = fb.db.collection('entries').doc(eid), exists = !!had, TS = firebase.firestore.FieldValue.serverTimestamp();
+      steps.forEach(function (st) {
+        entryWrites = entryWrites.then(function () {
+          var data = { name: st.name, predictions: st.predictions, bonus: st.bonus, answers: st.answers }, w;
+          if (!exists) {
+            data.t = t.id; data.member = me.id; data.uid = fb.user.uid; data.stamps = {};
+            st.keys.forEach(function (k) { data.stamps[k] = TS; });
+            w = ref.set(data);
+          } else {
+            st.keys.forEach(function (k) { data['stamps.' + k] = TS; });
+            w = ref.update(data);
+          }
+          exists = true;
+          return w.catch(function (e) {
+            // Database rules from before time stamps: save the old way
+            if (e && e.code === 'permission-denied') { exists = true; return ref.set(body); }
+            throw e;
+          });
+        }).catch(cloudError);
+      });
     });
-    return Promise.all(jobs).catch(cloudError);
+    return entryWrites;
   }
 
   if (FB_MODE) {
