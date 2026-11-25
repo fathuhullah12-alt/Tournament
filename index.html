@@ -276,6 +276,28 @@ section.block { padding-block: 48px 8px; }
   background: var(--chip); color: var(--fg-muted); font-size: 13px; font-variant-numeric: tabular-nums;
 }
 
+/* Floating bar: Current / Archive and All / Quiz / Futsal in one pill that stays under the header */
+.fbar { position: sticky; top: calc(var(--hdr-h, 72px) + 8px); z-index: 15; display: flex; align-items: center; gap: 4px; width: max-content; max-width: 100%; margin: 4px auto 18px; padding: 5px;
+  border-radius: 999px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg-raised) 88%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 12px 30px -14px rgba(0, 0, 0, .45); overflow-x: auto; scrollbar-width: none; }
+.fbar::-webkit-scrollbar { display: none; }
+.fbar { display: none !important; } /* hidden: the list shows current tournaments, the archive opens from a link under the list */
+.arch-link { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 18px auto 0; padding: 10px 18px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-raised); color: var(--fg-muted); font: 600 15px var(--font-body); cursor: pointer; }
+.arch-link:hover { color: var(--fg); }
+.arch-link[hidden] { display: none; }
+:root.role-visitor #tournaments .sec-head { display: none; } /* only holds the hidden title and the New tournament button */
+.fbar .tabs { gap: 2px; border: 0; margin: 0; }
+.fbar .tab { flex: none; gap: 6px; padding: 8px 12px; margin: 0; border: 0; border-radius: 999px; font-size: 15px; white-space: nowrap; }
+.fbar .tab[aria-selected="true"] { background: var(--teal); color: var(--on-teal); }
+.fbar .tab .tab-count { min-width: 20px; height: 20px; padding: 0 6px; font-size: 12px; }
+.fbar .tab[aria-selected="true"] .tab-count { background: color-mix(in srgb, #fff 24%, transparent); color: inherit; }
+.fbar-div { flex: none; width: 1px; height: 22px; background: var(--line); margin: 0 2px; }
+.fbar .segmented { gap: 0; padding: 0; background: none; }
+.fbar .segmented button { flex: none; padding: 8px 11px; border-radius: 999px; font-size: 15px; white-space: nowrap; }
+.fbar .segmented button[aria-pressed="true"] { background: var(--chip); box-shadow: none; }
+.sec-head:not(:has(> :not(.sr-only):not([hidden]))) { display: none; }
+@media (max-width: 400px) { .fbar .tab { padding: 8px 9px; font-size: 14px; } .fbar .segmented button { padding: 8px 8px; font-size: 14px; } }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* All / Quiz / Futsal */
 .segmented { display: inline-flex; gap: 2px; padding: 4px; border-radius: 13px; background: var(--chip); }
 .segmented button {
@@ -379,6 +401,24 @@ section.block { padding-block: 48px 8px; }
 .sp-card { justify-content: center; }
 .spons .sp-card { border-color: transparent; background: none; }
 .sp-text { text-align: left; }
+.spons .sp-card.sp-title { position: relative; inset: auto; opacity: 1; transform: none; pointer-events: auto; gap: 14px; padding: 2px 4px; margin-bottom: 16px;
+  border: 0; background: none; box-shadow: none; }
+.spons { gap: 6px; margin-bottom: 14px; padding: 16px 12px 12px; border: 0; border-radius: 20px; background: color-mix(in srgb, var(--fg) 4%, transparent); }
+.spons .sp-stage { height: 84px; }
+.spons .sp-card { gap: 14px; }
+.spons .sp-logo { width: 60px; height: 60px; border-radius: 14px; font-size: 20px; }
+.spons .sp-text b { font-size: 19px; }
+.spons .sp-text small { font-size: 14px; }
+.spons .sp-title .sp-logo { width: 92px; height: 92px; border-radius: 20px; font-size: 30px; background-color: #fff; box-shadow: 0 0 0 1px var(--line); }
+.spons .sp-card.sp-title { flex-direction: column; gap: 12px; }
+.spons .sp-title .sp-text { gap: 4px; text-align: center; justify-items: center; }
+.spons .sp-title .sp-text b { overflow-wrap: anywhere; font: 800 clamp(22px, 7vw, 30px)/1.05 var(--font-display); letter-spacing: .02em; text-transform: uppercase; white-space: normal; }
+.spons .sp-title .sp-text small { font-size: 16px; white-space: normal; }
+.sp-label-title { color: #b8860b; font-size: 16px; letter-spacing: .14em; }
+.spons .sp-label:not(.sp-label-title) { font-size: 13px; }
+.sp-crown { font-size: 15px; filter: grayscale(1); opacity: .55; }
+.sp-crown.on { filter: none; opacity: 1; border-color: #e3b553; background: color-mix(in srgb, #e3b553 14%, transparent); }
+.sp-title-tag { flex: none; margin-left: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; color: #b8860b; background: color-mix(in srgb, #e3b553 16%, transparent); }
 .sp-dots { display: flex; gap: 6px; justify-content: center; }
 .sp-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: background .3s, width .3s; }
 .sp-dots i.on { width: 16px; border-radius: 3px; background: var(--teal); }
@@ -673,7 +713,7 @@ html { -webkit-tap-highlight-color: transparent; }
 .hi-bar { position: relative; }
 .hi-bar[hidden] { display: none; }
 .hi-bar .wrap { padding-top: 20px; }
-body:has(#brand-hi:not([hidden])) #tournaments { padding-top: 32px; }
+
 .brand-hi { margin: 0; font-size: 16px; color: var(--fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brand-hi[hidden] { display: none; }
 .brand-hi b { font-weight: 700; color: var(--fg); }
@@ -697,6 +737,22 @@ body:has(#brand-hi:not([hidden])) #tournaments { padding-top: 32px; }
 .pref-group h2 { margin: 0; padding: 14px 18px 4px; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-dim); }
 .pref-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; padding: 14px 18px; border-top: 1px solid var(--line-soft); }
 .pref-group h2 + .pref-row { border-top: 0; }
+.t-phone { display: none; }
+@media (max-width: 820px) { .t-desk { display: none; } .t-phone { display: inline; } h2.pf-sub.t-phone { display: block; } }
+.pf-card { display: none; }
+@media (max-width: 820px) {
+  .pf-card { display: grid; gap: 14px; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); }
+  .pf-head { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .pf-av { flex: none; width: 56px; height: 56px; font-size: 22px; }
+  .pf-text { display: grid; gap: 2px; min-width: 0; flex: 1; }
+  .pf-text strong { font-size: 19px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pf-text small { color: var(--fg-muted); font-size: 14px; }
+  .pf-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pf-sub { margin: 10px 0 -4px; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-dim); }
+}
+.pref-go { color: var(--fg); text-decoration: none; flex-wrap: nowrap; }
+.pref-go:hover { background: var(--chip); }
+.pref-go > svg.i { flex: none; color: var(--fg-dim); }
 .pref-row > div:first-child { display: grid; gap: 2px; min-width: 0; flex: 1 1 200px; }
 .pref-row strong { font-size: 16px; }
 .pref-row small { color: var(--fg-muted); font-size: 14px; }
@@ -1906,6 +1962,32 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .app-key svg.i { width: 17px; height: 17px; }
 .fb-badge { min-width: 20px; height: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px; background: var(--live); color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .fb-badge[hidden] { display: none; }
+/* Bottom navigation bar on phones */
+.bnav { display: none; }
+@media (max-width: 820px) {
+  .bnav { display: flex; position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px)); width: min(520px, calc(100% - 24px)); padding: 6px;
+    border-radius: 24px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg-raised) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 14px 34px -12px rgba(0, 0, 0, .45); }
+  .bnav a { border-radius: 18px; }
+  .bnav a { position: relative; flex: 1 1 0; min-width: 0; display: grid; justify-items: center; gap: 3px; padding: 4px 2px; border-radius: 12px; color: var(--fg-muted); font-size: 11px; font-weight: 600; text-align: center; -webkit-tap-highlight-color: transparent; }
+  .bnav a > span:not(.nav-ic) { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bnav .nav-ic { display: grid; place-items: center; width: 44px; height: 28px; border-radius: 999px; transition: background .15s; }
+  .bnav .nav-ic svg.i { width: 21px; height: 21px; }
+  .bnav a[aria-current="page"] { color: var(--teal); }
+  .bnav a[aria-current="page"] .nav-ic { background: color-mix(in srgb, var(--teal) 16%, transparent); }
+  .bnav .fb-badge { position: absolute; top: 0; left: calc(50% + 6px); margin: 0; min-width: 17px; height: 17px; font-size: 10px; padding: 0 4px; }
+  .menu-btn { display: none !important; }
+  .fbar { position: relative; top: auto; margin: 0 auto 14px; }
+  body { padding-bottom: calc(78px + max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))); }
+  .legal { padding-bottom: 4px; }
+  footer { margin-top: 28px; }
+  .app-bar { bottom: calc(80px + max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))); }
+  .toast { bottom: calc(84px + max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))); }
+  .hi-bar:not(:has(.brand-hi:not([hidden]))) { display: none; }
+  .hi-bar .wrap { padding-top: 14px; }
+  body section.block { padding-top: 20px; }
+  body section#tournaments.block { padding-top: 14px !important; }
+}
 .fb-stars { display: flex; gap: 6px; }
 .fb-stars button { width: 44px; height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: none; color: var(--fg-dim); cursor: pointer; }
 .fb-stars button svg.i { width: 100%; height: 100%; }
@@ -1961,6 +2043,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <symbol id="ic-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
     <symbol id="ic-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7M6 9.5V20h12V9.5M10 20v-5h4v5"/></symbol>
     <symbol id="ic-doc" viewBox="0 0 24 24"><path d="M7 3.5h7l4 4V20.5H7zM14 3.5v4h4M9.5 12h6M9.5 15.5h6"/></symbol>
+    <symbol id="ic-profile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3.2"/><path d="M6.2 18.4c1.2-2.3 3.3-3.5 5.8-3.5s4.6 1.2 5.8 3.5"/></symbol>
     <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.3"/><path d="M3 19.5c.5-3.3 2.9-5.2 6-5.2s5.5 1.9 6 5.2M15.5 5.6a3.2 3.2 0 0 1 0 6M17.5 14.6c2 .6 3.2 2.2 3.5 4.9"/></symbol>
     <symbol id="ic-phone-dl" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7.5v7M9 11.5l3 3 3-3M10.5 18.5h3"/></symbol>
     <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M4.5 15v4.5h15V15"/></symbol>
@@ -2020,6 +2103,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <button class="menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="nav"><svg class="i"><use href="#ic-menu"/></svg></button>
   </div>
 </header>
+<nav class="bnav" id="bnav" aria-label="Main"></nav>
 <div class="hi-bar"><div class="wrap"><p class="brand-hi" id="brand-hi" hidden>Welcome, <b id="brand-hi-name"></b></p></div></div>
 <div class="menu-scrim" id="menu-scrim" hidden></div>
 
@@ -2032,22 +2116,26 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <div class="ts-head"><h2 class="ts-title"><span class="ts-dot" aria-hidden="true"></span>Today's matches</h2><button class="ts-share" type="button" id="ts-share" hidden><svg class="i" aria-hidden="true"><use href="#ic-whatsapp"/></svg>Share results</button></div>
         <ul class="ts-list" id="ts-list"></ul>
       </div>
+      <div class="fbar" id="fbar">
       <div class="tabs" role="tablist" aria-label="Tournament list">
         <button class="tab" type="button" role="tab" id="tab-current" data-tab="current" aria-selected="true">Current <span class="tab-count" id="count-current">0</span></button>
         <button class="tab" type="button" role="tab" id="tab-archive" data-tab="archive" aria-selected="false">Archive <span class="tab-count" id="count-archive">0</span></button>
       </div>
-
-      <div class="sec-head">
-        <h2 id="list-title">Tournaments</h2>
-        <div class="segmented" role="group" aria-label="Filter by type" id="type-filter">
+      <span class="fbar-div" aria-hidden="true"></span>
+          <div class="segmented" role="group" aria-label="Filter by type" id="type-filter">
           <button type="button" data-type="all" aria-pressed="true">All</button>
           <button type="button" data-type="Quiz" aria-pressed="false">Quiz</button>
           <button type="button" data-type="Futsal" aria-pressed="false">Futsal</button>
         </div>
+      </div>
+
+      <div class="sec-head">
+        <h2 id="list-title" class="sr-only">Tournaments</h2>
         <div data-admin><button class="btn" type="button" data-new><svg class="i"><use href="#ic-plus"/></svg>New tournament</button></div>
       </div>
 
       <div class="grid" id="grid" aria-live="polite"></div>
+      <button class="arch-link" type="button" id="arch-link" hidden></button>
 
       <div class="empty" id="empty">
         <svg class="i"><use href="#ic-trophy"/></svg>
@@ -2115,7 +2203,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   <section class="block detail" id="preferences" hidden>
     <div class="wrap prefs">
       <a class="back" href="#tournaments"><svg class="i"><use href="#ic-left"/></svg>All tournaments</a>
-      <h1 class="detail-title">Settings</h1>
+      <h1 class="detail-title"><span class="t-desk">Settings</span><span class="t-phone">Profile</span></h1>
+
+      <div class="pf-card" id="pf-card"></div>
+      <h2 class="pf-sub t-phone">Settings</h2>
 
       <div class="pref-group">
         <h2>Appearance</h2>
@@ -2127,6 +2218,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
             <button type="button" data-theme-pick="dark">Dark</button>
           </div>
         </div>
+      </div>
+
+      <div class="pref-group" data-site>
+        <h2>Club</h2>
+        <a class="pref-row pref-go" href="#members">
+          <div><strong>Members</strong><small>Add member IDs and set who is a manager or admin.</small></div>
+          <svg class="i" aria-hidden="true"><use href="#ic-right"/></svg>
+        </a>
       </div>
 
       <div class="pref-group" data-site>
@@ -2349,7 +2448,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.30</span>
+    <span class="site-ver">Version 2.7.40</span>
   </div>
 </footer>
 
@@ -2466,7 +2565,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <div class="menu-list">
         <button type="button" id="s-edit"><strong>Edit details</strong><small>Name, date, venue, format and description</small></button>
         <button type="button" id="s-awards-row" class="awards-row"><strong id="s-awards">Add awards</strong><small>King of the Tournament, top scorer, best 5, best coach and best manager</small></button>
-        <button type="button" id="s-spons-row"><strong>Sponsors</strong><small>Logos that slide under the tournament name</small></button>
+        <button type="button" id="s-spons-row"><strong>Sponsors</strong><small>Logos under the tournament name. Tap 👑 to pick the title sponsor.</small></button>
         <button type="button" id="s-delete" class="danger"><strong>Delete tournament</strong><small>Removes its teams, players, matches and results</small></button>
         <div class="confirm" id="s-confirm" hidden>
           <strong>Delete this tournament?</strong>
@@ -4102,6 +4201,16 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         var b = el('button', 'sp-ic'); b.type = 'button'; b.setAttribute('aria-label', label); b.title = label; b.disabled = !!dis;
         b.appendChild(svgIcon(icon)); b.addEventListener('click', fn); acts.appendChild(b);
       }
+      var crown = el('button', 'sp-ic sp-crown' + (s.title ? ' on' : ''), '👑'); crown.type = 'button';
+      crown.title = s.title ? 'Title sponsor (tap to remove)' : 'Make title sponsor';
+      crown.setAttribute('aria-label', crown.title); crown.setAttribute('aria-pressed', s.title ? 'true' : 'false');
+      crown.addEventListener('click', function () {
+        var on = !s.title;
+        list.forEach(function (x) { delete x.title; });
+        if (on) s.title = true;
+        saveSponsors(); toast(on ? s.name + ' is the title sponsor' : 'No title sponsor now');
+      });
+      acts.appendChild(crown);
       btn('Move up', 'ic-left', function () { list.splice(i - 1, 0, list.splice(i, 1)[0]); saveSponsors(); }, i === 0);
       btn('Edit', 'ic-edit', function () {
         spEd.idx = i; spEd.logo = s.logo || null;
@@ -4133,6 +4242,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (link) item.link = link;
     if (spEd.logo) item.logo = spEd.logo;
     var list = spEd.t.sponsors || (spEd.t.sponsors = []);
+    if (spEd.idx >= 0 && list[spEd.idx] && list[spEd.idx].title) item.title = true;
     if (spEd.idx >= 0) list[spEd.idx] = item; else list.push(item);
     var added = spEd.idx < 0;
     resetSponsorForm();
@@ -4340,7 +4450,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   // Sponsors: one small card at a time, sliding to the next every few seconds
   var DEMO_SPONSORS = [
-    { name: 'Island Fresh Mart', note: 'Groceries delivered daily', c: '#2f8f6b' },
+    { name: 'Island Fresh Mart', note: 'Groceries delivered daily', c: '#2f8f6b', title: true },
     { name: 'Blue Wave Cafe', note: 'Coffee, juice and short eats', c: '#2b6cb0' },
     { name: 'Atoll Motors', note: 'Bikes, parts and service', c: '#c05621' },
     { name: 'Sunrise Pharmacy', note: 'Open 24 hours', c: '#b83280' },
@@ -4351,14 +4461,21 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     return FB_MODE ? [] : DEMO_SPONSORS; // demo cards only in the preview
   }
   function renderSponsors(t, boxId) {
-    var box = document.getElementById(boxId || 'd-spons'), list = sponsorsOf(t);
-    var key = t.id + '|' + JSON.stringify(list);
+    var box = document.getElementById(boxId || 'd-spons'), all = sponsorsOf(t);
+    var key = t.id + '|' + JSON.stringify(all);
     if (key === box.spKey) return;
     box.spKey = key; clearInterval(box.spTimer);
     box.textContent = '';
-    box.hidden = !list.length;
+    box.hidden = !all.length;
+    if (!all.length) return;
+    var top = all.filter(function (s) { return s.title; })[0], list = all.filter(function (s) { return s !== top; });
+    if (top) {
+      box.appendChild(el('small', 'sp-label sp-label-title', 'Title sponsor'));
+      var tc = sponsorCard(top); tc.classList.add('in', 'sp-title');
+      box.appendChild(tc);
+    }
     if (!list.length) return;
-    box.appendChild(el('small', 'sp-label', list.length === 1 ? 'Sponsor' : 'Sponsors'));
+    box.appendChild(el('small', 'sp-label', list.length === 1 && !top ? 'Sponsor' : 'Sponsors'));
     var stage = el('div', 'sp-stage'), dots = el('div', 'sp-dots'), at = 0;
     var cards = list.map(function (s, i) {
       var c = sponsorCard(s); if (i === 0) c.classList.add('in');
@@ -8128,6 +8245,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   var feedbackSection = document.getElementById('feedback-page');
   function themeChoice() { return root.getAttribute('data-theme') || 'system'; }
   function renderPrefs() {
+    renderProfile();
     document.querySelectorAll('[data-theme-pick]').forEach(function (b) {
       b.setAttribute('aria-pressed', b.dataset.themePick === themeChoice() ? 'true' : 'false');
     });
@@ -8189,6 +8307,37 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   // Plain #t-<id> anchors open a tournament; anything else shows the list
   var hallSection = document.getElementById('hall');
   // Icon menu on computers: each link keeps its name for the hover label and screen readers
+  (function () {
+    var h = document.querySelector('.site-header');
+    function set() { document.documentElement.style.setProperty('--hdr-h', h.getBoundingClientRect().height + 'px'); }
+    set(); if (window.ResizeObserver) new ResizeObserver(set).observe(h); window.addEventListener('resize', set);
+  })();
+  // Archive link under the list (the Current / Archive bar is hidden)
+  (function () {
+    var link = document.getElementById('arch-link'), ta = document.getElementById('tab-archive'), tc = document.getElementById('tab-current'), n = document.getElementById('count-archive');
+    function sync() {
+      var arch = ta.getAttribute('aria-selected') === 'true', c = +(n.textContent || 0);
+      link.hidden = !arch && !c;
+      link.textContent = arch ? '‹ Back to current tournaments' : 'Archive (' + c + ') ›';
+    }
+    link.addEventListener('click', function () { (ta.getAttribute('aria-selected') === 'true' ? tc : ta).click(); window.scrollTo(0, 0); });
+    new MutationObserver(sync).observe(document.getElementById('fbar'), { subtree: true, attributes: true, childList: true, characterData: true });
+    sync();
+  })();
+  // Phones: the same links in a bar fixed at the bottom of the screen
+  (function () {
+    var bn = document.getElementById('bnav');
+    document.querySelectorAll('#nav a').forEach(function (a) {
+      if (a.getAttribute('href') === '#members') return; // Members lives inside Settings on phones
+      var c = a.cloneNode(true), b = c.querySelector('.fb-badge');
+      if (a.getAttribute('href') === '#preferences') {
+        c.querySelector('use').setAttribute('href', '#ic-profile');
+        c.querySelector('span:not(.nav-ic)').textContent = 'Profile';
+      }
+      if (b) { b.removeAttribute('id'); b.classList.add('fb-badge-b'); }
+      bn.appendChild(c);
+    });
+  })();
   document.querySelectorAll('#nav a').forEach(function (a) {
     var label = a.querySelector('span:not(.nav-ic)');
     if (label) { a.setAttribute('data-tip', label.textContent); a.setAttribute('aria-label', label.textContent); }
@@ -8328,9 +8477,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (location.hash !== '#members' || !isSiteAdmin()) membersSection.hidden = true;
     if (location.hash !== '#feedback' || !isSiteAdmin()) feedbackSection.hidden = true;
     var page = location.hash === '#preferences' || location.hash === '#hall' || ((location.hash === '#members' || location.hash === '#feedback') && isSiteAdmin()) ? location.hash : '#top';
-    document.querySelectorAll('#nav a').forEach(function (a) {
+    document.querySelectorAll('#nav a, #bnav a').forEach(function (a) {
       var target = a.getAttribute('href');
-      var here = target === page;
+      var here = target === page || (page === '#members' && target === '#preferences' && a.closest('#bnav'));
       if (here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
   }
@@ -9014,6 +9163,36 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     document.getElementById('ac-visitor').setAttribute('aria-checked', on ? 'true' : 'false');
     applyRole();
   }
+  // Profile card on the Settings page (phones open it from Profile in the bottom bar)
+  function renderProfile() {
+    var box = document.getElementById('pf-card'); if (!box) return;
+    box.textContent = '';
+    var signed = !!auth.account || !!auth.realAdmin;
+    var who = auth.account ? auth.account.name : auth.realAdmin ? 'Admin' : 'Visitor';
+    var r = signed ? roleOf() : 'visitor';
+    var head = el('div', 'pf-head');
+    var av = el('span', 'ac-avatar pf-av' + (r === 'admin' ? ' is-admin' : r === 'manager' ? ' is-manager' : ''), who.charAt(0));
+    if (auth.account) memberPhoto(av, auth.account.id);
+    head.appendChild(av);
+    var txt = el('div', 'pf-text');
+    txt.appendChild(el('strong', null, who));
+    txt.appendChild(el('small', null, auth.account ? 'Member ID ' + auth.account.id : auth.realAdmin ? 'You own this site' : 'Sign in to make picks and play the quiz'));
+    head.appendChild(txt);
+    if (signed) head.appendChild(el('span', 'tag ' + (r === 'admin' ? 't-amber' : r === 'manager' ? 't-blue' : 't-green'), r === 'admin' ? 'Admin' : r === 'manager' ? 'Manager' : 'Member'));
+    box.appendChild(head);
+    var acts = el('div', 'pf-acts');
+    function act(label, ic, cls, fn) {
+      var b = el('button', 'btn btn-ghost btn-sm' + (cls ? ' ' + cls : '')); b.type = 'button';
+      if (ic) b.appendChild(icon(ic));
+      b.appendChild(document.createTextNode(label));
+      b.addEventListener('click', fn); acts.appendChild(b);
+    }
+    if (!auth.account) act('Sign in', null, '', function (e) { openAuth(null, null, e.currentTarget); });
+    if (auth.account) act('Edit profile', null, '', function (e) { openAccount(e.currentTarget); });
+    if (auth.account) act('Change password', 'ic-key', '', function () { document.getElementById('ac-pass').click(); });
+    if (auth.account) act('Sign out', null, 'danger-text', function () { document.getElementById('ac-signout').click(); renderProfile(); });
+    if (acts.children.length) box.appendChild(acts);
+  }
   document.getElementById('account-btn').addEventListener('click', function (e) {
     if (!auth.account && !auth.realAdmin) openAuth(null, null, e.currentTarget);
     else openAccount(e.currentTarget);
@@ -9623,6 +9802,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var n = isSiteAdmin() && feedback ? feedback.filter(function (f) { return !f.read; }).length : 0;
     var b = document.getElementById('fb-badge');
     b.textContent = n; b.hidden = !n;
+    document.querySelectorAll('.fb-badge-b').forEach(function (x) { x.textContent = n; x.hidden = !n; });
   }
   function paintStars() {
     Array.prototype.forEach.call(document.querySelectorAll('#fb-stars [data-star]'), function (b) {
