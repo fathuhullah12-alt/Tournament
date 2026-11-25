@@ -1997,8 +1997,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   .bnav a[aria-current="page"] .nav-ic { background: color-mix(in srgb, var(--teal) 16%, transparent); }
   .bnav .fb-badge { position: absolute; top: 0; left: calc(50% + 6px); margin: 0; min-width: 17px; height: 17px; font-size: 10px; padding: 0 4px; }
   .menu-btn { display: none !important; }
-  /* Phones: no profile photo or theme button in the header (Profile is in the bottom bar, Theme is on the Profile page) */
-  .site-header .account-btn, .site-header .theme-btn { display: none !important; }
+  /* Phones: no profile photo in the header (Profile is in the bottom bar); the theme button stays */
+  .site-header .account-btn { display: none !important; }
+  .site-header .theme-btn { margin-left: auto; }
   .fbar { position: relative; top: auto; margin: 0 auto 14px; }
   body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
   .legal { padding-bottom: 4px; }
@@ -2470,7 +2471,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.1</span>
+    <span class="site-ver">Version 2.8.2</span>
   </div>
 </footer>
 
