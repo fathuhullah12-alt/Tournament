@@ -1976,6 +1976,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     box-shadow: 0 -8px 24px -14px rgba(0, 0, 0, .35); }
   .bnav a { border-radius: 18px; }
   /* keep the bar reaching the screen edge when iPhone bounces at the end of the page */
+  /* iPhone home-screen app: the strip under the page takes the html colour, so match the bar */
+  html { background: var(--bg-raised); }
   .bnav::after { content: ""; position: absolute; left: -1px; right: -1px; top: 100%; height: 160px; background: var(--bg-raised); pointer-events: none; }
   .bnav > * { max-width: 130px; }
   .bnav { justify-content: center; }
@@ -2458,7 +2460,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.44</span>
+    <span class="site-ver">Version 2.7.45</span>
   </div>
 </footer>
 
