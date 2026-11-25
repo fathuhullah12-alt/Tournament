@@ -1061,6 +1061,22 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .btn-ghost.danger-text { color: var(--live); }
 /* Played match: scorers and cards under each team, folded until the card is tapped */
 .fx .fx-events[hidden] { display: none; }
+.fx .fx-events.tl { display: grid; grid-template-columns: 1fr; gap: 2px; position: relative; padding: 12px 0 6px; }
+.fx .fx-events.tl::before { content: ""; position: absolute; left: 50%; top: 14px; bottom: 10px; width: 2px; margin-left: -1px; background: color-mix(in srgb, var(--line) 90%, transparent); border-radius: 2px; }
+.tl-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr); align-items: center; min-height: 44px; }
+.tl-side { min-width: 0; }
+.tl-l { text-align: right; padding-right: 10px; }
+.tl-r { text-align: left; padding-left: 10px; }
+.tl-min { position: relative; justify-self: center; min-width: 40px; padding: 3px 7px; border-radius: 8px; background: var(--bg-raised); border: 1px solid var(--line); text-align: center; font: 700 12px/1.2 var(--font-body); font-variant-numeric: tabular-nums; color: var(--fg); }
+.tl-who { display: inline-grid; gap: 1px; max-width: 100%; }
+.tl-line { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: 13.5px; line-height: 1.25; color: var(--fg); }
+.tl-l .tl-line { flex-direction: row-reverse; }
+.tl-line b { font-weight: 700; overflow-wrap: anywhere; }
+.tl-who small { font-size: 11.5px; color: var(--fg-muted); }
+.fx .fx-events .tl-line .tl-ball { flex: none; width: 16px; height: 16px; color: #2fae63; }
+.tl-line .bk { flex: none; width: 11px; height: 15px; border-radius: 2px; }
+.tl-motm .tl-min { color: #b8860b; border-color: color-mix(in srgb, #e3b53c 60%, transparent); background: color-mix(in srgb, #e3b53c 14%, var(--bg-raised)); font-size: 13px; }
+.tl-motm small { color: #b8860b; font-weight: 700; letter-spacing: .02em; }
 .fx .fx-more { grid-column: 1 / -1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; color: var(--fg-dim); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .fx .fx-more svg.i { width: 14px; height: 14px; transition: transform .2s ease; }
 .fx.fx-open .fx-more svg.i { transform: rotate(180deg); }
@@ -2333,7 +2349,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.29</span>
+    <span class="site-ver">Version 2.7.30</span>
   </div>
 </footer>
 
@@ -5784,9 +5800,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     else if (played(m)) {
       b.appendChild(el('span', 'fx-ft', 'Full time'));
     } else meta.push(formatKickoff(m.date));
-    if (played(m) && !isBye(m)) { var ev = matchEvents(m, home, away); if (ev) b.appendChild(ev); }
+    var ev = played(m) && !isBye(m) ? matchEvents(m, home, away, t) : null;
+    if (ev) b.appendChild(ev);
     var metaEl = el('span', 'meta', meta.join(' · '));
-    if (played(m) && m.potm) {
+    if (played(m) && m.potm && !ev) {
       var star = el('span', 'potm');
       star.appendChild(el('small', null, 'Player of the match'));
       star.appendChild(el('b', null, '★ ' + m.potm.player));
@@ -5822,31 +5839,45 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     b.setAttribute('aria-label', (home ? home.name : '') + ' against ' + (away ? away.name : 'bye') + (played(m) ? ', ' + m.hs + ' to ' + m.as : '') + (out ? ', suspended: ' + out.map(function (x) { return x.player; }).join(', ') : ''));
     return b;
   }
-  // Scorers with goal counts, then yellow and red cards, for each side of a played match
-  function matchEvents(m, home, away) {
+  // Match timeline: home events on the left, away on the right, minute in the middle, latest first.
+  // Minutes come from the live controls; a result typed in by hand has goals and cards without minutes.
+  function matchEvents(m, home, away, t) {
     var goals = m.goals || [], cards = m.cards || [];
-    if (!goals.length && !cards.length) return null;
-    var wrap = el('span', 'fx-events');
-    [[home, 'ev-home'], [away, 'ev-away']].forEach(function (k) {
-      var team = k[0], ul = el('span', 'ev ' + k[1]);
-      if (team) {
-        var order = [], n = {};
-        goals.forEach(function (g) { if (g.team !== team.id) return; if (!n[g.player]) { n[g.player] = 0; order.push(g.player); } n[g.player]++; });
-        order.forEach(function (p) {
-          var li = el('span', 'ev-row'), ic = svgIcon('ic-futsal'), txt = el('span', null, p);
-          if (n[p] > 1) txt.appendChild(el('b', null, ' ×' + n[p]));
-          li.appendChild(ic); li.appendChild(txt); ul.appendChild(li);
-        });
-        ['y', 'r'].forEach(function (c) {
-          cards.forEach(function (x) {
-            if (x.team !== team.id || x.c !== c) return;
-            var li = el('span', 'ev-row'); li.appendChild(el('i', 'bk bk-' + c)); li.appendChild(el('span', null, x.player));
-            li.setAttribute('aria-label', x.player + ', ' + (c === 'y' ? 'yellow' : 'red') + ' card');
-            ul.appendChild(li);
-          });
-        });
-      }
-      wrap.appendChild(ul);
+    function count(list, id) { return list.filter(function (x) { return x.team === id; }).length; }
+    function sameSet(live, saved) { return [m.home, m.away].every(function (id) { return count(live, id) === count(saved, id); }); }
+    var lg = m.lgoals || [], lc = m.lcards || [];
+    var useG = lg.length && sameSet(lg, goals) ? lg : goals, useC = lc.length && sameSet(lc, cards) ? lc : cards;
+    var items = [];
+    useG.forEach(function (g, i) { items.push({ k: 'g', team: g.team, player: g.player, min: g.min, o: i }); });
+    useC.forEach(function (c, i) { items.push({ k: c.c, team: c.team, player: c.player, min: c.min, o: 100 + i }); });
+    if (!items.length && !m.potm) return null;
+    items.sort(function (x, y) { return ((y.min || 0) - (x.min || 0)) || (y.o - x.o); });
+    function num(teamId, name) {
+      var tm = teamById(t, teamId), hit = null;
+      ((tm && tm.players) || []).forEach(function (pl) { if (!hit && sameName(pl.name, name)) hit = pl; });
+      return hit && hit.number !== '' && hit.number != null ? '#' + hit.number + ' ' : '';
+    }
+    var wrap = el('span', 'fx-events tl');
+    function row(side, minTxt, iconEl, name, sub, cls) {
+      var r = el('span', 'tl-row tl-' + side + (cls ? ' ' + cls : ''));
+      var who = el('span', 'tl-who'), line = el('span', 'tl-line');
+      if (iconEl) line.appendChild(iconEl);
+      line.appendChild(el('b', null, name));
+      who.appendChild(line);
+      if (sub) who.appendChild(el('small', null, sub));
+      r.appendChild(el('span', 'tl-side tl-l')).appendChild(side === 'h' ? who : document.createTextNode(''));
+      r.appendChild(el('span', 'tl-min', minTxt));
+      r.appendChild(el('span', 'tl-side tl-r')).appendChild(side === 'a' ? who : document.createTextNode(''));
+      wrap.appendChild(r);
+    }
+    if (m.potm) {
+      row(m.potm.team === m.away ? 'a' : 'h', '★', null, num(m.potm.team, m.potm.player) + m.potm.player, 'Man of the Match', 'tl-motm');
+    }
+    items.forEach(function (x) {
+      var side = x.team === m.away ? 'a' : 'h', ic;
+      if (x.k === 'g') { ic = svgIcon('ic-futsal'); ic.classList.add('tl-ball'); }
+      else ic = el('i', 'bk bk-' + x.k);
+      row(side, x.min ? x.min + "'" : '·', ic, num(x.team, x.player) + x.player, x.k === 'y' ? 'Yellow card' : x.k === 'r' ? 'Red card' : '');
     });
     return wrap;
   }
@@ -6478,7 +6509,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (played(m) && !isBye(m)) {
         // Scorers and cards stay folded; tapping the card shows them with Share and, for admins, Edit
         var more = el('span', 'fx-more');
-        more.appendChild(el('span', null, ev ? 'Goals and cards' : 'Share result'));
+        more.appendChild(el('span', null, ev ? 'Summary' : 'Share result'));
         more.appendChild(svgIcon('ic-down'));
         if (ev) row.insertBefore(more, ev); else row.insertBefore(more, row.querySelector('.meta'));
         var btns = el('div', 'fx-btns');
