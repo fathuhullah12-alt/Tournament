@@ -540,6 +540,7 @@ section.block { padding-block: 48px 8px; }
 .ts-head .ts-title { margin: 0; }
 .ts-share { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .ts-share[hidden] { display: none; }
+.tab-share { display: flex; justify-content: flex-end; margin: 0 0 10px; }
 .ts-share .i { width: 16px; height: 16px; }
 .ts-state.ft { color: var(--fg-dim); }
 .ts-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; }
@@ -2493,7 +2494,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.5</span>
+    <span class="site-ver">Version 2.8.6</span>
   </div>
 </footer>
 
@@ -4980,6 +4981,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         root.appendChild(standingsTable(t, teams));
       }
       var anyPlayed = (t.matches || []).some(function (m) { return !m.ko && played(m); });
+      if (anyPlayed) root.insertBefore(tabShareBtn(t, 'table', 'Share standings'), root.firstChild);
       root.appendChild(el('p', 'table-note', !anyPlayed ? 'The table updates as match results are entered.'
         : groups.length ? 'Top two in each group go through to the knockout round.' : 'Win 3 points, draw 1 point.'));
       return true;
@@ -6517,6 +6519,114 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     shLink = 'https://noonuprc.com/';
     showSharePic(function (logos) { return dayPicture(items, label, logos); }, 'results-' + d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + '.png', trigger, 'Share today\'s results', 'All of today\'s results in one picture, for WhatsApp groups and status.');
   }
+  // Standings or top scorers as one picture for WhatsApp groups and status
+  function tablePicture(t, kind, withLogos) {
+    var FD = '"Barlow Condensed", "Noto Sans Thaana", sans-serif', FB = '"Barlow", "Noto Sans Thaana", sans-serif';
+    var fonts = ['800 60px "Barlow Condensed"', '700 40px "Barlow Condensed"', '600 30px "Barlow"', '700 30px "Barlow"'].map(function (f) { return document.fonts ? document.fonts.load(f).catch(function () {}) : null; });
+    var teams = t.squads || [], groups = groupNames(t), blocks = [];
+    if (kind === 'table') {
+      if (groups.length) groups.forEach(function (g) { var mem = teams.filter(function (tm) { return tm.group === g; }); if (mem.length) blocks.push({ cap: g, rows: tableFor(t, mem) }); });
+      else blocks.push({ cap: '', rows: tableFor(t, teams) });
+    } else blocks.push({ cap: '', rows: scorerRows(t).slice(0, 10) });
+    var logoTeams = [];
+    blocks.forEach(function (b) { b.rows.forEach(function (row) { if (logoTeams.indexOf(row.team) === -1) logoTeams.push(row.team); }); });
+    var srcs = [withLogos && t.logo, withLogos && prefs.logo].concat(logoTeams.map(function (tm) { return withLogos && tm.logo; }));
+    return Promise.all(fonts.concat(srcs.map(loadImg))).then(function (res) {
+      var im = res.slice(fonts.length), tLogo = im[0], clubLogo = im[1], tl = {};
+      logoTeams.forEach(function (tm, i) { tl[tm.id] = im[i + 2]; });
+      function hex(c, d) { return /^#[0-9a-f]{6}$/i.test(c || '') ? c : d; }
+      var W = 1080, rowH = 84, capH = 70, headRowH = 56;
+      var rowsN = blocks.reduce(function (n, b) { return n + b.rows.length; }, 0);
+      var headH = tLogo ? 470 : 300, tablesH = blocks.reduce(function (n, b) { return n + (b.cap ? capH : 0) + headRowH + b.rows.length * rowH + 30; }, 0);
+      var footH = clubLogo ? 300 : 170, H = Math.max(1350, headH + tablesH + footH + 40);
+      var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      var x = cv.getContext('2d');
+      var accent = hex(t.color, '#e3b553');
+      x.fillStyle = '#101615'; x.fillRect(0, 0, W, H);
+      function wash(cx, cy, rad, col) { var g = x.createRadialGradient(cx, cy, 30, cx, cy, rad); g.addColorStop(0, col + '60'); g.addColorStop(1, col + '00'); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+      wash(160, 200, 700, accent); wash(960, H - 300, 700, '#3d8a89');
+      function fit(text, font, size, max) { do { x.font = font.replace('#', size); size -= 2; } while (x.measureText(text).width > max && size > 18); }
+      function rr(bx, by, bw, bh, rad) { x.beginPath(); if (x.roundRect) x.roundRect(bx, by, bw, bh, rad); else x.rect(bx, by, bw, bh); }
+      x.textAlign = 'center';
+      var y = 80;
+      if (tLogo) {
+        var ls = 200, pad = 20, lr = Math.min((ls - pad * 2) / tLogo.naturalWidth, (ls - pad * 2) / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr, bx = (W - ls) / 2;
+        x.save(); x.shadowColor = 'rgba(227, 181, 83, .5)'; x.shadowBlur = 40; rr(bx, y, ls, ls, 36); x.fillStyle = '#ffffff'; x.fill(); x.restore();
+        x.save(); x.lineWidth = 7; x.strokeStyle = '#e3b553'; rr(bx, y, ls, ls, 36); x.stroke(); x.restore();
+        x.drawImage(tLogo, (W - lw) / 2, y + (ls - lh) / 2, lw, lh);
+        y += ls + 60;
+      } else y += 30;
+      x.fillStyle = accent; x.font = '700 40px ' + FD;
+      if (x.letterSpacing !== undefined) x.letterSpacing = '8px';
+      x.fillText(kind === 'table' ? 'STANDINGS' : 'TOP SCORERS', W / 2, y);
+      if (x.letterSpacing !== undefined) x.letterSpacing = '0px';
+      x.fillStyle = '#f2f4f3'; fit((t.name || '').toUpperCase(), '800 #px ' + FD, 64, W - 120); x.fillText((t.name || '').toUpperCase(), W / 2, y + 76);
+      y += 130;
+      // Short tables sit in the middle of the picture, not at the top
+      y += Math.max(0, (H - (headH + tablesH + footH + 40)) / 2);
+      var L = 60, R = W - 60;
+      var cols = kind === 'table' ? [['P', 640], ['W', 710], ['D', 780], ['L', 850], ['GD', 925], ['PTS', 1000]] : [['GOALS', 990]];
+      blocks.forEach(function (b) {
+        if (b.cap) { x.textAlign = 'left'; x.fillStyle = accent; x.font = '800 40px ' + FD; x.fillText(b.cap.toUpperCase(), L, y + 46); y += capH; }
+        x.fillStyle = '#8d9895'; x.font = '700 26px ' + FB;
+        x.textAlign = 'left'; x.fillText(kind === 'table' ? 'TEAM' : 'PLAYER', L + 150, y + 36);
+        x.textAlign = 'center'; cols.forEach(function (c) { x.fillText(c[0], c[1], y + 36); });
+        y += headRowH;
+        b.rows.forEach(function (row, i) {
+          var team = row.team, top = i === 0;
+          x.fillStyle = top ? 'rgba(227, 181, 83, .16)' : (i % 2 ? 'rgba(255,255,255,.035)' : 'rgba(255,255,255,.07)');
+          rr(L - 10, y + 6, R - L + 20, rowH - 12, 18); x.fill();
+          var cy = y + rowH / 2;
+          x.textAlign = 'center'; x.fillStyle = top ? '#f0c35a' : '#c9d0ce'; x.font = '800 40px ' + FD; x.fillText(String(i + 1), L + 30, cy + 14);
+          // Crest
+          var cx = L + 105, rad = 28, logo = tl[team.id];
+          x.save(); x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.closePath();
+          x.fillStyle = logo ? '#ffffff' : hex(team.c1, '#346b4a'); x.fill();
+          x.lineWidth = 4; x.strokeStyle = team.c2 || '#ffffff'; x.stroke();
+          if (logo) { x.clip(); var sc = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82; x.drawImage(logo, cx - logo.width * sc / 2, cy - logo.height * sc / 2, logo.width * sc, logo.height * sc); }
+          else { x.fillStyle = team.c2 || '#ffffff'; x.font = '800 30px ' + FD; x.textBaseline = 'middle'; x.fillText((team.name || 'T').trim().charAt(0).toUpperCase(), cx, cy + 2); x.textBaseline = 'alphabetic'; }
+          x.restore();
+          x.textAlign = 'left'; x.fillStyle = '#f2f4f3';
+          if (kind === 'table') {
+            fit(team.name, '700 #px ' + FB, 34, 370); x.fillText(team.name, L + 150, cy + 12);
+            var gd = row.gf - row.ga;
+            x.textAlign = 'center'; x.font = '600 32px ' + FB; x.fillStyle = '#c9d0ce';
+            [row.p, row.w, row.d, row.l, (gd > 0 ? '+' : '') + gd].forEach(function (v, k) { x.fillText(String(v), cols[k][1], cy + 11); });
+            x.fillStyle = '#ffffff'; x.font = '800 40px ' + FD; x.fillText(String(row.pts), cols[5][1], cy + 14);
+          } else {
+            fit(row.player, '700 #px ' + FB, 34, 690); x.fillText(row.player, L + 150, cy - 2);
+            x.fillStyle = '#9aa5a2'; fit(team.name, '600 #px ' + FB, 24, 690); x.fillText(team.name, L + 150, cy + 28);
+            x.textAlign = 'center'; x.fillStyle = top ? '#f0c35a' : '#ffffff'; x.font = '800 46px ' + FD; x.fillText(String(row.goals), cols[0][1], cy + 16);
+          }
+          y += rowH;
+        });
+        y += 30;
+      });
+      x.textAlign = 'center';
+      // Footer: club logo, club name, date and website
+      x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(120, H - footH + 20, W - 240, 2);
+      if (clubLogo) { x.save(); x.beginPath(); x.arc(W / 2, H - 200, 50, 0, Math.PI * 2); x.closePath(); x.fillStyle = '#ffffff'; x.fill(); x.clip(); var s2 = Math.max(100 / clubLogo.width, 100 / clubLogo.height); x.drawImage(clubLogo, W / 2 - clubLogo.width * s2 / 2, H - 200 - clubLogo.height * s2 / 2, clubLogo.width * s2, clubLogo.height * s2); x.restore(); }
+      x.fillStyle = '#eef1ef'; fit((prefs.name || 'Our club').toUpperCase(), '800 #px ' + FD, 40, W - 200); x.fillText((prefs.name || 'Our club').toUpperCase(), W / 2, H - 92);
+      var d = new Date();
+      x.fillStyle = '#e3b553'; x.font = '700 30px ' + FB; x.fillText('Updated ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() + '  ·  noonuprc.com', W / 2, H - 44);
+      return new Promise(function (ok, bad) { try { cv.toBlob(function (bl) { bl ? ok(bl) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); } });
+    });
+  }
+  function openTableShare(t, kind, trigger) {
+    var lines = kind === 'table'
+      ? tableFor(t, t.squads || []).slice(0, 8).map(function (row, i) { return (i + 1) + '. ' + row.team.name + ' ' + row.pts + ' pts'; })
+      : scorerRows(t).slice(0, 5).map(function (row, i) { return (i + 1) + '. ' + row.player + ' (' + row.team.name + ') ' + row.goals; });
+    shText = (kind === 'table' ? 'Standings' : 'Top scorers') + ' · ' + t.name + '\n' + lines.join('\n');
+    shLink = 'https://noonuprc.com/#t-' + t.id;
+    showSharePic(function (logos) { return tablePicture(t, kind, logos); }, (t.name || 'tournament').replace(/[^\wހ-޿-]+/g, '-') + (kind === 'table' ? '-standings.png' : '-top-scorers.png'), trigger,
+      kind === 'table' ? 'Share standings' : 'Share top scorers', 'Send this picture to WhatsApp groups and your status.');
+  }
+  function tabShareBtn(t, kind, label) {
+    var bar = el('div', 'tab-share'), b = el('button', 'ts-share'); b.type = 'button';
+    b.appendChild(svgIcon('ic-whatsapp')); b.appendChild(document.createTextNode(label));
+    b.onclick = function () { openTableShare(t, kind, b); };
+    bar.appendChild(b); return bar;
+  }
   function openInvite(t, trigger) {
     shText = 'Join ' + t.name + (t.date ? ' · ' + formatDate(t.date) : '') + (typeOf(t.category).quiz ? '. Play the quiz and win!' : '. Predict the scores and win!');
     shLink = 'https://noonuprc.com/#t-' + t.id;
@@ -6805,6 +6915,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     tile(yN, yN === 1 ? 'Yellow card' : 'Yellow cards', 'bk-y');
     tile(rN, rN === 1 ? 'Red card' : 'Red cards', 'bk-r');
     root.appendChild(sum);
+    if (rows.length) root.appendChild(tabShareBtn(t, 'scorers', 'Share top scorers'));
     if (rows.length) root.appendChild(goalsTable(t, rows));
     if (cards.length) {
       var cw = el('div', 'table-wrap st-cards'), ct = el('table', 'standings');
