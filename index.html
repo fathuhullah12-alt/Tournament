@@ -2471,7 +2471,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.2</span>
+    <span class="site-ver">Version 2.8.3</span>
   </div>
 </footer>
 
@@ -4542,6 +4542,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     document.getElementById('d-name').textContent = t.name;
     document.getElementById('d-name').classList.toggle('title-dv', thaana(t.name));
     var dl = document.getElementById('d-logo'); dl.hidden = !t.logo; if (t.logo) dl.src = t.logo; else dl.removeAttribute('src');
+    fitTitle('d-name', 'd-logo');
     renderSponsors(t);
     var narrow = window.matchMedia && matchMedia('(max-width: 480px)').matches;
     var sub = [['calendar', narrow ? formatDate(t.date).replace(/^[^,]*,\s*/, '') : formatDate(t.date)]];
@@ -7887,6 +7888,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     document.getElementById('q-name').textContent = t.name;
     document.getElementById('q-name').classList.toggle('title-dv', thaana(t.name));
     var ql = document.getElementById('q-logo'); ql.hidden = !t.logo; if (t.logo) ql.src = t.logo; else ql.removeAttribute('src');
+    fitTitle('q-name', 'q-logo');
     var players = quizBoard(t).length;
     metaPills(document.getElementById('q-sub'), [['calendar', 'Starts ' + formatDate(t.date)],
       ['quiz', qs.length + (qs.length === 1 ? ' question' : ' questions')], ['users', players + (players === 1 ? ' player' : ' players')]]);
@@ -9327,6 +9329,19 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   });
   // When a member created their account, e.g. "26 Oct 2026, 7:05 am"
   // Date, place and counts under a tournament name, as small icon pills
+  // Tournament name next to its logo: shrink the font until the name is no taller than the logo
+  function fitTitle(nameId, logoId) {
+    var h = document.getElementById(nameId), lg = document.getElementById(logoId);
+    if (!h || !lg) return;
+    h.style.fontSize = '';
+    if (lg.hidden || !h.textContent || !h.offsetParent) return;
+    var max = lg.getBoundingClientRect().height;
+    var size = parseFloat(getComputedStyle(h).fontSize);
+    while (size > 14 && h.getBoundingClientRect().height > max + 1) { size -= 1; h.style.fontSize = size + 'px'; }
+  }
+  function refitTitles() { fitTitle('d-name', 'd-logo'); fitTitle('q-name', 'q-logo'); }
+  window.addEventListener('resize', refitTitles);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refitTitles);
   function metaPills(node, items) {
     node.textContent = '';
     items.forEach(function (x) {
