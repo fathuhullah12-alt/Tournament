@@ -709,6 +709,12 @@ html { -webkit-tap-highlight-color: transparent; }
 .meta-pill { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px 6px 10px; border-radius: 999px; background: var(--chip); border: 1px solid var(--line-soft); color: var(--fg); font-weight: 500; line-height: 1.2; min-width: 0; }
 .meta-pill .i { width: 16px; height: 16px; flex: none; color: var(--teal-hover); }
 .meta-pill span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Tournament page: date, place and teams stay on one line */
+#d-sub { flex-wrap: nowrap; }
+#d-sub .meta-pill { flex: 0 1 auto; white-space: nowrap; }
+#d-sub .meta-pill:nth-child(2) { flex-shrink: 3; }
+#d-sub .meta-pill:last-child { flex-shrink: 0; }
+@media (max-width: 480px) { #d-sub { gap: 6px; font-size: 13px; } #d-sub .meta-pill { gap: 5px; padding: 5px 9px 5px 8px; } #d-sub .meta-pill .i { width: 14px; height: 14px; } }
 .detail-desc { margin: 4px 0 24px; color: var(--fg-muted); max-width: 60ch; }
 .detail-kick { margin-bottom: 18px; }
 #detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-remind, #detail.pred-mode #d-invite, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
@@ -2464,7 +2470,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.0</span>
+    <span class="site-ver">Version 2.8.1</span>
   </div>
 </footer>
 
@@ -4536,9 +4542,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     document.getElementById('d-name').classList.toggle('title-dv', thaana(t.name));
     var dl = document.getElementById('d-logo'); dl.hidden = !t.logo; if (t.logo) dl.src = t.logo; else dl.removeAttribute('src');
     renderSponsors(t);
-    var sub = [['calendar', formatDate(t.date)]];
+    var narrow = window.matchMedia && matchMedia('(max-width: 480px)').matches;
+    var sub = [['calendar', narrow ? formatDate(t.date).replace(/^[^,]*,\s*/, '') : formatDate(t.date)]];
     if (t.location) sub.push(['pin', t.location]);
-    sub.push(['users', (t.squads || []).length + ' of ' + t.teams + ' teams']);
+    sub.push(['users', (t.squads || []).length + '/' + t.teams + ' teams']);
     metaPills(document.getElementById('d-sub'), sub);
     var dk = document.getElementById('d-kick');
     dk.dataset.kick = t.id; fillNextKick(dk, t);
