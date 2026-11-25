@@ -284,7 +284,7 @@ section.block { padding-block: 48px 8px; }
 .fbar { display: none !important; } /* hidden: the list shows current tournaments, the archive opens from a link under the list */
 .arch-link { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 18px auto 0; padding: 10px 18px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-raised); color: var(--fg-muted); font: 600 15px var(--font-body); cursor: pointer; }
 .arch-link:hover { color: var(--fg); }
-.arch-link[hidden] { display: none; }
+.arch-link[hidden], .arch-link { display: none !important; }
 :root.role-visitor #tournaments .sec-head { display: none; } /* only holds the hidden title and the New tournament button */
 .fbar .tabs { gap: 2px; border: 0; margin: 0; }
 .fbar .tab { flex: none; gap: 6px; padding: 8px 12px; margin: 0; border: 0; border-radius: 999px; font-size: 15px; white-space: nowrap; }
@@ -1965,10 +1965,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 /* Bottom navigation bar on phones */
 .bnav { display: none; }
 @media (max-width: 820px) {
-  .bnav { display: flex; position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px)); width: min(520px, calc(100% - 24px)); padding: 6px;
-    border-radius: 24px; border: 1px solid var(--line); background: color-mix(in srgb, var(--bg-raised) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 14px 34px -12px rgba(0, 0, 0, .45); }
+  .bnav { display: flex; position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; padding: 6px max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-bottom, 0px));
+    border-radius: 22px 22px 0 0; border: 1px solid var(--line); border-bottom: 0; background: color-mix(in srgb, var(--bg-raised) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 -8px 24px -14px rgba(0, 0, 0, .35); }
   .bnav a { border-radius: 18px; }
+  .bnav > * { max-width: 130px; }
+  .bnav { justify-content: center; }
   .bnav a { position: relative; flex: 1 1 0; min-width: 0; display: grid; justify-items: center; gap: 3px; padding: 4px 2px; border-radius: 12px; color: var(--fg-muted); font-size: 11px; font-weight: 600; text-align: center; -webkit-tap-highlight-color: transparent; }
   .bnav a > span:not(.nav-ic) { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .bnav .nav-ic { display: grid; place-items: center; width: 44px; height: 28px; border-radius: 999px; transition: background .15s; }
@@ -1978,11 +1980,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   .bnav .fb-badge { position: absolute; top: 0; left: calc(50% + 6px); margin: 0; min-width: 17px; height: 17px; font-size: 10px; padding: 0 4px; }
   .menu-btn { display: none !important; }
   .fbar { position: relative; top: auto; margin: 0 auto 14px; }
-  body { padding-bottom: calc(78px + max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))); }
+  body { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
   .legal { padding-bottom: 4px; }
   footer { margin-top: 28px; }
-  .app-bar { bottom: calc(80px + max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))); }
-  .toast { bottom: calc(84px + max(10px, calc(env(safe-area-inset-bottom, 0px) - 14px))); }
+  .app-bar { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
   .hi-bar:not(:has(.brand-hi:not([hidden]))) { display: none; }
   .hi-bar .wrap { padding-top: 14px; }
   body section.block { padding-top: 20px; }
@@ -2448,7 +2450,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.7.41</span>
+    <span class="site-ver">Version 2.7.42</span>
   </div>
 </footer>
 
