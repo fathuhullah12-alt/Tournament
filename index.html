@@ -1382,6 +1382,9 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pp-career .pp-score { font-size: 15px; color: var(--teal); }
 .pp-career .pp-ev { padding-left: 34px; color: var(--fg-muted); }
 .pp-career .pp-hon { color: var(--fg); font-weight: 700; }
+.pp-hon { display: inline-flex; align-items: center; gap: 6px; }
+.pp-hon-ic { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #f6d77a, #d9a632); color: #4a3405; box-shadow: 0 2px 6px -2px rgba(160, 110, 10, .6); font-style: normal; }
+.pp-hon-ic svg.i { width: 14px; height: 14px; stroke-width: 2.2; }
 .pp-career .pp-here { border-color: var(--teal); }
 .pp-career .pp-link { cursor: pointer; }
 .pp-career .pp-link:hover { background: var(--chip); }
@@ -2108,6 +2111,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <symbol id="ic-chat" viewBox="0 0 24 24"><path d="M4.5 5.5h15v10h-9l-4.5 3.5v-3.5h-1.5z"/><path d="M8.5 9.5h7M8.5 12.5h4.5"/></symbol>
     <symbol id="ic-key" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14 9l2 2"/></symbol>
     <symbol id="ic-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="ic-crown" viewBox="0 0 24 24"><path d="M4 8l4 4 4-6 4 6 4-4-1.5 10h-13Z"/><path d="M5.5 20.5h13"/></symbol>
+    <symbol id="ic-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.6l3.6 2.6-1.4 4.2H9.8l-1.4-4.2Z"/><path d="M12 3.5v4.1M15.6 10.2l4-1.3M14.2 14.4l2.5 3.4M9.8 14.4l-2.5 3.4M8.4 10.2l-4-1.3"/></symbol>
     <symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M7.5 3.5h9v6a4.5 4.5 0 0 1-9 0Z"/><path d="M7.5 5.5h-3a3 3 0 0 0 3 4.5M16.5 5.5h3a3 3 0 0 1-3 4.5M12 14v3.5M8.5 20.5h7l-.8-3h-5.4Z"/></symbol>
     <!-- Social -->
     <symbol id="ic-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".7"/></symbol>
@@ -2494,7 +2499,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.6</span>
+    <span class="site-ver">Version 2.8.7</span>
   </div>
 </footer>
 
@@ -5341,11 +5346,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           if (m.potm && m.potm.team === team.id && m.potm.player.trim().toLowerCase() === key) r.potm++;
         });
         var champ = statusOf(t) === 'completed' ? championOf(t) : null;
-        if (champ && champ.id === team.id) r.honours.push('🏆 Champions');
+        if (champ && champ.id === team.id) r.honours.push(['ic-trophy', 'Champions']);
         var pz = prizesOf(t), same = function (n) { return n && n.trim().toLowerCase() === key; };
-        if (same(pz.player)) r.honours.push('👑 King of the Tournament');
-        if (same(pz.scorer)) r.honours.push('👟 Top scorer');
-        if (pz.best5.some(same)) r.honours.push('🖐 Best 5');
+        if (same(pz.player)) r.honours.push(['ic-crown', 'King of the Tournament']);
+        if (same(pz.scorer)) r.honours.push(['ic-ball', 'Top scorer']);
+        if (pz.best5.some(same)) r.honours.push(['ic-star', 'Best 5']);
         rows.push(r);
       });
     });
@@ -5371,7 +5376,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (r.potm) ev.appendChild(el('span', 'pp-potm', '★ ' + r.potm + '× Player of the Match'));
       if (r.y) { var y = el('span'); y.appendChild(el('i', 'bk bk-y')); y.appendChild(document.createTextNode(String(r.y))); ev.appendChild(y); }
       if (r.r) { var rd = el('span'); rd.appendChild(el('i', 'bk bk-r')); rd.appendChild(document.createTextNode(String(r.r))); ev.appendChild(rd); }
-      r.honours.forEach(function (h) { ev.appendChild(el('span', 'pp-hon', h)); });
+      r.honours.forEach(function (h) { var hs = el('span', 'pp-hon'), hb = el('i', 'pp-hon-ic'); hb.appendChild(svgIcon(h[0])); hs.appendChild(hb); hs.appendChild(document.createTextNode(h[1])); ev.appendChild(hs); });
       li.appendChild(ev);
       if (r.t !== cur) {
         li.classList.add('pp-link'); li.tabIndex = 0; li.setAttribute('role', 'link');
