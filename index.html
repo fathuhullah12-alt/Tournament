@@ -556,7 +556,11 @@ section.block { padding-block: 48px 8px; }
 .nk-vs > i { font-style: normal; font: 800 15px var(--font-display); color: var(--fg-muted); padding: 4px 9px; border-radius: 8px; background: var(--chip); }
 .nk-team { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; text-align: center; }
 .nk-team b { font-size: 16px; line-height: 1.15; overflow-wrap: anywhere; }
-.nk-away { flex-direction: column-reverse; }
+.nk-away { flex-direction: column-reverse; justify-content: flex-end; }
+/* Both crests and both names start on the same line, even when one name wraps */
+.nk-vs { align-items: start; }
+.nk-vs > i { align-self: start; margin-top: 0; }
+.next-kick .btn-sm.nk-predict { padding: 6px 14px; font-size: 13.5px; min-height: 0; }
 .nk-clock { text-align: center; font: 500 26px/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
 .nk-label.nk-final { color: var(--live); font-size: 15px; letter-spacing: .14em; }
 .pens-box { display: grid; gap: 10px; padding: 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--gold, #d9a93a) 40%, var(--line)); }
@@ -611,8 +615,8 @@ section.block { padding-block: 48px 8px; }
 .nk-wait { text-align: center; font-size: 13px; color: var(--fg-muted); }
 .next-kick .nk-kickoff { background: var(--live); color: #fff; font-weight: 700; padding: 9px 22px; }
 .next-kick .nk-predict { background: var(--teal); color: var(--on-teal); }
-.nk-predict { position: relative; z-index: 2; pointer-events: auto; justify-self: center; align-self: center; margin: 2px auto 0; display: inline-flex; align-items: center; gap: 6px; background: var(--teal); color: var(--on-teal); font-weight: 700; padding: 9px 18px; }
-.nk-predict .i { width: 16px; height: 16px; }
+.nk-predict { position: relative; z-index: 2; pointer-events: auto; justify-self: center; align-self: center; margin: 2px auto 0; display: inline-flex; align-items: center; gap: 5px; background: var(--teal); color: var(--on-teal); font-weight: 700; padding: 6px 14px; font-size: 13.5px; min-height: 0; }
+.nk-predict .i { width: 14px; height: 14px; }
 .nk-kickoff { position: relative; z-index: 2; pointer-events: auto; justify-self: center; align-self: center; margin: 2px auto 0; display: flex; }
 .next-kick.is-playing { background: color-mix(in srgb, var(--live) 10%, transparent); border-color: color-mix(in srgb, var(--live) 30%, transparent); }
 .next-kick.is-playing .nk-label { color: var(--live); display: inline-flex; align-items: center; gap: 7px; }
@@ -2500,7 +2504,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.8</span>
+    <span class="site-ver">Version 2.8.9</span>
   </div>
 </footer>
 
