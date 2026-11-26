@@ -2583,7 +2583,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.19</span>
+    <span class="site-ver">Version 2.8.21</span>
   </div>
 </footer>
 
@@ -6625,6 +6625,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     });
   }
   function openDayShare(items, trigger) {
+    if (!auth.account && !isAdmin()) { openAuth('Sign in to share the results.', function () { openDayShare(items, trigger); }, trigger); return; }
     var d = new Date(), label = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear();
     shText = 'Results · ' + label + '\n' + items.map(function (it) { return (it.h ? it.h.name : '') + ' ' + it.m.hs + ' – ' + it.m.as + ' ' + (it.a ? it.a.name : ''); }).join('\n');
     shLink = 'https://noonuprc.com/';
@@ -6835,6 +6836,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     }).catch(function () { wait.textContent = 'Could not make the picture. Try again.'; });
   }
   function openShare(t, m, trigger) {
+    if (!auth.account && !isAdmin()) { openAuth('Sign in to share this result.', function () { openShare(t, m, trigger); }, trigger); return; }
     document.getElementById('sh-title').textContent = 'Share result';
     document.querySelector('#sh-modal .sheet-sub').textContent = 'Send this picture to a WhatsApp chat, group or status.';
     var home = teamById(t, m.home), away = teamById(t, m.away);
@@ -10456,8 +10458,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var e = entries[k];
       if (e.t !== t.id) return;
       markLate(t, e);
-      function tag(x) { if (x && e.member && !x.member) x.member = e.member; return x; }
-      p = p.concat((e.predictions || []).map(tag)); b = b.concat((e.bonus || []).map(tag)); a = a.concat(e.answers || []);
+      function tag(x) { if (!x || !e.member || x.member) return x; var c = {}; for (var k in x) c[k] = x[k]; c.member = e.member; return c; }
+      p = p.concat((e.predictions || []).map(tag)); b = b.concat(e.bonus || []); a = a.concat(e.answers || []);
     });
     t.predictions = p; t.bonus = b; t.answers = a;
   }
@@ -10480,7 +10482,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var eid = t.id + '__' + me.id;
       var body = {
         t: t.id, member: me.id, uid: fb.user.uid, name: me.name,
-        predictions: (t.predictions || []).filter(function (p) { return (p.name || '').toLowerCase() === low; }),
+        predictions: (t.predictions || []).filter(function (p) { return (p.name || '').toLowerCase() === low; })
+          .map(function (p) { if (!('member' in p)) return p; var c = {}; for (var k in p) if (k !== 'member') c[k] = p[k]; return c; }),
         bonus: (t.bonus || []).filter(function (b) { return (b.name || '').toLowerCase() === low; }),
         answers: (t.answers || []).filter(function (a) { return a.member === me.id; })
       };
