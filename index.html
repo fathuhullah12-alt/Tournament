@@ -1987,6 +1987,36 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .fb-badge[hidden] { display: none; }
 /* Bottom navigation bar on phones */
 .bnav { display: none; }
+.hf-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.hf-top .ts-share { text-decoration: none; }
+.pref-go .fb-badge { margin-left: auto; flex: none; }
+.lb-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 10px; margin: 18px 0 16px; }
+.lb-step { position: relative; display: grid; justify-items: center; gap: 4px; text-align: center; min-width: 0; }
+.lb-av { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; font: 800 24px var(--font-display); color: #fff; background: var(--teal); border: 3px solid var(--bg-raised); box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .5); }
+.lb-av.sm { width: 34px; height: 34px; font-size: 16px; border-width: 2px; flex: none; }
+.lb-gold .lb-av { width: 72px; height: 72px; font-size: 30px; background: linear-gradient(135deg, #f6d77a, #d9a632); color: #4a3405; }
+.lb-silver .lb-av { background: linear-gradient(135deg, #e6eaee, #a9b3bc); color: #2c343b; }
+.lb-bronze .lb-av { background: linear-gradient(135deg, #f0c09a, #b9733f); color: #3d2210; }
+.lb-crown { position: absolute; top: -18px; color: #e0b21a; }
+.lb-crown svg.i { width: 26px; height: 26px; stroke-width: 2; }
+.lb-name { font-size: 15px; line-height: 1.15; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-pts { color: var(--fg-muted); font-size: 13px; font-weight: 700; }
+.lb-base { width: 100%; display: grid; place-items: center; border-radius: 14px 14px 6px 6px; font: 800 26px var(--font-display); color: #fff; margin-top: 4px; }
+.lb-gold .lb-base { height: 92px; background: linear-gradient(180deg, #e9c254, #c9962a); }
+.lb-silver .lb-base { height: 68px; background: linear-gradient(180deg, #bfc8d0, #8f9aa4); }
+.lb-bronze .lb-base { height: 52px; background: linear-gradient(180deg, #d79a6a, #a8622f); }
+.lb-step.is-me .lb-name { color: var(--teal); }
+.lb-you { display: grid; gap: 2px; padding: 12px 16px; margin-bottom: 14px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--teal) 40%, var(--line)); background: color-mix(in srgb, var(--teal) 10%, var(--bg-raised)); }
+.lb-you strong { font: 800 26px/1.1 var(--font-display); }
+.lb-you small { color: var(--fg-muted); }
+.lb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.lb-list li { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-raised); }
+.lb-list li.is-me { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 10%, var(--bg-raised)); }
+.lb-rank { width: 22px; flex: none; text-align: center; font: 800 18px var(--font-display); color: var(--fg-muted); }
+.lb-tx { display: grid; min-width: 0; flex: 1; }
+.lb-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-tx small { color: var(--fg-muted); font-size: 12px; }
+.lb-p { font: 800 22px var(--font-display); }
 .club-soon { display: grid; justify-items: center; gap: 10px; text-align: center; padding: 36px 20px; border: 1px solid var(--line); border-radius: 22px; background: var(--bg-raised); }
 .club-soon .logo-mark { width: 96px; height: 96px; border-radius: 50%; }
 .club-soon .logo-mark img { border-radius: 50%; }
@@ -2118,6 +2148,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <symbol id="ic-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
     <symbol id="ic-crown" viewBox="0 0 24 24"><path d="M4 8l4 4 4-6 4 6 4-4-1.5 10h-13Z"/><path d="M5.5 20.5h13"/></symbol>
     <symbol id="ic-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.6l3.6 2.6-1.4 4.2H9.8l-1.4-4.2Z"/><path d="M12 3.5v4.1M15.6 10.2l4-1.3M14.2 14.4l2.5 3.4M9.8 14.4l-2.5 3.4M8.4 10.2l-4-1.3"/></symbol>
+    <symbol id="ic-rank" viewBox="0 0 24 24"><path d="M3.5 20.5h17"/><path d="M9 20.5V9.5h6v11"/><path d="M4 20.5v-6h5M15 20.5v-8h5v8"/><path d="M12 3.5l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3Z"/></symbol>
     <symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M7.5 3.5h9v6a4.5 4.5 0 0 1-9 0Z"/><path d="M7.5 5.5h-3a3 3 0 0 0 3 4.5M16.5 5.5h3a3 3 0 0 1-3 4.5M12 14v3.5M8.5 20.5h7l-.8-3h-5.4Z"/></symbol>
     <!-- Social -->
     <symbol id="ic-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".7"/></symbol>
@@ -2139,6 +2170,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <a href="#top" aria-current="page"><span class="nav-ic"><svg class="i"><use href="#ic-home"/></svg></span><span>Home</span></a>
       <a href="#members" data-site><span class="nav-ic"><svg class="i"><use href="#ic-users"/></svg></span><span>Members</span></a>
       <a href="#feedback" data-site><span class="nav-ic"><svg class="i"><use href="#ic-chat"/></svg></span><span>Feedback</span><b class="fb-badge" id="fb-badge" hidden></b></a>
+      <a href="#leaderboard" class="nav-lb"><span class="nav-ic"><svg class="i"><use href="#ic-rank"/></svg></span><span>Leaderboard</span></a>
       <a href="#hall"><span class="nav-ic"><svg class="i"><use href="#ic-trophy"/></svg></span><span>Hall of Fame</span></a>
       <a href="#preferences"><span class="nav-ic"><svg class="i"><use href="#ic-gear"/></svg></span><span>Settings</span></a>
     </nav>
@@ -2233,6 +2265,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   </section>
 
   <!-- Hall of Fame: champions and award winners, year by year -->
+  <section class="block detail" id="leaderboard" hidden>
+    <div class="wrap">
+      <a class="back" href="#tournaments"><svg class="i"><use href="#ic-left"/></svg>All tournaments</a>
+      <h1 class="detail-title">Leaderboard</h1>
+      <p class="hf-sub">Top predictors across every tournament. Exact score 3 points, right result 1 point, plus tournament picks.</p>
+      <div id="lb-body"></div>
+    </div>
+  </section>
   <section class="block detail" id="club" hidden>
     <div class="wrap">
       <a class="back" href="#tournaments"><svg class="i"><use href="#ic-left"/></svg>All tournaments</a>
@@ -2247,7 +2287,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   <section class="block detail" id="hall" hidden>
     <div class="wrap">
       <a class="back" href="#tournaments"><svg class="i"><use href="#ic-left"/></svg>All tournaments</a>
-      <h1 class="detail-title">Hall of Fame</h1>
+      <div class="hf-top"><h1 class="detail-title">Hall of Fame</h1><a class="ts-share" href="#leaderboard"><svg class="i" aria-hidden="true"><use href="#ic-rank"/></svg>Leaderboard</a></div>
       <p class="hf-sub">Every champion, top scorer and quiz winner from finished tournaments.</p>
       <div id="hf-most"></div>
       <div id="hf-years"></div>
@@ -2280,6 +2320,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <h2>Club</h2>
         <a class="pref-row pref-go" href="#members">
           <div><strong>Members</strong><small>Add member IDs and set who is a manager or admin.</small></div>
+          <svg class="i" aria-hidden="true"><use href="#ic-right"/></svg>
+        </a>
+        <a class="pref-row pref-go" href="#feedback">
+          <div><strong>Feedback</strong><small>Read what members send from the site.</small></div>
+          <b class="fb-badge fb-badge-b" hidden></b>
           <svg class="i" aria-hidden="true"><use href="#ic-right"/></svg>
         </a>
       </div>
@@ -2504,7 +2549,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.9</span>
+    <span class="site-ver">Version 2.8.10</span>
   </div>
 </footer>
 
@@ -8491,6 +8536,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   // Plain #t-<id> anchors open a tournament; anything else shows the list
   var hallSection = document.getElementById('hall');
   var clubSection = document.getElementById('club');
+  var lbSection = document.getElementById('leaderboard');
   // Icon menu on computers: each link keeps its name for the hover label and screen readers
   (function () {
     var h = document.querySelector('.site-header');
@@ -8513,23 +8559,94 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   (function () {
     var bn = document.getElementById('bnav');
     document.querySelectorAll('#nav a').forEach(function (a) {
-      if (a.getAttribute('href') === '#members') return; // Members lives inside Settings on phones
+      if (a.getAttribute('href') === '#members' || a.getAttribute('href') === '#feedback') return; // Members and Feedback live inside Profile on phones
       var c = a.cloneNode(true), b = c.querySelector('.fb-badge');
       if (a.getAttribute('href') === '#preferences') {
         c.querySelector('use').setAttribute('href', '#ic-profile');
         c.querySelector('span:not(.nav-ic)').textContent = 'Profile';
+        var pb = document.createElement('b'); pb.className = 'fb-badge fb-badge-b'; pb.hidden = true; c.appendChild(pb);
       }
       if (b) { b.removeAttribute('id'); b.classList.add('fb-badge-b'); }
       bn.appendChild(c);
     });
     // Club button sits in the middle of the bar
-    var club = document.getElementById('bn-club'), links = bn.querySelectorAll('a:not(.bn-club)');
-    if (club && links[2]) bn.insertBefore(club, links[2]); else if (club) bn.appendChild(club);
+    var club = document.getElementById('bn-club'), hallLink = bn.querySelector('a[href="#hall"]');
+    if (club && hallLink) bn.insertBefore(club, hallLink); else if (club) bn.appendChild(club);
   })();
   document.querySelectorAll('#nav a').forEach(function (a) {
     var label = a.querySelector('span:not(.nav-ic)');
     if (label) { a.setAttribute('data-tip', label.textContent); a.setAttribute('aria-label', label.textContent); }
   });
+  // All-time top predictors: points from every tournament added up, by name
+  function allTimePredictors() {
+    var board = {};
+    tournaments.forEach(function (t) {
+      if (!visibleTo(t) || typeOf(t.category).quiz) return;
+      var byId = {}, seen = {};
+      (t.matches || []).forEach(function (m) { byId[m.id] = m; });
+      function row(name) {
+        var k = name.trim().toLowerCase();
+        if (!board[k]) board[k] = { key: k, name: name.trim(), pts: 0, exact: 0, right: 0, n: 0, tours: 0 };
+        if (!seen[k]) { seen[k] = 1; board[k].tours++; }
+        return board[k];
+      }
+      (t.predictions || []).forEach(function (p) {
+        var m = byId[p.match]; if (!m || !p.name) return;
+        var rw = row(p.name), pts = predPoints(p, m);
+        rw.n++;
+        if (pts == null) return;
+        rw.pts += pts; if (pts === 3) rw.exact++; if (pts) rw.right++;
+      });
+      (t.bonus || []).forEach(function (b) { if (b.name) row(b.name).pts += bonusScore(t, b).pts; });
+    });
+    var rows = Object.keys(board).map(function (k) { return board[k]; })
+      .sort(function (a, b) { return b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name); });
+    rows.forEach(function (rw, i) { var pv = rows[i - 1]; rw.rank = pv && pv.pts === rw.pts && pv.exact === rw.exact ? pv.rank : i + 1; });
+    return rows;
+  }
+  function renderLeaderboard() {
+    var root = document.getElementById('lb-body'), rows = allTimePredictors();
+    var me = (auth.account ? auth.account.name : prefs.predName || '').trim().toLowerCase();
+    root.textContent = '';
+    if (!rows.length) { root.appendChild(el('p', 'hf-empty', 'No predictions yet. Predict the scores of upcoming matches to get on the board.')); return; }
+    function avatar(name, cls) { var a = el('span', 'lb-av' + (cls ? ' ' + cls : ''), (name || '?').trim().charAt(0).toUpperCase()); return a; }
+    // Podium: 2nd, 1st, 3rd
+    var pod = el('div', 'lb-podium');
+    [1, 0, 2].forEach(function (i) {
+      var rw = rows[i]; if (!rw) return;
+      var place = ['lb-gold', 'lb-silver', 'lb-bronze'][i];
+      var c = el('div', 'lb-step ' + place + (rw.key === me ? ' is-me' : ''));
+      var av = avatar(rw.name); c.appendChild(av);
+      if (i === 0) { var cr = el('span', 'lb-crown'); cr.appendChild(svgIcon('ic-crown')); c.appendChild(cr); }
+      c.appendChild(textDir(el('b', 'lb-name', rw.name), rw.name));
+      c.appendChild(el('span', 'lb-pts', rw.pts + ' pts'));
+      var base = el('div', 'lb-base'); base.appendChild(el('span', null, String(rw.rank))); c.appendChild(base);
+      pod.appendChild(c);
+    });
+    root.appendChild(pod);
+    var mine = rows.filter(function (rw) { return rw.key === me; })[0];
+    if (mine) {
+      var you = el('div', 'lb-you');
+      you.appendChild(el('span', 'pd-kicker', 'Your rank'));
+      you.appendChild(el('strong', null, '#' + mine.rank + ' of ' + rows.length));
+      you.appendChild(el('small', null, mine.pts + ' points · ' + mine.exact + ' exact · ' + mine.tours + (mine.tours === 1 ? ' tournament' : ' tournaments')));
+      root.appendChild(you);
+    }
+    var ul = el('ol', 'lb-list');
+    rows.forEach(function (rw, i) {
+      if (i < 3) return;
+      var li = el('li', rw.key === me ? 'is-me' : null);
+      li.appendChild(el('span', 'lb-rank', String(rw.rank)));
+      li.appendChild(avatar(rw.name, 'sm'));
+      var tx = el('span', 'lb-tx');
+      tx.appendChild(textDir(el('b', null, rw.name + (rw.key === me ? ' (You)' : '')), rw.name));
+      tx.appendChild(el('small', null, rw.exact + ' exact · ' + rw.right + ' right · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments')));
+      li.appendChild(tx);
+      li.appendChild(el('strong', 'lb-p', String(rw.pts)));
+      ul.appendChild(li);
+    });
+    if (ul.childNodes.length) root.appendChild(ul);
+  }
   function renderHall() {
     var done = tournaments.filter(function (t) { return visibleTo(t) && statusOf(t) === 'completed'; })
       .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
@@ -8642,6 +8759,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       listSection.hidden = true; detailSection.hidden = true; quizSection.hidden = true;
       feedbackSection.hidden = false;
       renderFeedback();
+    } else if (location.hash === '#leaderboard') {
+      detail.id = null;
+      listSection.hidden = true; detailSection.hidden = true; quizSection.hidden = true;
+      lbSection.hidden = false;
+      renderLeaderboard();
     } else if (location.hash === '#club') {
       detail.id = null;
       listSection.hidden = true; detailSection.hidden = true; quizSection.hidden = true;
@@ -8666,13 +8788,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (location.hash !== '#preferences') prefsSection.hidden = true;
     if (location.hash !== '#hall') hallSection.hidden = true;
     if (location.hash !== '#club') clubSection.hidden = true;
+    if (location.hash !== '#leaderboard') lbSection.hidden = true;
     document.querySelector('.hi-bar').hidden = listSection.hidden;
     if (location.hash !== '#members' || !isSiteAdmin()) membersSection.hidden = true;
     if (location.hash !== '#feedback' || !isSiteAdmin()) feedbackSection.hidden = true;
-    var page = location.hash === '#preferences' || location.hash === '#hall' || location.hash === '#club' || ((location.hash === '#members' || location.hash === '#feedback') && isSiteAdmin()) ? location.hash : '#top';
+    var page = location.hash === '#preferences' || location.hash === '#hall' || location.hash === '#club' || location.hash === '#leaderboard' || ((location.hash === '#members' || location.hash === '#feedback') && isSiteAdmin()) ? location.hash : '#top';
     document.querySelectorAll('#nav a, #bnav a').forEach(function (a) {
       var target = a.getAttribute('href');
-      var here = target === page || (page === '#members' && target === '#preferences' && a.closest('#bnav'));
+      var here = target === page || ((page === '#members' || page === '#feedback') && target === '#preferences' && a.closest('#bnav'));
       if (here) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
     });
   }
