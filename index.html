@@ -2008,6 +2008,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .lb-silver .lb-base { height: 68px; background: linear-gradient(180deg, #bfc8d0, #8f9aa4); }
 .lb-bronze .lb-base { height: 52px; background: linear-gradient(180deg, #d79a6a, #a8622f); }
 .lb-step.is-me .lb-name { color: var(--teal); }
+/* With a photo, the medal colour stays as a ring */
+.lb-gold .lb-av.has-photo { border-color: #e0b21a; }
+.lb-silver .lb-av.has-photo { border-color: #b4bec7; }
+.lb-bronze .lb-av.has-photo { border-color: #c27d47; }
 .lb-you { display: grid; gap: 2px; padding: 12px 16px; margin-bottom: 14px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--teal) 40%, var(--line)); background: color-mix(in srgb, var(--teal) 10%, var(--bg-raised)); }
 .lb-you strong { font: 800 26px/1.1 var(--font-display); }
 .lb-you small { color: var(--fg-muted); }
@@ -2551,7 +2555,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.14</span>
+    <span class="site-ver">Version 2.8.15</span>
   </div>
 </footer>
 
@@ -8603,11 +8607,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       (t.predictions || []).forEach(function (p) {
         var m = byId[p.match]; if (!m || !p.name) return;
         var rw = row(p.name), pts = predPoints(p, m);
-        rw.n++;
+        rw.n++; if (p.member && !rw.mid) rw.mid = p.member;
         if (pts == null) return;
         rw.pts += pts; if (pts === 3) rw.exact++; if (pts) rw.right++;
       });
-      (t.bonus || []).forEach(function (b) { if (b.name) row(b.name).pts += bonusScore(t, b).pts; });
+      (t.bonus || []).forEach(function (b) { if (!b.name) return; var rb = row(b.name); rb.pts += bonusScore(t, b).pts; if (b.member && !rb.mid) rb.mid = b.member; });
     });
     var rows = Object.keys(board).map(function (k) { return board[k]; })
       .sort(function (a, b) { return b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name); });
@@ -8627,14 +8631,21 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var me = (auth.account ? auth.account.name : prefs.predName || '').trim().toLowerCase();
     root.textContent = '';
     if (!rows.length) { root.appendChild(el('p', 'hf-empty', 'No predictions yet. Predict the scores of upcoming matches to get on the board.')); return; }
-    function avatar(name, cls) { var a = el('span', 'lb-av' + (cls ? ' ' + cls : ''), (name || '?').trim().charAt(0).toUpperCase()); return a; }
+    // Member ids by name, for older predictions saved without one
+    var byName = {};
+    (typeof members !== 'undefined' && members || []).forEach(function (m) { if (m && m.name) byName[m.name.trim().toLowerCase()] = m.id; });
+    if (auth.account) byName[(auth.account.name || '').trim().toLowerCase()] = auth.account.id;
+    function avatar(rw, cls) {
+      var a = el('span', 'lb-av' + (cls ? ' ' + cls : ''), (rw.name || '?').trim().charAt(0).toUpperCase());
+      return memberPhoto(a, rw.mid || byName[rw.key] || null);
+    }
     // Podium: 2nd, 1st, 3rd
     var pod = el('div', 'lb-podium' + (rows.length < 3 ? ' lb-n' + rows.length : ''));
     [1, 0, 2].forEach(function (i) {
       var rw = rows[i]; if (!rw) return;
       var place = ['lb-gold', 'lb-silver', 'lb-bronze'][i];
       var c = el('div', 'lb-step ' + place + (rw.key === me ? ' is-me' : ''));
-      var av = avatar(rw.name); c.appendChild(av);
+      var av = avatar(rw); c.appendChild(av);
       if (i === 0) { var cr = el('span', 'lb-crown'); cr.appendChild(svgIcon('ic-crown')); c.appendChild(cr); }
       c.appendChild(textDir(el('b', 'lb-name', rw.name), rw.name));
       c.appendChild(el('span', 'lb-pts', rw.pts + ' pts'));
@@ -8655,7 +8666,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (i < 3) return;
       var li = el('li', rw.key === me ? 'is-me' : null);
       li.appendChild(el('span', 'lb-rank', String(rw.rank)));
-      li.appendChild(avatar(rw.name, 'sm'));
+      li.appendChild(avatar(rw, 'sm'));
       var tx = el('span', 'lb-tx');
       tx.appendChild(textDir(el('b', null, rw.name + (rw.key === me ? ' (You)' : '')), rw.name));
       tx.appendChild(el('small', null, rw.exact + ' exact · ' + rw.right + ' right · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments')));
@@ -10254,7 +10265,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var e = entries[k];
       if (e.t !== t.id) return;
       markLate(t, e);
-      p = p.concat(e.predictions || []); b = b.concat(e.bonus || []); a = a.concat(e.answers || []);
+      function tag(x) { if (x && e.member && !x.member) x.member = e.member; return x; }
+      p = p.concat((e.predictions || []).map(tag)); b = b.concat((e.bonus || []).map(tag)); a = a.concat(e.answers || []);
     });
     t.predictions = p; t.bonus = b; t.answers = a;
   }
