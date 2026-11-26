@@ -497,7 +497,8 @@ section.block { padding-block: 48px 8px; }
   background: linear-gradient(120deg, color-mix(in srgb, var(--teal) 12%, transparent), color-mix(in srgb, #d9a93a 12%, transparent)); border: 1px solid color-mix(in srgb, var(--teal) 22%, transparent); }
 .next-kick[hidden] { display: none; }
 /* Tournament start countdown, before any match has a time */
-.next-kick.nk-start .nk-label { color: var(--gold); }
+.next-kick.nk-start .nk-label { color: var(--tc, var(--teal)); }
+.next-kick.nk-sib { margin-bottom: 10px; }
 .nk-when { text-align: center; color: var(--fg-muted); font-size: 14px; font-weight: 600; }
 /* Today's matches: a swipeable strip at the top of the home page on match days */
 .card-tp { position: relative; z-index: 1; pointer-events: none; display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--gold) 35%, var(--line)); background: color-mix(in srgb, var(--gold) 8%, transparent); }
@@ -2499,7 +2500,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.7</span>
+    <span class="site-ver">Version 2.8.8</span>
   </div>
 </footer>
 
@@ -3561,6 +3562,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function fillNextKick(box, t) {
     var nk = nextKick(t);
     box.textContent = '';
+    // The separate "Tournament starts in" card above this box is drawn fresh each time
+    var sib = box.previousElementSibling;
+    if (sib && sib.classList.contains('nk-sib')) sib.remove();
+    // "Tournament starts in" takes the tournament's own colour
+    if (t.color) box.style.setProperty('--tc', t.color); else box.style.removeProperty('--tc');
     box.classList.remove('nk-start');
     if (!nk) {
       // No match time yet: count down to the tournament's start date instead
@@ -3580,7 +3586,16 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var h = teamById(t, nk.m.home), a = teamById(t, nk.m.away);
     var head = el('div', 'nk-head');
     var isFinal = nk.m.ko && nk.m.stage === 'Final';
-    head.appendChild(el('span', 'nk-label' + (isFinal && !live ? ' nk-final' : ''), live && nk.m.half === 'ht' ? 'Half time' : live ? (isFinal ? 'Final · playing now' : 'Playing now') : waiting ? (isFinal ? 'Final · starting soon' : 'Starting soon') : isFinal ? 'Final' : 'Next match'));
+    // Before the very first kick-off: a "Tournament starts in" countdown on top, and the match below is the First match
+    var firstUp = !live && !waiting && !(t.matches || []).some(function (mm) { return hasStarted(mm) || played(mm); });
+    if (firstUp && box.parentNode) {
+      var st0 = el('div', 'next-kick nk-start nk-sib'), sec0 = Math.max(0, Math.floor(left / 1000)), d0 = Math.floor(sec0 / 86400);
+      if (t.color) st0.style.setProperty('--tc', t.color);
+      var h0 = el('div', 'nk-head'); h0.appendChild(el('span', 'nk-label', 'Tournament starts in')); st0.appendChild(h0);
+      st0.appendChild(el('div', 'nk-clock', (d0 ? d0 + 'd ' : '') + [Math.floor(sec0 / 3600) % 24, Math.floor(sec0 / 60) % 60, sec0 % 60].map(pad2).join(':')));
+      box.parentNode.insertBefore(st0, box);
+    }
+    head.appendChild(el('span', 'nk-label' + (isFinal && !live ? ' nk-final' : ''), live && nk.m.half === 'ht' ? 'Half time' : live ? (isFinal ? 'Final · playing now' : 'Playing now') : waiting ? (isFinal ? 'Final · starting soon' : 'Starting soon') : firstUp ? 'First match' : isFinal ? 'Final' : 'Next match'));
     head.appendChild(el('span', 'nk-stage', 'Match ' + ((t.matches || []).indexOf(nk.m) + 1) + ' · ' + nk.m.stage));
     box.appendChild(head);
     var vs = el('div', 'nk-vs');
@@ -3657,7 +3672,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       kb.setAttribute('data-admin', ''); kb.dataset.kickoff = t.id + '|' + nk.m.id;
       box.appendChild(kb);
     }
-    if (!live && !waiting) {
+    if (!live && !waiting && !firstUp) {
       var clock = el('div', 'nk-clock');
       clock.setAttribute('aria-label', 'Starts in');
       var sec = Math.floor(left / 1000), parts = [[Math.floor(sec / 86400), 'days'], [Math.floor(sec / 3600) % 24, 'hrs'], [Math.floor(sec / 60) % 60, 'min'], [sec % 60, 'sec']];
