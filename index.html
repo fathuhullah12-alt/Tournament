@@ -1991,6 +1991,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .hf-top .ts-share { text-decoration: none; }
 .pref-go .fb-badge { margin-left: auto; flex: none; }
 .lb-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 10px; margin: 18px 0 16px; }
+.lb-podium.lb-n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 67%; margin-inline: auto; }
+.lb-podium.lb-n1 { grid-template-columns: minmax(0, 1fr); width: 34%; margin-inline: auto; }
 .lb-step { position: relative; display: grid; justify-items: center; gap: 4px; text-align: center; min-width: 0; }
 .lb-av { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; font: 800 24px var(--font-display); color: #fff; background: var(--teal); border: 3px solid var(--bg-raised); box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .5); }
 .lb-av.sm { width: 34px; height: 34px; font-size: 16px; border-width: 2px; flex: none; }
@@ -2549,7 +2551,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.10</span>
+    <span class="site-ver">Version 2.8.12</span>
   </div>
 </footer>
 
@@ -4542,6 +4544,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     detail.tab = detail.tab === 'Predictions' ? 'Standings' : 'Predictions';
     fxConfirm = false; renderDetail();
     var btn = this; btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
+    // Opening predictions: glide down to them, just below the header
+    if (detail.tab === 'Predictions') requestAnimationFrame(function () {
+      var to = document.getElementById('d-content'), hd = document.querySelector('.site-header');
+      if (!to.firstChild) to = document.getElementById('d-panel');
+      if (!to) return;
+      var off = (hd && getComputedStyle(hd).position !== 'static' ? hd.getBoundingClientRect().bottom : 0) + 12;
+      window.scrollTo({ top: Math.max(0, to.getBoundingClientRect().top + window.pageYOffset - off), behavior: 'smooth' });
+    });
   });
 
   function current() {
@@ -8611,7 +8621,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (!rows.length) { root.appendChild(el('p', 'hf-empty', 'No predictions yet. Predict the scores of upcoming matches to get on the board.')); return; }
     function avatar(name, cls) { var a = el('span', 'lb-av' + (cls ? ' ' + cls : ''), (name || '?').trim().charAt(0).toUpperCase()); return a; }
     // Podium: 2nd, 1st, 3rd
-    var pod = el('div', 'lb-podium');
+    var pod = el('div', 'lb-podium' + (rows.length < 3 ? ' lb-n' + rows.length : ''));
     [1, 0, 2].forEach(function (i) {
       var rw = rows[i]; if (!rw) return;
       var place = ['lb-gold', 'lb-silver', 'lb-bronze'][i];
