@@ -363,6 +363,8 @@ section.block { padding-block: 48px 8px; }
 
 /* Tournament cards */
 .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); }
+/* Just one tournament: its card sits in the middle */
+#grid:has(> :only-child) { grid-template-columns: min(100%, 420px); justify-content: center; }
 .card {
   position: relative; display: flex; flex-direction: column; gap: 14px;
   padding: 26px 28px 24px; border-radius: var(--radius); border: 1px solid var(--line);
@@ -417,6 +419,17 @@ section.block { padding-block: 48px 8px; }
 .spons .sp-title .sp-text b { overflow-wrap: anywhere; font: 800 clamp(22px, 7vw, 30px)/1.05 var(--font-display); letter-spacing: .02em; text-transform: uppercase; white-space: normal; }
 .spons .sp-title .sp-text small { font-size: 16px; white-space: normal; }
 .sp-label-title { color: #b8860b; font-size: 16px; letter-spacing: .14em; }
+/* Title sponsor: a soft gold glow that breathes, a light that sweeps across the logo, and a shimmer on the label */
+.spons .sp-title .sp-logo { position: relative; animation: sp-glow 3.2s ease-in-out infinite; }
+.spons .sp-title .sp-logo::after { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .65) 48%, transparent 66%); transform: translateX(-120%); animation: sp-shine 4.5s ease-in-out infinite 1s; }
+.spons .sp-title .sp-text b { animation: sp-rise .7s cubic-bezier(.2, .8, .2, 1) both; }
+.sp-label-title { background: linear-gradient(90deg, #b8860b 0%, #f3cd5e 45%, #b8860b 60%, #b8860b 100%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: sp-label 4.5s linear infinite; }
+@keyframes sp-glow { 0%, 100% { box-shadow: 0 0 0 1px var(--line), 0 0 0 0 rgba(227, 181, 83, 0); } 50% { box-shadow: 0 0 0 2px rgba(227, 181, 83, .85), 0 0 26px 4px rgba(227, 181, 83, .45); } }
+@keyframes sp-shine { 0% { transform: translateX(-120%); } 35%, 100% { transform: translateX(120%); } }
+@keyframes sp-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes sp-label { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+@media (prefers-reduced-motion: reduce) { .spons .sp-title .sp-logo, .spons .sp-title .sp-logo::after, .spons .sp-title .sp-text b, .sp-label-title { animation: none; } .sp-label-title { color: #b8860b; background: none; } }
 .spons .sp-label:not(.sp-label-title) { font-size: 13px; }
 .sp-crown { font-size: 15px; filter: grayscale(1); opacity: .55; }
 .sp-crown.on { filter: none; opacity: 1; border-color: #e3b553; background: color-mix(in srgb, #e3b553 14%, transparent); }
@@ -2619,7 +2632,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.25</span>
+    <span class="site-ver">Version 2.8.26</span>
   </div>
 </footer>
 
