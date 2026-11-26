@@ -424,6 +424,25 @@ section.block { padding-block: 48px 8px; }
 .sp-dots { display: flex; gap: 6px; justify-content: center; }
 .sp-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: background .3s, width .3s; }
 .sp-dots i.on { width: 16px; border-radius: 3px; background: var(--teal); }
+/* Big screens: title sponsor on the left, every other sponsor as a tile on the right (no sliding) */
+@media (min-width: 821px) {
+  .spons { padding: 22px 26px; }
+  .spons.has-list { display: grid; grid-template-columns: 1fr; grid-template-areas: "sl" "st"; row-gap: 12px; }
+  .spons.has-title.has-list { grid-template-columns: minmax(220px, 300px) 1fr; grid-template-areas: "tl sl" "tc st"; column-gap: 28px; align-items: start; }
+  .spons.has-list .sp-label-title { grid-area: tl; }
+  .spons.has-title.has-list .sp-label.sp-label-title { text-align: center; padding-right: 26px; }
+  .spons.has-list .sp-card.sp-title { grid-area: tc; margin: 0; align-self: center; }
+  .spons.has-title.has-list .sp-card.sp-title { padding-right: 26px; border-right: 1px solid var(--line); border-radius: 0; }
+  .spons.has-list .sp-label:not(.sp-label-title) { grid-area: sl; }
+  .spons.has-title.has-list .sp-label { text-align: left; }
+  .spons.has-list .sp-stage { grid-area: st; height: auto; overflow: visible; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; align-self: center; }
+  .spons.has-list .sp-stage .sp-card { position: relative; inset: auto; opacity: 1 !important; transform: none !important; pointer-events: auto; justify-content: flex-start;
+    padding: 10px 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-raised); transition: border-color .2s, box-shadow .2s; }
+  .spons.has-list .sp-stage a.sp-card:hover { border-color: var(--teal); box-shadow: 0 6px 18px -12px rgba(0, 0, 0, .45); }
+  .spons.has-list .sp-stage .sp-logo { width: 52px; height: 52px; }
+  .spons.has-list .sp-stage .sp-text b { font-size: 17px; }
+  .spons.has-list .sp-dots { display: none; }
+}
 @media (prefers-reduced-motion: reduce) { .sp-card, .sp-card.out { transform: none; } }
 .sp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .sp-row { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border: 1px solid var(--line); border-radius: 14px; }
@@ -728,6 +747,10 @@ html { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 480px) { #d-sub { gap: 6px; font-size: 13px; } #d-sub .meta-pill { gap: 5px; padding: 5px 9px 5px 8px; } #d-sub .meta-pill .i { width: 14px; height: 14px; } }
 .detail-desc { margin: 4px 0 24px; color: var(--fg-muted); max-width: 60ch; }
 .detail-kick { margin-bottom: 18px; }
+/* Big screens: the match box, its "Tournament starts in" card and the invite button sit in the middle */
+#detail .detail-kick, #detail .d-remind { margin-left: auto; margin-right: auto; }
+#detail .d-remind:not([hidden]) { display: flex; }
+#detail .next-kick.nk-sib { max-width: 520px; margin-left: auto; margin-right: auto; margin-top: 14px; }
 #detail.pred-mode #d-awards, #detail.pred-mode #d-kick, #detail.pred-mode #d-remind, #detail.pred-mode #d-invite, #detail.pred-mode #d-desc, #detail.pred-mode #d-teambar { display: none !important; }
 .hi-bar { position: relative; }
 .hi-bar[hidden] { display: none; }
@@ -2592,7 +2615,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.23</span>
+    <span class="site-ver">Version 2.8.24</span>
   </div>
 </footer>
 
@@ -4641,6 +4664,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     box.hidden = !all.length;
     if (!all.length) return;
     var top = all.filter(function (s) { return s.title; })[0], list = all.filter(function (s) { return s !== top; });
+    box.classList.toggle('has-title', !!top); box.classList.toggle('has-list', !!list.length);
     if (top) {
       box.appendChild(el('small', 'sp-label sp-label-title', 'Title sponsor'));
       var tc = sponsorCard(top); tc.classList.add('in', 'sp-title');
