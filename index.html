@@ -603,12 +603,17 @@ section.block { padding-block: 48px 8px; }
 .nk-card-y .nk-card-ic { background: linear-gradient(160deg, #ffe066, #f2b705); }
 .nk-card-r .nk-card-ic { background: linear-gradient(160deg, #ff5a4e, #c81e1e); }
 .nk-ctl button:disabled { opacity: .45; cursor: default; }
-.lp-team { margin: 6px 0 8px; font: 800 16px var(--font-display); text-transform: uppercase; letter-spacing: .04em; color: var(--fg-muted); }
+.lp-team { display: flex; align-items: center; gap: 8px; margin: 6px 0 8px; font: 800 16px var(--font-display); text-transform: uppercase; letter-spacing: .04em; color: var(--fg-muted); }
 .lp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
 .lp-player { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
 .lp-player b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lp-num { flex: none; min-width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font: 800 13px var(--font-display); background: var(--chip); color: var(--fg-muted); }
 .lp-player:active { transform: scale(.97); }
+.lp-grid { --tca: var(--tca-l); }
+:root[data-theme="dark"] .lp-grid { --tca: var(--tca-d); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lp-grid { --tca: var(--tca-d); } }
+.lp-grid .lp-player { border-color: color-mix(in srgb, var(--tca) 40%, var(--line)); border-left: 5px solid var(--tca); background: color-mix(in srgb, var(--tca) 10%, var(--bg-raised)); }
+.lp-grid .lp-num { background: var(--tc1); color: var(--tc2); box-shadow: inset 0 0 0 1.5px var(--tca); }
 .next-kick .nk-ft { position: relative; z-index: 2; pointer-events: auto; justify-self: center; background: var(--bg-raised); color: var(--fg); border: 1px solid var(--line); font-weight: 700; padding: 9px 22px; }
 .fx .fx-ft.fx-live { color: var(--live); }
 .fx .score.fx-live-score { color: var(--live); }
@@ -1633,6 +1638,10 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pd-pts { text-align: right; line-height: 1; }
 .pd-pts strong { display: block; font: 800 26px var(--font-display); font-variant-numeric: tabular-nums; }
 .pd-pts small { font-size: 12px; color: var(--fg-muted); }
+.pd-tapme { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .12s, box-shadow .12s; }
+.pd-tapme:active { transform: scale(.98); }
+.pd-tapme:focus-visible { outline: 2px solid var(--teal-ring); outline-offset: 2px; }
+@media (hover: hover) { .pd-tapme:hover { box-shadow: 0 0 0 2px color-mix(in srgb, var(--teal) 45%, transparent); } }
 .pd-tap { grid-template-columns: 26px 38px 1fr auto 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .pd-tap:focus-visible { outline: 2px solid var(--teal-ring); outline-offset: 2px; border-radius: 10px; }
 .pd-chev { width: 16px; height: 16px; color: var(--fg-dim); transition: transform .2s; }
@@ -2583,7 +2592,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.21</span>
+    <span class="site-ver">Version 2.8.23</span>
   </div>
 </footer>
 
@@ -3825,8 +3834,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var teams = mode === 'goal' ? [teamId] : [m.home, m.away];
     teams.forEach(function (id) {
       var team = teamById(t, id); if (!team) return;
-      if (teams.length > 1) body.appendChild(el('h3', 'lp-team', team.name));
+      var c1 = /^#[0-9a-f]{6}$/i.test(team.c1 || '') ? team.c1 : '#3d8a89', c2 = /^#[0-9a-f]{6}$/i.test(team.c2 || '') ? team.c2 : '#ffffff';
+      if (teams.length > 1) { var hd = el('h3', 'lp-team'); hd.appendChild(crest(team, 'sm')); hd.appendChild(el('span', null, team.name)); body.appendChild(hd); }
       var grid = el('div', 'lp-grid');
+      // A very light kit (white) uses its second colour for the stripe, so it still shows on a light screen
+      var lum = function (h) { var n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+      grid.style.setProperty('--tc1', c1); grid.style.setProperty('--tc2', c2); grid.style.setProperty('--tca-l', lum(c1) > .8 ? c2 : c1); grid.style.setProperty('--tca-d', lum(c1) < .2 ? c2 : c1);
       (team.players || []).forEach(function (pl) {
         var b = el('button', 'lp-player'); b.type = 'button';
         if (pl.number != null && pl.number !== '') b.appendChild(el('span', 'lp-num', String(pl.number)));
@@ -7394,6 +7407,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     fiveBox.appendChild(chips);
     if (b5.done) fiveBox.appendChild(el('p', 'pd-five-ans', 'Real Best 5: ' + b5.answer));
     card.appendChild(fiveBox);
+    // While picks are open, tapping any pick box opens the picks too
+    if (go) Array.prototype.slice.call(grid.children).concat(fiveBox).forEach(function (box) {
+      box.classList.add('pd-tapme'); box.tabIndex = 0; box.setAttribute('role', 'button');
+      box.setAttribute('aria-label', (mine ? 'Edit picks: ' : 'Make picks: ') + (box.querySelector('small') || {}).textContent);
+      box.addEventListener('click', function () { go.click(); });
+      box.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go.click(); } });
+    });
     // What everyone is backing to win
     var votes = {};
     (t.bonus || []).forEach(function (b) { if (b.champion) votes[b.champion] = (votes[b.champion] || 0) + 1; });
