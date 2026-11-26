@@ -1678,6 +1678,23 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pd-pts { text-align: right; line-height: 1; }
 .pd-pts strong { display: block; font: 800 26px var(--font-display); font-variant-numeric: tabular-nums; }
 .pd-pts small { font-size: 12px; color: var(--fg-muted); }
+.pred-btn[hidden] { display: none !important; }
+.detail-tabs.sm-tabs { grid-template-columns: repeat(4, 1fr); }
+.detail-tabs > [hidden] { display: none !important; }
+.pred-sw { display: flex; align-items: center; gap: 12px; margin: 14px auto 0; padding: 12px 14px; border-radius: 16px; background: var(--chip); max-width: 520px; }
+.pred-sw[hidden] { display: none !important; }
+.pred-sw > div { flex: 1; display: grid; gap: 2px; min-width: 0; }
+.pred-sw b { font-size: 15px; }
+.pred-sw small { font-size: 13px; color: var(--fg-muted); }
+.ps-ic { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-raised); color: var(--teal); }
+.ps-ic .i { width: 18px; height: 18px; }
+.sm-ft { margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: var(--chip); display: grid; gap: 8px; }
+.sm-ft small { font: 700 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); text-align: center; }
+.sm-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+.sm-team { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.sm-team b { font-size: 14px; line-height: 1.2; overflow-wrap: anywhere; }
+.sm-away { justify-content: flex-end; text-align: right; }
+.sm-score { font: 800 26px var(--font-display); }
 .pd-tapme { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .12s, box-shadow .12s; }
 .pd-tapme:active { transform: scale(.98); }
 .pd-tapme:focus-visible { outline: 2px solid var(--teal-ring); outline-offset: 2px; }
@@ -2285,6 +2302,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           <div class="segmented" role="group" aria-label="Filter by type" id="type-filter">
           <button type="button" data-type="all" aria-pressed="true">All</button>
           <button type="button" data-type="Quiz" aria-pressed="false">Quiz</button>
+          <button type="button" data-type="Football" aria-pressed="false">Football</button>
           <button type="button" data-type="Futsal" aria-pressed="false">Futsal</button>
         </div>
       </div>
@@ -2320,6 +2338,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <p class="detail-desc" id="d-desc" hidden></p>
       <div class="spons" id="d-spons" hidden aria-label="Sponsors"></div>
       <div class="next-kick detail-kick" id="d-kick" hidden></div>
+      <div class="pred-sw" id="d-predsw" data-admin hidden><span class="ps-ic"><svg class="i"><use href="#ic-target"/></svg></span><div><b>Score predictions</b><small id="d-predsw-note"></small></div><button class="switch" type="button" role="switch" id="d-predsw-btn" aria-checked="false" aria-label="Score predictions"><span></span></button></div>
       <button class="btn btn-ghost btn-sm remind-btn d-remind" type="button" id="d-remind" hidden><svg class="i"><use href="#ic-calendar"/></svg>Remind me</button>
       <button class="btn btn-ghost btn-sm remind-btn d-remind d-invite" type="button" id="d-invite" hidden><svg class="i"><use href="#ic-whatsapp"/></svg>Invite friends on WhatsApp</button>
       <p class="lock-note" id="d-lock" hidden><svg class="i"><use href="#ic-lock"/></svg>This tournament is finished, so it's locked. Only the owner or an admin can change it.</p>
@@ -2434,7 +2453,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <h2>New tournaments</h2>
         <label class="pref-row field">
           <div><strong>Default type</strong><small>Selected first in the New tournament form.</small></div>
-          <select id="p-type"><option value="Futsal">Futsal</option><option value="Quiz">Quiz</option></select>
+          <select id="p-type"><option value="Futsal">Futsal</option><option value="Football">Football</option><option value="Quiz">Quiz</option></select>
         </label>
         <label class="pref-row field">
           <div><strong>Default maximum teams</strong><small>For futsal tournaments.</small></div>
@@ -2632,7 +2651,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.26</span>
+    <span class="site-ver">Version 2.8.27</span>
   </div>
 </footer>
 
@@ -2708,7 +2727,24 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           <option value="league">League (one table)</option>
           <option value="groups">Groups + knockout</option>
           <option value="knockout">Knockout</option>
+          <option value="single">Single match</option>
         </select>
+      </label>
+      <div class="field-row" id="row-single" hidden>
+        <label class="field">
+          <span>Home team</span>
+          <input id="f-home" type="text" maxlength="40" placeholder="e.g. Noonu Police">
+          <em class="err" id="err-home" hidden>Name the home team.</em>
+        </label>
+        <label class="field">
+          <span>Away team</span>
+          <input id="f-away" type="text" maxlength="40" placeholder="e.g. Raa Police">
+          <em class="err" id="err-away" hidden>Name the away team (not the same as home).</em>
+        </label>
+      </div>
+      <label class="field" id="row-time" hidden>
+        <span>Kick-off time</span>
+        <input id="f-time" type="time" value="20:00">
       </label>
       <label class="field">
         <span>Description (optional)</span>
@@ -3443,6 +3479,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   // Tournaments: created from the form, saved online when the page can reach its database
   var TYPES = [
     { name: 'Quiz', tag: 'Daily quiz', tone: 'amber', quiz: true, aliases: ['Daily quiz'] },
+    { name: 'Football', tag: 'Football', tone: 'blue' },
     { name: 'Futsal', tag: 'Futsal', tone: 'green' }
   ];
   var prefs = (function () { try { return JSON.parse(localStorage.getItem('prefs')) || {}; } catch (e) { return {}; } })();
@@ -3480,7 +3517,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     });
   }
   applyBrand();
-  var FORMATS = { league: 'League', groups: 'Groups + knockout', knockout: 'Knockout' };
+  var FORMATS = { league: 'League', groups: 'Groups + knockout', knockout: 'Knockout', single: 'Single match' };
   var KEY = 'tournaments.v1';
   var DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -3493,7 +3530,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     name: document.getElementById('f-name'), cat: document.getElementById('f-cat'),
     date: document.getElementById('f-date'), loc: document.getElementById('f-loc'),
     teams: document.getElementById('f-teams'), groups: document.getElementById('f-groups'),
-    format: document.getElementById('f-format'), desc: document.getElementById('f-desc')
+    format: document.getElementById('f-format'), desc: document.getElementById('f-desc'),
+    home: document.getElementById('f-home'), away: document.getElementById('f-away'), time: document.getElementById('f-time')
   };
   var lastTrigger = null;
 
@@ -3570,6 +3608,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     return c;
   }
   function teamsLine(t) {
+    if (t.format === 'single') return countLine(['Single match']);
     var parts = [0, ' / ' + t.teams + ' teams'];
     if (t.format === 'groups' || (!t.format && t.groups)) parts.push(' · ', t.groups, t.groups === 1 ? ' group' : ' groups');
     else if (t.format) parts.push(' · ' + FORMATS[t.format]);
@@ -3636,6 +3675,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         left ? 'Next question soon' : 'All questions done'));
       if (!today.lastChild.textContent) today.removeChild(today.lastChild);
       card.appendChild(today);
+    } else if (t.format === 'single' && (t.matches || [])[0] && played(t.matches[0])) {
+      var fm = t.matches[0], fh = teamById(t, fm.home), fa = teamById(t, fm.away), ft = el('div', 'sm-ft');
+      ft.appendChild(el('small', null, 'Full time'));
+      var fr = el('div', 'sm-row');
+      var s1 = el('span', 'sm-team'); if (fh) s1.appendChild(crest(fh, 'sm')); s1.appendChild(el('b', null, fh ? fh.name : 'Home'));
+      var s2 = el('span', 'sm-team sm-away'); s2.appendChild(el('b', null, fa ? fa.name : 'Away')); if (fa) s2.appendChild(crest(fa, 'sm'));
+      fr.appendChild(s1); fr.appendChild(el('strong', 'sm-score', fm.hs + '–' + fm.as)); fr.appendChild(s2);
+      ft.appendChild(fr); card.appendChild(ft);
     } else if (championOf(t)) {
       // Tournament decided: the card shows the winners instead of a countdown
       var champ = championOf(t), cb = el('div', 'card-champ');
@@ -3706,7 +3753,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var sd = !typeOf(t.category).quiz && statusOf(t) === 'upcoming' && t.date ? new Date(t.date + 'T00:00').getTime() : NaN;
       if (isNaN(sd) || sd <= Date.now()) { box.hidden = true; return false; }
       box.hidden = false; box.classList.add('nk-start'); box.dataset.state = 'soon';
-      var hd = el('div', 'nk-head'); hd.appendChild(el('span', 'nk-label', 'Tournament starts in')); box.appendChild(hd);
+      var hd = el('div', 'nk-head'); hd.appendChild(el('span', 'nk-label', t.format === 'single' ? 'Match day in' : 'Tournament starts in')); box.appendChild(hd);
       var s2 = Math.floor((sd - Date.now()) / 1000), d2 = Math.floor(s2 / 86400);
       box.appendChild(el('div', 'nk-clock', (d2 ? d2 + 'd ' : '') + [Math.floor(s2 / 3600) % 24, Math.floor(s2 / 60) % 60, s2 % 60].map(pad2).join(':')));
       return true;
@@ -3724,12 +3771,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (firstUp && box.parentNode) {
       var st0 = el('div', 'next-kick nk-start nk-sib'), sec0 = Math.max(0, Math.floor(left / 1000)), d0 = Math.floor(sec0 / 86400);
       if (t.color) st0.style.setProperty('--tc', t.color);
-      var h0 = el('div', 'nk-head'); h0.appendChild(el('span', 'nk-label', 'Tournament starts in')); st0.appendChild(h0);
+      var h0 = el('div', 'nk-head'); h0.appendChild(el('span', 'nk-label', t.format === 'single' ? 'Kick-off in' : 'Tournament starts in')); st0.appendChild(h0);
       st0.appendChild(el('div', 'nk-clock', (d0 ? d0 + 'd ' : '') + [Math.floor(sec0 / 3600) % 24, Math.floor(sec0 / 60) % 60, sec0 % 60].map(pad2).join(':')));
       box.parentNode.insertBefore(st0, box);
     }
-    head.appendChild(el('span', 'nk-label' + (isFinal && !live ? ' nk-final' : ''), live && nk.m.half === 'ht' ? 'Half time' : live ? (isFinal ? 'Final · playing now' : 'Playing now') : waiting ? (isFinal ? 'Final · starting soon' : 'Starting soon') : firstUp ? 'First match' : isFinal ? 'Final' : 'Next match'));
-    head.appendChild(el('span', 'nk-stage', 'Match ' + ((t.matches || []).indexOf(nk.m) + 1) + ' · ' + nk.m.stage));
+    head.appendChild(el('span', 'nk-label' + (isFinal && !live ? ' nk-final' : ''), live && nk.m.half === 'ht' ? 'Half time' : live ? (isFinal ? 'Final · playing now' : 'Playing now') : waiting ? (isFinal ? 'Final · starting soon' : 'Starting soon') : t.format === 'single' ? 'The match' : firstUp ? 'First match' : isFinal ? 'Final' : 'Next match'));
+    head.appendChild(el('span', 'nk-stage', t.format === 'single' ? typeOf(t.category).tag : 'Match ' + ((t.matches || []).indexOf(nk.m) + 1) + ' · ' + nk.m.stage));
     box.appendChild(head);
     var vs = el('div', 'nk-vs');
     function tbd(side) { var sl = nk.m[side + 'Slot']; return sl ? slotLabel(t, sl) : 'TBD'; }
@@ -4086,7 +4133,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (!todo.length && acc && !nudgeClosed) {
       var nm = (acc.name || '').trim().toLowerCase();
       tournaments.some(function (t) {
-        if (!visibleTo(t) || isArchived(t) || typeOf(t.category).quiz || !(t.squads || []).length || bonusLocked(t)) return false;
+        if (!visibleTo(t) || isArchived(t) || typeOf(t.category).quiz || t.format === 'single' || !(t.squads || []).length || bonusLocked(t)) return false;
         var b = (t.bonus || []).filter(function (x) { return (x.member && x.member === acc.id) || (nm && (x.name || '').trim().toLowerCase() === nm); })[0];
         var full = b && b.champion && b.scorer && b.player && (b.best5 || []).filter(Boolean).length === 5;
         if (full) return false;
@@ -4205,14 +4252,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function syncFields() {
     var quiz = typeOf(f.cat.value).quiz;
     document.getElementById('row-loc').hidden = !!quiz;
-    document.getElementById('row-teams').hidden = !!quiz;
-    document.getElementById('row-format').hidden = !!quiz;
+    var single = !quiz && f.format.value === 'single';
+    document.getElementById('row-teams').hidden = !!quiz || single;
+    document.getElementById('row-format').hidden = !!quiz || !!(editing && editing.format === 'single');
     document.getElementById('row-groups').hidden = !!quiz || f.format.value !== 'groups';
+    document.getElementById('row-single').hidden = !single;
+    document.getElementById('row-time').hidden = !single;
+    document.getElementById('form-title').textContent = (editing ? 'Edit ' : 'New ') + (single ? 'match' : 'tournament');
   }
   f.cat.addEventListener('change', syncFields);
   f.format.addEventListener('change', syncFields);
 
-  var ERRORS = [['name', 'err-name'], ['date', 'err-date'], ['teams', 'err-teams'], ['groups', 'err-groups']];
+  var ERRORS = [['name', 'err-name'], ['date', 'err-date'], ['teams', 'err-teams'], ['groups', 'err-groups'], ['home', 'err-home'], ['away', 'err-away']];
   function setError(input, errId, show) {
     document.getElementById(errId).hidden = !show;
     input.setAttribute('aria-invalid', show ? 'true' : 'false');
@@ -4268,11 +4319,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       f.name.value = t.name; f.cat.value = typeOf(t.category).name; f.date.value = t.date;
       f.loc.value = t.location || ''; f.teams.value = t.teams || 8;
       f.format.value = t.format || 'league'; f.groups.value = t.groups || 2; f.desc.value = t.description || '';
+      if (t.format === 'single') {
+        var sq = t.squads || [], m0 = (t.matches || [])[0];
+        f.home.value = sq[0] ? sq[0].name : ''; f.away.value = sq[1] ? sq[1].name : '';
+        f.time.value = m0 && m0.date && m0.date.length > 10 ? m0.date.slice(11, 16) : '';
+      }
     } else {
       f.cat.value = view.type === 'all' ? (prefs.type || 'Futsal') : view.type;
       f.teams.value = prefs.teams || 8;
       f.date.value = todayISO();
     }
+    var sOpt = f.format.querySelector('option[value="single"]'); sOpt.hidden = sOpt.disabled = !!(t && t.format !== 'single');
     document.getElementById('f-hidden').setAttribute('aria-checked', t && t.hidden ? 'true' : 'false');
     formLogo = t && t.logo ? t.logo : null; syncFormLogo();
     formColor = t && t.color ? t.color : ''; syncFormColor();
@@ -4559,6 +4616,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       date: !f.date.value,
       teams: !quiz && !(teams >= 2 && teams <= 128)
     };
+    var single = !quiz && format === 'single';
+    var home = f.home.value.trim(), away = f.away.value.trim();
+    if (single) { teams = 2; bad.teams = false; }
+    bad.home = single && !home;
+    bad.away = single && (!away || away.toLowerCase() === home.toLowerCase());
     bad.groups = !quiz && format === 'groups' && !bad.teams && !(groups >= 2 && groups <= 32 && groups <= teams);
     var first = null;
     ERRORS.forEach(function (er) {
@@ -4579,6 +4641,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       editing.hidden = document.getElementById('f-hidden').getAttribute('aria-checked') === 'true';
       if (formLogo) editing.logo = formLogo; else delete editing.logo;
       if (formColor) editing.color = formColor; else delete editing.color;
+      if (single) {
+        var es = editing.squads || [], em = (editing.matches || [])[0];
+        if (es[0]) es[0].name = home; if (es[1]) es[1].name = away;
+        if (em) em.date = f.date.value + (f.time.value ? 'T' + f.time.value : '');
+      }
       save(tournaments);
       render();
       modal.hidden = true;
@@ -4601,6 +4668,16 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       status: f.date.value < todayISO() ? 'completed' : f.date.value > todayISO() ? 'upcoming' : 'live'
     });
     var added = tournaments[0];
+    if (single) {
+      // One match between two named teams; predictions stay off until an admin opens them
+      added.squads = [[home, '#346b4a', '#ffffff'], [away, '#2b6cb0', '#ffffff']].map(function (x, i) {
+        return { id: added.id + (i ? 'a' : 'h'), name: x[0], group: '', c1: x[1], c2: x[2], logo: null, players: [], officials: [] };
+      });
+      var sm = newMatch(added.squads[0].id, added.squads[1].id, 'Match');
+      sm.date = f.date.value + (f.time.value ? 'T' + f.time.value : '');
+      added.matches = [sm];
+      added.predOff = true;
+    }
     if (formLogo) added.logo = formLogo;
     if (formColor) added.color = formColor;
     view.tab = isArchived(added) ? 'archive' : 'current';
@@ -4625,9 +4702,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     b.addEventListener('click', function () { detail.tab = name; fxConfirm = false; renderDetail(); });
     dTabs.appendChild(b);
   });
+  document.getElementById('d-predsw-btn').addEventListener('click', function () {
+    var t = current(); if (!t || !isAdmin()) return;
+    if (t.predOff) delete t.predOff; else t.predOff = true;
+    save(tournaments); renderDetail(); render();
+    toast(t.predOff ? 'Predictions turned off' : 'Predictions are open');
+  });
   // Predictions sits on its own button in the header; tapping it again goes back to the table
   document.getElementById('d-pred').addEventListener('click', function () {
-    detail.tab = detail.tab === 'Predictions' ? 'Standings' : 'Predictions';
+    detail.tab = detail.tab === 'Predictions' ? ((current() || {}).format === 'single' ? 'Fixtures' : 'Standings') : 'Predictions';
     fxConfirm = false; renderDetail();
     var btn = this; btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
     // Opening predictions: glide down to them, just below the header
@@ -4751,7 +4834,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var narrow = window.matchMedia && matchMedia('(max-width: 480px)').matches;
     var sub = [['calendar', narrow ? formatDate(t.date).replace(/^[^,]*,\s*/, '') : formatDate(t.date)]];
     if (t.location) sub.push(['pin', t.location]);
-    sub.push(['users', (t.squads || []).length + '/' + t.teams + ' teams']);
+    var isSingle = t.format === 'single';
+    sub.push(isSingle ? ['users', 'Single match'] : ['users', (t.squads || []).length + '/' + t.teams + ' teams']);
+    // Single match: Fixtures, Stats, Players, Teams only
+    if (isSingle && (detail.tab === 'Standings' || detail.tab === 'Groups')) detail.tab = 'Fixtures';
+    if (t.predOff && detail.tab === 'Predictions') detail.tab = isSingle ? 'Fixtures' : 'Standings';
+    Array.prototype.forEach.call(dTabs.children, function (b) { b.hidden = isSingle && (b.textContent === 'Standings' || b.textContent === 'Groups'); });
+    dTabs.classList.toggle('sm-tabs', isSingle);
+    document.getElementById('d-pred').hidden = !!t.predOff;
+    var psw = document.getElementById('d-predsw');
+    psw.hidden = !isSingle || !isAdmin();
+    document.getElementById('d-predsw-btn').setAttribute('aria-checked', t.predOff ? 'false' : 'true');
+    document.getElementById('d-predsw-note').textContent = t.predOff ? 'Off. Members can\'t predict this match yet.' : 'On. Members can predict until kick-off.';
     metaPills(document.getElementById('d-sub'), sub);
     var dk = document.getElementById('d-kick');
     dk.dataset.kick = t.id; fillNextKick(dk, t);
@@ -7307,6 +7401,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   // A match takes score predictions until its kickoff time (or until a result is entered)
   function predOpen(m) {
     if (played(m) || hasStarted(m)) return false;
+    if (tournaments.some(function (t) { return t.predOff && (t.matches || []).indexOf(m) !== -1; })) return false;
     var at = m.date ? new Date(m.date).getTime() : NaN;
     // Open until kick-off; if the match starts late, until the Kick off button (at most 30 minutes late)
     return isNaN(at) || Date.now() < at + 30 * 60 * 1000;
@@ -7666,7 +7761,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 
     var dash = el('section', 'pd');
     // Tournament picks first, so Make picks / Edit picks is easy to find
-    dash.appendChild(bonusCard(t, me));
+    if (t.format !== 'single') dash.appendChild(bonusCard(t, me));
     var stats = el('div', 'm-stats pd-stats');
     [[rows.length, 'Players'], [made, 'Predictions'], [playedCount + '/' + ms.length, 'Played'], [rows.length ? rows[0].pts : 0, 'Top score']].forEach(function (x) {
       var d = el('div'); d.appendChild(el('strong', null, String(x[0]))); d.appendChild(el('small', null, x[1])); stats.appendChild(d);
@@ -7983,6 +8078,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') e.preventDefault(); });
   });
   function isKo(t, stage) {
+    if (t.format === 'single') return false;
     if (t.format === 'knockout') return true;
     return stage !== 'League' && groupNames(t).indexOf(stage) === -1;
   }
