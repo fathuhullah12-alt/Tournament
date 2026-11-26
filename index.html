@@ -435,7 +435,9 @@ section.block { padding-block: 48px 8px; }
   .spons.has-title.has-list .sp-card.sp-title { padding-right: 26px; border-right: 1px solid var(--line); border-radius: 0; }
   .spons.has-list .sp-label:not(.sp-label-title) { grid-area: sl; }
   .spons.has-title.has-list .sp-label { text-align: left; }
-  .spons.has-list .sp-stage { grid-area: st; height: auto; overflow: visible; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; align-self: center; }
+  .spons.has-list .sp-stage { grid-area: st; height: auto; overflow: hidden; align-self: center; min-width: 0; padding: 2px; margin: -2px; }
+  .spons.has-list .sp-track { display: flex; column-gap: 10px; will-change: transform; }
+  .spons.has-list .sp-track > .sp-card { flex: 0 0 calc((100% - 20px) / 3); min-width: 0; }
   .spons.has-list .sp-stage .sp-card { position: relative; inset: auto; opacity: 1 !important; transform: none !important; pointer-events: auto; justify-content: flex-start;
     padding: 10px 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-raised); transition: border-color .2s, box-shadow .2s; }
   .spons.has-list .sp-stage a.sp-card:hover { border-color: var(--teal); box-shadow: 0 6px 18px -12px rgba(0, 0, 0, .45); }
@@ -443,6 +445,8 @@ section.block { padding-block: 48px 8px; }
   .spons.has-list .sp-stage .sp-text b { font-size: 17px; }
   .spons.has-list .sp-dots { display: none; }
 }
+@media (min-width: 821px) and (max-width: 1100px) { .spons.has-list .sp-track > .sp-card { flex-basis: calc((100% - 10px) / 2); } }
+@media (prefers-reduced-motion: reduce) { .sp-track { transition: none !important; } }
 @media (prefers-reduced-motion: reduce) { .sp-card, .sp-card.out { transform: none; } }
 .sp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .sp-row { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border: 1px solid var(--line); border-radius: 14px; }
@@ -2615,7 +2619,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.24</span>
+    <span class="site-ver">Version 2.8.25</span>
   </div>
 </footer>
 
@@ -4672,18 +4676,32 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     }
     if (!list.length) return;
     box.appendChild(el('small', 'sp-label', list.length === 1 && !top ? 'Sponsor' : 'Sponsors'));
-    var stage = el('div', 'sp-stage'), dots = el('div', 'sp-dots'), at = 0;
+    var stage = el('div', 'sp-stage'), track = el('div', 'sp-track'), dots = el('div', 'sp-dots'), at = 0;
+    stage.appendChild(track);
     var cards = list.map(function (s, i) {
       var c = sponsorCard(s); if (i === 0) c.classList.add('in');
-      stage.appendChild(c);
+      track.appendChild(c);
       dots.appendChild(el('i', i === 0 ? 'on' : null));
       return c;
     });
     box.appendChild(stage);
     if (list.length < 2) return;
     box.appendChild(dots);
+    var wide = window.matchMedia('(min-width: 821px)');
     box.spTimer = setInterval(function () {
       if (document.hidden || !box.offsetParent) return;
+      if (wide.matches) {
+        // Big screens: 2 or 3 cards in view, the row moves left by one card
+        var first = track.firstElementChild; if (!first) return;
+        var step = first.offsetWidth + (parseFloat(getComputedStyle(track).columnGap) || 0);
+        if (track.scrollWidth <= stage.clientWidth + 2) return;
+        track.style.transition = 'transform .7s cubic-bezier(.4, 0, .2, 1)';
+        track.style.transform = 'translateX(' + (-step) + 'px)';
+        setTimeout(function () {
+          track.style.transition = 'none'; track.appendChild(first); track.style.transform = 'none';
+        }, 720);
+        return;
+      }
       var old = cards[at];
       old.classList.remove('in'); old.classList.add('out');
       setTimeout(function () { old.classList.remove('out'); }, 600);
