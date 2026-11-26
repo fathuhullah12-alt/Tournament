@@ -2551,7 +2551,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.12</span>
+    <span class="site-ver">Version 2.8.13</span>
   </div>
 </footer>
 
@@ -6298,9 +6298,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           var sc = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82;
           x.drawImage(logo, cx - logo.width * sc / 2, cy - logo.height * sc / 2, logo.width * sc, logo.height * sc);
         } else {
-          x.fillStyle = (team && team.c2) || '#ffffff'; x.font = '800 ' + Math.round(rad * 1.05) + 'px ' + FD; x.textBaseline = 'middle';
-          x.fillText(((team && team.name) || 'T').trim().charAt(0).toUpperCase(), cx, cy + rad * .05);
-          x.textBaseline = 'alphabetic';
+          x.fillStyle = (team && team.c2) || '#ffffff'; x.font = '800 ' + Math.round(rad * 1.05) + 'px ' + FD; 
+          inkText(x, ((team && team.name) || 'T').trim().charAt(0).toUpperCase(), cx, cy);
         }
         x.restore();
       }
@@ -6462,7 +6461,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           x.fillStyle = logo ? '#ffffff' : hex(tm.c1, '#346b4a'); x.fill();
           x.lineWidth = 5; x.strokeStyle = tm.c2 || '#ffffff'; x.stroke();
           if (logo) { x.clip(); var sc = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82; x.drawImage(logo, cx - logo.width * sc / 2, cy - logo.height * sc / 2, logo.width * sc, logo.height * sc); }
-          else { x.fillStyle = tm.c2 || '#ffffff'; x.font = '800 48px ' + FD; x.textBaseline = 'middle'; x.fillText((tm.name || 'T').trim().charAt(0).toUpperCase(), cx, cy + 3); x.textBaseline = 'alphabetic'; }
+          else { x.fillStyle = tm.c2 || '#ffffff'; x.font = '800 48px ' + FD; inkText(x, (tm.name || 'T').trim().charAt(0).toUpperCase(), cx, cy); }
           x.restore();
         });
         y += rowsN * (rad * 2 + 22);
@@ -6543,7 +6542,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         x.fillStyle = logo ? '#ffffff' : hex(team && team.c1, '#346b4a'); x.fill();
         x.lineWidth = 5; x.strokeStyle = (team && team.c2) || '#ffffff'; x.stroke();
         if (logo) { x.clip(); var sc = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82; x.drawImage(logo, cx - logo.width * sc / 2, cy - logo.height * sc / 2, logo.width * sc, logo.height * sc); }
-        else { x.fillStyle = (team && team.c2) || '#ffffff'; x.font = '800 ' + Math.round(rad * 1.1) + 'px ' + FD; x.textBaseline = 'middle'; x.fillText(((team && team.name) || 'T').trim().charAt(0).toUpperCase(), cx, cy + 3); x.textBaseline = 'alphabetic'; }
+        else { x.fillStyle = (team && team.c2) || '#ffffff'; x.font = '800 ' + Math.round(rad * 1.1) + 'px ' + FD; inkText(x, ((team && team.name) || 'T').trim().charAt(0).toUpperCase(), cx, cy); }
         x.restore();
       }
       rows.forEach(function (rw, i) {
@@ -6663,7 +6662,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           x.fillStyle = logo ? '#ffffff' : hex(team.c1, '#346b4a'); x.fill();
           x.lineWidth = 4; x.strokeStyle = team.c2 || '#ffffff'; x.stroke();
           if (logo) { x.clip(); var sc = Math.max((rad * 2) / logo.width, (rad * 2) / logo.height) * .82; x.drawImage(logo, cx - logo.width * sc / 2, cy - logo.height * sc / 2, logo.width * sc, logo.height * sc); }
-          else { x.fillStyle = team.c2 || '#ffffff'; x.font = '800 30px ' + FD; x.textBaseline = 'middle'; x.fillText((team.name || 'T').trim().charAt(0).toUpperCase(), cx, cy + 2); x.textBaseline = 'alphabetic'; }
+          else { x.fillStyle = team.c2 || '#ffffff'; x.font = '800 30px ' + FD; inkText(x, (team.name || 'T').trim().charAt(0).toUpperCase(), cx, cy); }
           x.restore();
           x.textAlign = 'left'; x.fillStyle = '#f2f4f3';
           if (kind === 'table') {
@@ -8613,6 +8612,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       .sort(function (a, b) { return b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name); });
     rows.forEach(function (rw, i) { var pv = rows[i - 1]; rw.rank = pv && pv.pts === rw.pts && pv.exact === rw.exact ? pv.rank : i + 1; });
     return rows;
+  }
+  function inkText(x, ch, cx, cy) {
+    var a = x.textAlign, bl = x.textBaseline;
+    x.textAlign = 'left'; x.textBaseline = 'alphabetic';
+    var m = x.measureText(ch), L = m.actualBoundingBoxLeft || 0, R = m.actualBoundingBoxRight || m.width;
+    var up = m.actualBoundingBoxAscent || 0, dn = m.actualBoundingBoxDescent || 0;
+    x.fillText(ch, cx - (R - L) / 2, cy + (up - dn) / 2);
+    x.textAlign = a; x.textBaseline = bl;
   }
   function renderLeaderboard() {
     var root = document.getElementById('lb-body'), rows = allTimePredictors();
