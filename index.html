@@ -1633,6 +1633,26 @@ td.q-pts { font-weight: 800; color: var(--amber-fg); }
 .pd-pts { text-align: right; line-height: 1; }
 .pd-pts strong { display: block; font: 800 26px var(--font-display); font-variant-numeric: tabular-nums; }
 .pd-pts small { font-size: 12px; color: var(--fg-muted); }
+.pd-tap { grid-template-columns: 26px 38px 1fr auto 16px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.pd-tap:focus-visible { outline: 2px solid var(--teal-ring); outline-offset: 2px; border-radius: 10px; }
+.pd-chev { width: 16px; height: 16px; color: var(--fg-dim); transition: transform .2s; }
+.pd-tap.open .pd-chev { transform: rotate(180deg); }
+.pd-more { display: grid; gap: 12px; margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: var(--chip); }
+.pd-more[hidden] { display: none; }
+.pm-sec { display: grid; gap: 6px; }
+.pm-sec h4 { margin: 0; font: 700 12px var(--font-body); letter-spacing: .08em; text-transform: uppercase; color: var(--fg-muted); }
+.pm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--bg-raised); border-left: 4px solid var(--line); }
+.pm-won { border-left-color: #2e9d62; }
+.pm-right { border-left-color: var(--teal); }
+.pm-lost { border-left-color: #c25450; }
+.pm-tx { display: grid; gap: 1px; min-width: 0; }
+.pm-tx b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pm-tx span, .pm-tx small { font-size: 12.5px; color: var(--fg-muted); }
+.pm-pts { flex: none; font: 800 18px var(--font-display); }
+.pm-won .pm-pts { color: #2e9d62; }
+.pm-right .pm-pts { color: var(--teal); }
+.pm-lost .pm-pts { color: var(--fg-dim); }
+.pm-wait .pm-pts { font: 700 12px var(--font-body); color: var(--fg-muted); }
 .pd-bonus-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .pd-bonus-head > div { display: grid; gap: 3px; }
 .pd-bonus-head h3 { margin: 0; }
@@ -2023,6 +2043,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .lb-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lb-tx small { color: var(--fg-muted); font-size: 12px; }
 .lb-p { font: 800 22px var(--font-display); }
+#lb-body > .tab-share { margin: 6px 0 0; }
+.pd-board-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; }
+.pd-board-head h3 { margin: 0 !important; }
+.pd-board-head .tab-share { margin: 0; }
 .club-soon { display: grid; justify-items: center; gap: 10px; text-align: center; padding: 36px 20px; border: 1px solid var(--line); border-radius: 22px; background: var(--bg-raised); }
 .club-soon .logo-mark { width: 96px; height: 96px; border-radius: 50%; }
 .club-soon .logo-mark img { border-radius: 50%; }
@@ -2555,7 +2579,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.15</span>
+    <span class="site-ver">Version 2.8.17</span>
   </div>
 </footer>
 
@@ -6695,6 +6719,81 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       return new Promise(function (ok, bad) { try { cv.toBlob(function (bl) { bl ? ok(bl) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); } });
     });
   }
+  function boardPicture(rows, o, withLogos) {
+    var FD = '"Barlow Condensed", "Noto Sans Thaana", sans-serif', FB = '"Barlow", "Noto Sans Thaana", sans-serif';
+    var fonts = ['800 60px "Barlow Condensed"', '700 40px "Barlow Condensed"', '600 30px "Barlow"', '700 30px "Barlow"'].map(function (f) { return document.fonts ? document.fonts.load(f).catch(function () {}) : null; });
+    rows = rows.slice(0, 10);
+    var srcs = [withLogos && o.logo, withLogos && prefs.logo].concat(rows.map(function (rw) { return rw.mid && photos[rw.mid] || null; }));
+    return Promise.all(fonts.concat(srcs.map(loadImg))).then(function (res) {
+      var im = res.slice(fonts.length), tLogo = im[0], clubLogo = im[1], pics = im.slice(2);
+      function hex(c, d) { return /^#[0-9a-f]{6}$/i.test(c || '') ? c : d; }
+      var W = 1080, rowH = 96;
+      var headH = tLogo ? 470 : 300, listH = rows.length * rowH + 30, footH = clubLogo ? 300 : 170;
+      var H = Math.max(1350, headH + listH + footH + 40);
+      var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      var x = cv.getContext('2d'), accent = hex(o.color, '#e3b553');
+      x.fillStyle = '#101615'; x.fillRect(0, 0, W, H);
+      function wash(cx, cy, rad, col) { var g = x.createRadialGradient(cx, cy, 30, cx, cy, rad); g.addColorStop(0, col + '60'); g.addColorStop(1, col + '00'); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+      wash(160, 200, 700, accent); wash(960, H - 300, 700, '#3d8a89');
+      function fit(text, font, size, max) { do { x.font = font.replace('#', size); size -= 2; } while (x.measureText(text).width > max && size > 18); }
+      function rr(bx, by, bw, bh, rad) { x.beginPath(); if (x.roundRect) x.roundRect(bx, by, bw, bh, rad); else x.rect(bx, by, bw, bh); }
+      x.textAlign = 'center';
+      var y = 80;
+      if (tLogo) {
+        var ls = 200, pad = 20, lr = Math.min((ls - pad * 2) / tLogo.naturalWidth, (ls - pad * 2) / tLogo.naturalHeight), lw = tLogo.naturalWidth * lr, lh = tLogo.naturalHeight * lr, bx = (W - ls) / 2;
+        x.save(); x.shadowColor = 'rgba(227, 181, 83, .5)'; x.shadowBlur = 40; rr(bx, y, ls, ls, 36); x.fillStyle = '#ffffff'; x.fill(); x.restore();
+        x.save(); x.lineWidth = 7; x.strokeStyle = '#e3b553'; rr(bx, y, ls, ls, 36); x.stroke(); x.restore();
+        x.drawImage(tLogo, (W - lw) / 2, y + (ls - lh) / 2, lw, lh);
+        y += ls + 60;
+      } else y += 30;
+      x.fillStyle = accent; x.font = '700 40px ' + FD;
+      if (x.letterSpacing !== undefined) x.letterSpacing = '8px';
+      x.fillText(o.kicker, W / 2, y);
+      if (x.letterSpacing !== undefined) x.letterSpacing = '0px';
+      x.fillStyle = '#f2f4f3'; fit(o.title.toUpperCase(), '800 #px ' + FD, 64, W - 120); x.fillText(o.title.toUpperCase(), W / 2, y + 76);
+      y += 130;
+      y += Math.max(0, (H - (headH + listH + footH + 40)) / 2);
+      var L = 60, R = W - 60, medal = ['#f0c35a', '#c9d2da', '#d28c57'];
+      rows.forEach(function (rw, i) {
+        var pod = rw.rank <= 3 && rw.pts > 0, mc = pod ? medal[rw.rank - 1] : null;
+        x.fillStyle = rw.rank === 1 && pod ? 'rgba(227, 181, 83, .16)' : (i % 2 ? 'rgba(255,255,255,.035)' : 'rgba(255,255,255,.07)');
+        rr(L - 10, y + 6, R - L + 20, rowH - 12, 20); x.fill();
+        var cy = y + rowH / 2;
+        x.textAlign = 'center'; x.fillStyle = mc || '#c9d0ce'; x.font = '800 42px ' + FD; x.fillText(String(rw.rank), L + 32, cy + 15);
+        // Photo, or the first letter
+        var cx = L + 112, rad = 33, pic = pics[i];
+        x.save(); x.beginPath(); x.arc(cx, cy, rad, 0, Math.PI * 2); x.closePath();
+        x.fillStyle = '#3d8a89'; x.fill();
+        if (pic) { x.save(); x.clip(); var sc = Math.max((rad * 2) / pic.width, (rad * 2) / pic.height); x.drawImage(pic, cx - pic.width * sc / 2, cy - pic.height * sc / 2, pic.width * sc, pic.height * sc); x.restore(); }
+        else { x.fillStyle = '#ffffff'; x.font = '800 34px ' + FD; inkText(x, (rw.name || '?').trim().charAt(0).toUpperCase(), cx, cy); }
+        x.lineWidth = 5; x.strokeStyle = mc || 'rgba(255,255,255,.85)'; x.stroke();
+        x.restore();
+        x.textAlign = 'left'; x.fillStyle = '#f2f4f3';
+        fit(rw.name, '700 #px ' + FB, 36, 640); x.fillText(rw.name, L + 166, cy - 2);
+        x.fillStyle = '#9aa5a2'; x.font = '600 25px ' + FB; x.fillText(o.sub(rw), L + 166, cy + 30);
+        x.textAlign = 'right'; x.fillStyle = mc || '#ffffff'; x.font = '800 50px ' + FD; x.fillText(String(rw.pts), R - 62, cy + 17);
+        x.fillStyle = '#9aa5a2'; x.font = '700 24px ' + FB; x.fillText('pts', R - 4, cy + 15);
+        y += rowH;
+      });
+      x.textAlign = 'center';
+      x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(120, H - footH + 20, W - 240, 2);
+      if (clubLogo) { x.save(); x.beginPath(); x.arc(W / 2, H - 200, 50, 0, Math.PI * 2); x.closePath(); x.fillStyle = '#ffffff'; x.fill(); x.clip(); var s2 = Math.max(100 / clubLogo.width, 100 / clubLogo.height); x.drawImage(clubLogo, W / 2 - clubLogo.width * s2 / 2, H - 200 - clubLogo.height * s2 / 2, clubLogo.width * s2, clubLogo.height * s2); x.restore(); }
+      x.fillStyle = '#eef1ef'; fit((prefs.name || 'Our club').toUpperCase(), '800 #px ' + FD, 40, W - 200); x.fillText((prefs.name || 'Our club').toUpperCase(), W / 2, H - 92);
+      var d = new Date();
+      x.fillStyle = '#e3b553'; x.font = '700 30px ' + FB; x.fillText('Updated ' + d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() + '  ·  noonuprc.com', W / 2, H - 44);
+      return new Promise(function (ok, bad) { try { cv.toBlob(function (bl) { bl ? ok(bl) : bad(new Error('blank')); }, 'image/png'); } catch (e) { bad(e); } });
+    });
+  }
+  function boardShareBtn(rows, o, file, link) {
+    var bar = el('div', 'tab-share'), b = el('button', 'ts-share'); b.type = 'button';
+    b.appendChild(svgIcon('ic-whatsapp')); b.appendChild(document.createTextNode('Share leaderboard'));
+    b.onclick = function () {
+      shText = o.kicker.charAt(0) + o.kicker.slice(1).toLowerCase() + ' · ' + o.title + '\n' + rows.slice(0, 5).map(function (rw) { return rw.rank + '. ' + rw.name + ' ' + rw.pts + ' pts'; }).join('\n');
+      shLink = link;
+      showSharePic(function (logos) { return boardPicture(rows, o, logos); }, file, b, 'Share leaderboard', 'Send this picture to WhatsApp groups and your status.');
+    };
+    bar.appendChild(b); return bar;
+  }
   function openTableShare(t, kind, trigger) {
     var lines = kind === 'table'
       ? tableFor(t, t.squads || []).slice(0, 8).map(function (row, i) { return (i + 1) + '. ' + row.team.name + ' ' + row.pts + ' pts'; })
@@ -7196,6 +7295,47 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     items.forEach(function (it) { if (!it.done || !it.pick || lateB) it.pts = 0; });
     return { items: items, pts: items.reduce(function (s, it) { return s + it.pts; }, 0) };
   }
+  // Rows left open on the prediction board stay open when it redraws
+  var pdOpen = {};
+  // How one person earned their points: tournament picks once awarded, then each match that has kicked off
+  function howEarned(t, r) {
+    var box = el('li', 'pd-more'), any = false;
+    if (r.b && bonusLocked(t)) {
+      var res = bonusScore(t, r.b), sec = el('div', 'pm-sec');
+      sec.appendChild(el('h4', null, 'Tournament picks'));
+      res.items.forEach(function (it) {
+        if (!it.pick) return;
+        var st = !it.done ? 'wait' : it.pts ? 'won' : 'lost';
+        var row = el('div', 'pm-row pm-' + st);
+        var tx = el('div', 'pm-tx'); tx.appendChild(el('b', null, it.label)); tx.appendChild(textDir(el('span', null, it.pick), it.pick));
+        if (it.done && !it.pts && it.answer) tx.appendChild(el('small', null, 'Winner: ' + it.answer));
+        row.appendChild(tx);
+        row.appendChild(el('span', 'pm-pts', st === 'wait' ? 'Waiting' : '+' + it.pts));
+        sec.appendChild(row); any = true;
+      });
+      if (sec.childNodes.length > 1) box.appendChild(sec);
+    }
+    // Only matches that have kicked off, so nobody can copy a pick
+    var seen = r.picks.filter(function (x) { return played(x.m) || hasStarted(x.m); })
+      .sort(function (a, b) { return (b.m.date || '').localeCompare(a.m.date || ''); });
+    if (seen.length) {
+      var sec2 = el('div', 'pm-sec');
+      sec2.appendChild(el('h4', null, 'Match predictions'));
+      seen.forEach(function (x) {
+        var h = teamById(t, x.m.home), a = teamById(t, x.m.away), done = x.pts != null;
+        var st = !done ? 'wait' : x.pts === 3 ? 'won' : x.pts ? 'right' : 'lost';
+        var row = el('div', 'pm-row pm-' + st);
+        var tx = el('div', 'pm-tx');
+        tx.appendChild(el('b', null, (h ? h.name : 'Home') + ' v ' + (a ? a.name : 'Away')));
+        tx.appendChild(el('span', null, 'Picked ' + x.p.hs + '–' + x.p.as + (done ? ' · Final ' + x.m.hs + '–' + x.m.as : ' · Playing now')));
+        row.appendChild(tx);
+        row.appendChild(el('span', 'pm-pts', !done ? 'Live' : '+' + x.pts));
+        sec2.appendChild(row); any = true;
+      });
+      box.appendChild(sec2);
+    }
+    return any ? box : null;
+  }
   function bonusCard(t, me) {
     var mine = (t.bonus || []).filter(function (b) { return b.name.toLowerCase() === me; })[0];
     var locked = bonusLocked(t);
@@ -7432,7 +7572,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var key = b.name.toLowerCase();
       if (!board[key]) board[key] = { key: key, name: b.name, n: 0, settled: 0, pts: 0, exact: 0, right: 0, bonus: 0, picks: [] };
       var got = bonusScore(t, b).pts;
-      board[key].bonus = got; board[key].pts += got;
+      board[key].bonus = got; board[key].pts += got; board[key].b = b;
     });
     var rows = Object.keys(board).map(function (k) { return board[k]; })
       .sort(function (a, b) { return b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name); });
@@ -7481,7 +7621,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     }
 
     var lb = el('div', 'pd-board');
-    lb.appendChild(el('h3', null, 'Leaderboard'));
+    var lbh = el('div', 'pd-board-head'); lbh.appendChild(el('h3', null, 'Leaderboard')); lb.appendChild(lbh);
+    if (rows.length) lbh.appendChild(boardShareBtn(rows, { kicker: 'PREDICTION LEADERBOARD', title: t.name || '', logo: t.logo, color: t.color,
+      sub: function (rw) { return rw.exact + ' exact · ' + rw.right + ' right' + (rw.bonus ? ' · +' + rw.bonus + ' bonus' : ''); } },
+      (t.name || 'tournament').replace(/[^\wހ-޿-]+/g, '-') + '-leaderboard.png', 'https://noonuprc.com/#t-' + t.id));
     if (!rows.length) lb.appendChild(el('p', 'pd-empty', 'No predictions yet. Pick a score below to get on the board.'));
     var top = rows.length ? rows[0].pts : 0;
     var ol = el('ol', 'pd-list');
@@ -7500,7 +7643,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       li.appendChild(mid);
       var pts = el('span', 'pd-pts'); pts.appendChild(el('strong', null, String(r.pts))); pts.appendChild(el('small', null, 'pts'));
       li.appendChild(pts);
-      ol.appendChild(li);
+      var more = howEarned(t, r);
+      if (more) {
+        var openKey = t.id + '|' + r.key;
+        li.classList.add('pd-tap'); li.tabIndex = 0; li.setAttribute('role', 'button');
+        var chev = svgIcon('ic-down'); chev.classList.add('pd-chev'); li.appendChild(chev);
+        var setOpen = function (on) { li.classList.toggle('open', on); more.hidden = !on; li.setAttribute('aria-expanded', on ? 'true' : 'false'); if (on) pdOpen[openKey] = 1; else delete pdOpen[openKey]; };
+        li.addEventListener('click', function () { setOpen(more.hidden); });
+        li.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(more.hidden); } });
+        ol.appendChild(li); ol.appendChild(more);
+        setOpen(!!pdOpen[openKey]);
+      } else ol.appendChild(li);
     });
     lb.appendChild(ol);
     dash.appendChild(lb);
@@ -8631,6 +8784,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var me = (auth.account ? auth.account.name : prefs.predName || '').trim().toLowerCase();
     root.textContent = '';
     if (!rows.length) { root.appendChild(el('p', 'hf-empty', 'No predictions yet. Predict the scores of upcoming matches to get on the board.')); return; }
+    root.appendChild(boardShareBtn(rows, { kicker: 'TOP PREDICTORS', title: 'All tournaments', sub: function (rw) { return rw.exact + ' exact · ' + rw.right + ' right · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments'); } },
+      'top-predictors.png', 'https://noonuprc.com/#leaderboard'));
     // Member ids by name, for older predictions saved without one
     var byName = {};
     (typeof members !== 'undefined' && members || []).forEach(function (m) { if (m && m.name) byName[m.name.trim().toLowerCase()] = m.id; });
