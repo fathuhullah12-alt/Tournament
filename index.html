@@ -2211,6 +2211,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .fb-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .crafted { display: inline-flex; align-items: center; gap: 7px; }
 .crafted b { color: var(--amber-fg); font-weight: 600; }
+.a-scorers { display: grid; gap: 8px; }
+.a-scorers > label { display: contents; }
+.a-more { justify-self: start; background: none; border: 0; padding: 4px 0; color: var(--teal, #3d8a89); font: inherit; font-weight: 600; cursor: pointer; }
 .site-ver { font-size: 12px; letter-spacing: .04em; opacity: .8; }
 /* The heart beats, rings and throws a few sparks, on a slow loop */
 .heart { position: relative; display: inline-grid; place-items: center; width: 18px; height: 18px; }
@@ -2687,7 +2690,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.33</span>
+    <span class="site-ver">Version 2.8.34</span>
   </div>
 </footer>
 
@@ -3467,7 +3470,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </div>
     <div class="sheet-body">
       <label class="field"><span>King of the Tournament</span><input id="a-player" type="text" maxlength="40" placeholder="Player name"></label>
-      <label class="field"><span>Top scorer</span><input id="a-scorer" type="text" maxlength="40" placeholder="Player name"></label>
+      <div class="field a-scorers"><span>Top scorer</span><input id="a-scorer" aria-label="Top scorer" type="text" maxlength="40" placeholder="Player name">
+        <input data-scorer2 id="a-scorer-2" type="text" maxlength="40" placeholder="Joint top scorer 2" aria-label="Joint top scorer 2" hidden>
+        <input data-scorer2 id="a-scorer-3" type="text" maxlength="40" placeholder="Joint top scorer 3" aria-label="Joint top scorer 3" hidden>
+        <input data-scorer2 id="a-scorer-4" type="text" maxlength="40" placeholder="Joint top scorer 4" aria-label="Joint top scorer 4" hidden>
+        <button type="button" class="a-more" id="a-scorer-more">+ Add joint top scorer</button></div>
       <fieldset class="field five">
         <legend>Best 5</legend>
         <input data-best5 id="a-five-1" type="text" maxlength="40" placeholder="Goalkeeper" aria-label="Best 5, goalkeeper">
@@ -4630,16 +4637,27 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     manager: document.getElementById('a-manager')
   };
   var aFive = Array.prototype.slice.call(document.querySelectorAll('[data-best5]'));
+  var aScorers = [document.getElementById('a-scorer')].concat(Array.prototype.slice.call(document.querySelectorAll('[data-scorer2]')));
+  var aMore = document.getElementById('a-scorer-more');
+  function showScorers(n) {
+    aScorers.forEach(function (i, k) { if (k) i.hidden = k >= n; });
+    aMore.hidden = n >= aScorers.length;
+  }
+  aMore.addEventListener('click', function () {
+    var n = aScorers.filter(function (i) { return !i.hidden; }).length + 1;
+    showScorers(n); aScorers[n - 1].focus();
+  });
   var aPickClose = null;
   function prizesOf(t) {
     var p = t.prizes || {};
-    return { player: p.player || '', scorer: p.scorer || '', best5: (p.best5 || []).concat(['', '', '', '', '']).slice(0, 5), coach: p.coach || '', manager: p.manager || '' };
+    var scs = (Array.isArray(p.scorers) && p.scorers.length ? p.scorers : [p.scorer]).filter(Boolean);
+    return { player: p.player || '', scorer: scs[0] || '', scorers: scs, best5: (p.best5 || []).concat(['', '', '', '', '']).slice(0, 5), coach: p.coach || '', manager: p.manager || '' };
   }
   function awardRows(t) {
     var p = prizesOf(t), rows = [];
     var five = p.best5.filter(Boolean);
     if (p.player) rows.push(['King of the Tournament', p.player]);
-    if (p.scorer) rows.push(['Top scorer', p.scorer]);
+    if (p.scorers.length) rows.push([p.scorers.length > 1 ? 'Top scorers' : 'Top scorer', p.scorers.join(', ')]);
     if (five.length) rows.push(['Best 5', five.join(', ')]);
     if (p.coach) rows.push(['Best coach', p.coach]);
     if (p.manager) rows.push(['Best manager', p.manager]);
@@ -4650,7 +4668,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     awardsModal.returnFocus = trigger || null;
     var p = prizesOf(t);
     document.getElementById('a-name').textContent = t.name;
-    aFields.player.value = p.player; aFields.scorer.value = p.scorer; aFields.coach.value = p.coach; aFields.manager.value = p.manager;
+    aFields.player.value = p.player; aScorers.forEach(function (i, k) { i.value = p.scorers[k] || ''; }); showScorers(Math.max(1, p.scorers.length)); aFields.coach.value = p.coach; aFields.manager.value = p.manager;
     aFive.forEach(function (input, i) { input.value = p.best5[i]; input.classList.remove('bp-dup'); });
     document.getElementById('a-err').hidden = true;
     if (aPickClose) aPickClose();
@@ -4669,9 +4687,12 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var aErr = document.getElementById('a-err');
     if (dup) { aErr.textContent = dup + ' is in the Best 5 twice. Pick five different players.'; aErr.hidden = false; return; }
     aErr.hidden = true;
+    var scs = [];
+    aScorers.forEach(function (i) { var n = i.value.trim(); if (n && !scs.some(function (x) { return sameName(x, n); })) scs.push(n); });
     aTarget.prizes = {
       player: aFields.player.value.trim(),
-      scorer: aFields.scorer.value.trim(),
+      scorer: scs[0] || '',
+      scorers: scs,
       best5: aFive.map(function (i) { return i.value.trim(); }),
       coach: aFields.coach.value.trim(),
       manager: aFields.manager.value.trim()
@@ -4979,10 +5000,10 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       cbody.appendChild(ctxt); cb.appendChild(cbody); list.appendChild(cb);
     }
     if (prize.player) tile('King of the Tournament', prize.player, 'aw-gold');
-    if (prize.scorer) {
-      var goals = (scorerRows(t).filter(function (x) { return sameName(x.player, prize.scorer); })[0] || {}).goals;
-      tile('Top scorer', prize.scorer, 'aw-silver', goals ? goals + (goals === 1 ? ' goal' : ' goals') : '');
-    }
+    prize.scorers.forEach(function (name) {
+      var goals = (scorerRows(t).filter(function (x) { return sameName(x.player, name); })[0] || {}).goals;
+      tile(prize.scorers.length > 1 ? 'Joint top scorer' : 'Top scorer', name, 'aw-silver', goals ? goals + (goals === 1 ? ' goal' : ' goals') : '');
+    });
     var five = prize.best5.map(function (n, i) { return { n: n, i: i }; }).filter(function (x) { return x.n; });
     if (five.length) {
       var fb = el('div', 'aw-tile aw-five');
@@ -5696,7 +5717,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         if (champ && champ.id === team.id) r.honours.push(['ic-trophy', 'Champions']);
         var pz = prizesOf(t), same = function (n) { return n && n.trim().toLowerCase() === key; };
         if (same(pz.player)) r.honours.push(['ic-crown', 'King of the Tournament']);
-        if (same(pz.scorer)) r.honours.push(['ic-ball', 'Top scorer']);
+        if (pz.scorers.some(same)) r.honours.push(['ic-ball', 'Top scorer']);
         if (pz.best5.some(same)) r.honours.push(['ic-star', 'Best 5']);
         rows.push(r);
       });
@@ -7528,7 +7549,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function bonusScore(t, b) {
     var champ = championOf(t), prize = prizesOf(t), over = !!champ || statusOf(t) === 'completed';
     var sc = scorerRows(t), most = sc.length ? sc[0].goals : 0;
-    var tops = prize.scorer ? [prize.scorer] : over ? sc.filter(function (x) { return x.goals === most; }).map(function (x) { return x.player; }) : [];
+    var tops = prize.scorers.length ? prize.scorers : over ? sc.filter(function (x) { return x.goals === most; }).map(function (x) { return x.player; }) : [];
     var five = prize.best5.filter(Boolean);
     var champTeam = teamById(t, b.champion);
     var items = [
@@ -7670,7 +7691,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         sortedPlayers(team.players || []).forEach(function (p) { out.push({ name: p.name, number: p.number, team: team }); });
       });
       // Top scorer box: most goals first, with each player's goal count
-      if (t && input === scorerInput) {
+      if (t && scorerInput && (scorerInput === input || (Array.isArray(scorerInput) && scorerInput.indexOf(input) >= 0))) {
         scorerRows(t).forEach(function (r) {
           var hit = out.filter(function (p) { return p.team.id === r.team.id && sameName(p.name, r.player); })[0];
           if (hit) hit.goals = r.goals; else out.push({ name: r.player, number: '', team: r.team, goals: r.goals });
@@ -7740,8 +7761,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   var ppClose = playerPicker([document.getElementById('bp-scorer'), document.getElementById('bp-player')].concat(bp5), bp5,
     document.getElementById('bonus-form'), function () { return bonusTarget; }, 'In your Best 5');
-  aPickClose = playerPicker([aFields.player, aFields.scorer].concat(aFive, [aFields.coach, aFields.manager]), aFive,
-    document.getElementById('awards-form'), function () { return aTarget; }, 'Already in Best 5', aFields.scorer);
+  aPickClose = playerPicker([aFields.player].concat(aScorers, aFive, [aFields.coach, aFields.manager]), aFive,
+    document.getElementById('awards-form'), function () { return aTarget; }, 'Already in Best 5', aScorers);
   function fillBonus() {
     var name = document.getElementById('bp-name').value.trim().toLowerCase();
     var b = (bonusTarget.bonus || []).filter(function (x) { return x.name.toLowerCase() === name; })[0] || {};
@@ -9270,7 +9291,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         }
         var p = prizesOf(t), sc = scorerRows(t)[0];
         if (p.player) rows.push(['', 'King of the Tournament', p.player, '']);
-        if (p.scorer) rows.push(['', 'Top scorer', p.scorer, '']);
+        if (p.scorers.length) rows.push(['', p.scorers.length > 1 ? 'Top scorers' : 'Top scorer', p.scorers.join(', '), '']);
         else if (sc) rows.push(['', 'Top scorer', sc.player, sc.goals + (sc.goals === 1 ? ' goal' : ' goals') + ' · ' + sc.team.name]);
         if (p.coach) rows.push(['', 'Best coach', p.coach, '']);
         if (p.manager) rows.push(['', 'Best manager', p.manager, '']);
