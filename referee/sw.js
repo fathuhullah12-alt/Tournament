@@ -1,6 +1,6 @@
 // Lets the referee panel install as an app on tablets and phones.
 // Always loads fresh from network; keeps last copy for offline resilience.
-var CACHE = 'nprc-referee-v2';
+var CACHE = 'nprc-referee-v3';
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(CACHE)

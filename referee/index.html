@@ -2574,7 +2574,7 @@
                 <button class="p-act" type="button" data-pg="${esc(p.id)}" title="${p.red ? 'Sent off — cannot return' : 'Goal (choose assist)'}" ${p.red ? 'disabled' : ''}>⚽</button>
                 <button class="p-act" type="button" data-py="${esc(p.id)}" title="${p.red ? 'Sent off' : 'Yellow card'}" ${p.red ? 'disabled' : ''}><i class="bk bk-y" style="width:7px;height:10px;"></i></button>
                 <button class="p-act" type="button" data-pr="${esc(p.id)}" title="${p.red ? 'Already sent off' : 'Red card (2:00)'}" ${p.red ? 'disabled' : ''}><i class="bk bk-r" style="width:7px;height:10px;"></i></button>
-                <button class="p-act" type="button" data-px="${esc(p.id)}" title="Remove player" style="color:var(--fg-dim);">×</button>
+                ${(state.linked || p.fromMain) ? '' : `<button class="p-act" type="button" data-px="${esc(p.id)}" title="Remove player" style="color:var(--fg-dim);">×</button>`}
               </span>
             </li>
           `;
@@ -2586,18 +2586,21 @@
               <p class="kicker">GOAL SCORERS, ASSISTS &amp; CARDS</p>
               <h3>${esc(t.name)} players</h3>
             </div>
+            ${state.linked ? `<span class="tag t-green" style="font-size:10px;">Synced · ${t.players.length}</span>` : ''}
           </div>
+          ${state.linked ? '' : `
           <form class="roster-add-row" data-add-form>
             <input class="input" type="number" min="0" max="99" placeholder="#" data-pnum aria-label="Jersey number">
             <input class="input" type="text" maxlength="36" placeholder="Player name" data-pname aria-label="Player name">
             <button class="btn btn-sm" type="submit">+ Add</button>
-          </form>
+          </form>`}
           <div class="scroll-area">
-            ${t.players.length ? `<ul class="roster-list">${rows}</ul>` : `<p class="empty-note">No players added yet</p>`}
+            ${t.players.length ? `<ul class="roster-list">${rows}</ul>` : `<p class="empty-note">${state.linked ? 'No players in this team in the main app yet' : 'No players added yet'}</p>`}
           </div>
         `;
 
-        container.querySelector('[data-add-form]').addEventListener('submit', e => {
+        const addForm = container.querySelector('[data-add-form]');
+        if (addForm) addForm.addEventListener('submit', e => {
           e.preventDefault();
           const numInp = container.querySelector('[data-pnum]');
           const nameInp = container.querySelector('[data-pname]');
@@ -3157,34 +3160,89 @@
         }
       }
 
+      function extractSquadPlayers(team, teamId, goalsList, cardsList) {
+        const raw = Array.isArray(team && team.players) ? team.players
+          : (Array.isArray(team && team.roster) ? team.roster : []);
+        const mapped = raw.map((p, idx) => {
+          const isStr = typeof p === 'string';
+          const name = String(isStr ? p : (p && (p.name || p.player || p.fullName) || '')).trim();
+          if (!name) return null;
+          const numVal = !isStr && p ? (p.number ?? p.num ?? p.jersey ?? '') : '';
+          const num = numVal === '' || numVal == null ? '' : String(numVal);
+          return {
+            id: (!isStr && p && p.id) ? String(p.id) : ('mp_' + idx + '_' + name.toLowerCase().replace(/\s+/g, '_')),
+            num,
+            name,
+            fromMain: true,
+            goals: goalsList.filter(g => g.team === teamId && g.player === name).length,
+            assists: goalsList.filter(g => g.team === teamId && g.assist === name).length,
+            yellow: cardsList.filter(c => c.team === teamId && c.player === name && c.c === 'y').length,
+            red: cardsList.filter(c => c.team === teamId && c.player === name && c.c === 'r').length
+          };
+        }).filter(Boolean);
+
+        return mapped.sort((a, b) => {
+          const x = a.num === '' ? 1000 : Number(a.num);
+          const y = b.num === '' ? 1000 : Number(b.num);
+          return x - y || a.name.localeCompare(b.name);
+        });
+      }
+
+      function syncLinkedRostersFromCloud() {
+        if (!state.linked) return;
+        const t = cloud.tournaments.find(x => x.id === state.linked.tournamentId);
+        if (!t) return;
+        const m = (t.matches || []).find(x => x.id === state.linked.matchId) || {};
+        const isPlayed = m.hs != null && m.as != null;
+        const allG = isPlayed ? (m.goals || []) : (m.lgoals || []);
+        const allC = isPlayed ? (m.cards || []) : (m.lcards || []);
+        let changed = false;
+
+        [['home', state.linked.homeId], ['away', state.linked.awayId]].forEach(([key, tid]) => {
+          const sq = (t.squads || []).find(s => String(s.id) === String(tid));
+          if (!sq) return;
+          const freshList = extractSquadPlayers(sq, tid, allG, allC);
+          if (!freshList.length) return;
+          const existingByName = new Map((state.teams[key].players || []).map(p => [p.name.toLowerCase(), p]));
+          const merged = freshList.map(fp => {
+            const prev = existingByName.get(fp.name.toLowerCase());
+            return prev ? Object.assign({}, fp, {
+              goals: Math.max(fp.goals, prev.goals || 0),
+              assists: Math.max(fp.assists, prev.assists || 0),
+              yellow: Math.max(fp.yellow, prev.yellow || 0),
+              red: Math.max(fp.red, prev.red || 0),
+              fromMain: true
+            }) : fp;
+          });
+          if (JSON.stringify(merged) !== JSON.stringify(state.teams[key].players)) {
+            state.teams[key].players = merged;
+            changed = true;
+          }
+        });
+
+        if (changed) {
+          saveState(true);
+          render();
+        }
+      }
+
       function loadMatchFromTournament(t, m) {
-        const homeTeam = (t.squads || []).find(s => s.id === m.home);
-        const awayTeam = (t.squads || []).find(s => s.id === m.away);
+        const homeTeam = (t.squads || []).find(s => String(s.id) === String(m.home));
+        const awayTeam = (t.squads || []).find(s => String(s.id) === String(m.away));
         if (!homeTeam || !awayTeam) {
           toast('Both teams must be assigned to this match first.');
           return;
         }
         const matchNo = (t.matches || []).indexOf(m) + 1;
         const isPlayed = m.hs != null && m.as != null;
+        const srcGoals = isPlayed ? (m.goals || []) : (m.lgoals || []);
+        const srcCards = isPlayed ? (m.cards || []) : (m.lcards || []);
 
-        const mapPlayers = (team, teamId) => (team.players || []).map(p => {
-          const allG = isPlayed ? (m.goals || []) : (m.lgoals || []);
-          const allC = isPlayed ? (m.cards || []) : (m.lcards || []);
-          return {
-            id: p.id || uid(),
-            num: p.number != null ? String(p.number) : '',
-            name: p.name,
-            goals: allG.filter(g => g.team === teamId && g.player === p.name).length,
-            assists: allG.filter(g => g.team === teamId && g.assist === p.name).length,
-            yellow: allC.filter(c => c.team === teamId && c.player === p.name && c.c === 'y').length,
-            red: allC.filter(c => c.team === teamId && c.player === p.name && c.c === 'r').length
-          };
-        });
+        const homePlayers = extractSquadPlayers(homeTeam, m.home, srcGoals, srcCards);
+        const awayPlayers = extractSquadPlayers(awayTeam, m.away, srcGoals, srcCards);
 
         // Reconstruct events log from existing live or saved goals/cards
         const rebuiltEvents = [];
-        const srcGoals = isPlayed ? (m.goals || []) : (m.lgoals || []);
-        const srcCards = isPlayed ? (m.cards || []) : (m.lcards || []);
         srcGoals.forEach(g => {
           const tk = g.team === m.away ? 'away' : 'home';
           const tm = tk === 'home' ? homeTeam.name : awayTeam.name;
@@ -3209,7 +3267,7 @@
 
         const fresh = defaultState();
         fresh.halfMinutes = state.halfMinutes || 20;
-        fresh.breakMinutes = state.breakMinutes || 5;
+        fresh.breakMinutes = state.breakMinutes || 15;
         fresh.clockSec = fresh.halfMinutes * 60;
         fresh.status = isPlayed ? 'done' : m.started ? (m.half === 'ht' ? 'halftime' : 'live') : 'upcoming';
         fresh.period = m.half === 'ht' ? 'Half-Time' : m.half === '2' ? '2nd Half' : '1st Half';
@@ -3232,7 +3290,7 @@
           score: isPlayed ? m.hs : (m.lh || 0),
           fouls: (m.fouls && m.fouls.h) || 0,
           timeouts: [false, false],
-          players: mapPlayers(homeTeam, m.home)
+          players: homePlayers
         };
         fresh.teams.away = {
           name: awayTeam.name,
@@ -3240,7 +3298,7 @@
           score: isPlayed ? m.as : (m.la || 0),
           fouls: (m.fouls && m.fouls.a) || 0,
           timeouts: [false, false],
-          players: mapPlayers(awayTeam, m.away)
+          players: awayPlayers
         };
         fresh.events = rebuiltEvents;
 
@@ -3249,7 +3307,7 @@
         render();
         updateSyncPill();
         connectModal.hidden = true;
-        toast(`Loaded Match ${matchNo}: ${homeTeam.name} vs ${awayTeam.name}`);
+        toast(`Loaded M${matchNo}: ${homeTeam.name} (${homePlayers.length}) vs ${awayTeam.name} (${awayPlayers.length})`);
       }
 
       function renderConnectModal() {
@@ -3464,6 +3522,8 @@
                 const foundT = cloud.tournaments.find(x => x.id === qT);
                 const foundM = foundT && (foundT.matches || []).find(x => x.id === qM);
                 if (foundT && foundM) loadMatchFromTournament(foundT, foundM);
+              } else if (state.linked) {
+                syncLinkedRostersFromCloud();
               }
               if (!connectModal.hidden) renderConnectModal();
             });
