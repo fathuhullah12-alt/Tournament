@@ -1,6 +1,5 @@
-// Lets the referee panel install as an app on tablets and phones.
-// Always loads fresh from network; keeps last copy for offline resilience.
-var CACHE = 'nprc-referee-v4';
+// Network-first service worker with no-store fetch so updates load immediately when online.
+var CACHE = 'nprc-referee-v5';
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(CACHE)
@@ -18,7 +17,7 @@ self.addEventListener('activate', function (e) {
 self.addEventListener('fetch', function (e) {
   if (e.request.mode !== 'navigate') return;
   e.respondWith(
-    fetch(e.request).then(function (res) {
+    fetch(e.request, { cache: 'no-store' }).then(function (res) {
       var copy = res.clone();
       if (res.ok) caches.open(CACHE).then(function (c) { c.put('./', copy); });
       return res;
