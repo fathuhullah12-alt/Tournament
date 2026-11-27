@@ -2624,6 +2624,11 @@
           if (p) recordCard(teamKey, 'red', p.name);
         }));
         container.querySelectorAll('[data-px]').forEach(b => b.addEventListener('click', () => {
+          const target = t.players.find(x => x.id === b.dataset.px);
+          if (state.linked || (target && target.fromMain)) {
+            toast('Players loaded from the main app cannot be deleted here.');
+            return;
+          }
           t.players = t.players.filter(x => x.id !== b.dataset.px);
           saveState(); render();
         }));
@@ -2961,33 +2966,37 @@
       });
 
       document.getElementById('btn-reset-match').addEventListener('click', () => {
+        const isLinked = !!state.linked;
         openModal(
           'Reset Match?',
-          `<p style="margin:0;color:var(--fg-muted);">This clears the score, accumulated fouls, timeouts, clock, shootout, suspensions, and events.</p>`,
+          `<p style="margin:0;color:var(--fg-muted);">This clears the score, accumulated fouls, timeouts, clock, shootout, suspensions, and events.${isLinked ? ' Teams and players synced from the main app will stay locked.' : ''}</p>`,
           (body, acts) => {
             acts.querySelector('#am-reset-scores').addEventListener('click', () => {
+              const keepLinked = state.linked ? Object.assign({}, state.linked) : null;
               const keepHome = { name: state.teams.home.name, color: state.teams.home.color, players: state.teams.home.players.map(p => ({ ...p, goals: 0, assists: 0, yellow: 0, red: 0 })) };
               const keepAway = { name: state.teams.away.name, color: state.teams.away.color, players: state.teams.away.players.map(p => ({ ...p, goals: 0, assists: 0, yellow: 0, red: 0 })) };
               const half = state.halfMinutes, brk = state.breakMinutes;
               state = defaultState();
+              state.linked = keepLinked;
               state.halfMinutes = half;
               state.breakMinutes = brk;
               state.clockSec = half * 60;
               Object.assign(state.teams.home, keepHome);
               Object.assign(state.teams.away, keepAway);
               actionModal.hidden = true;
-              saveState(); render();
+              saveState(); render(); updateSyncPill();
               toast('Match reset (teams & players kept)');
             });
-            acts.querySelector('#am-reset-all').addEventListener('click', () => {
+            const allBtn = acts.querySelector('#am-reset-all');
+            if (allBtn) allBtn.addEventListener('click', () => {
               state = defaultState();
               actionModal.hidden = true;
-              saveState(); render();
+              saveState(); render(); updateSyncPill();
               toast('Full reset complete');
             });
           },
           `<button class="btn btn-ghost btn-sm" type="button" id="am-reset-scores">Reset match only</button>
-           <button class="btn btn-live btn-sm" type="button" id="am-reset-all">Reset everything</button>`
+           ${isLinked ? '' : '<button class="btn btn-live btn-sm" type="button" id="am-reset-all">Reset everything</button>'}`
         );
       });
 
