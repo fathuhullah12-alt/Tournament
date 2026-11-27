@@ -658,6 +658,9 @@ section.block { padding-block: 48px 8px; }
 .next-kick .nk-predict { background: var(--teal); color: var(--on-teal); }
 .nk-predict { position: relative; z-index: 2; pointer-events: auto; justify-self: center; align-self: center; margin: 2px auto 0; display: inline-flex; align-items: center; gap: 5px; background: var(--teal); color: var(--on-teal); font-weight: 700; padding: 6px 14px; font-size: 13.5px; min-height: 0; }
 .nk-predict .i { width: 14px; height: 14px; }
+.nk-ref { position: relative; z-index: 2; pointer-events: auto; justify-self: center; align-self: center; margin: 6px auto 0; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 13.5px; min-height: 0; text-decoration: none; }
+.nk-ref .i, .mf-ref .i { width: 15px; height: 15px; }
+.mf-ref { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; text-decoration: none; }
 .nk-kickoff { position: relative; z-index: 2; pointer-events: auto; justify-self: center; align-self: center; margin: 2px auto 0; display: flex; }
 .next-kick.is-playing { background: color-mix(in srgb, var(--live) 10%, transparent); border-color: color-mix(in srgb, var(--live) 30%, transparent); }
 .next-kick.is-playing .nk-label { color: var(--live); display: inline-flex; align-items: center; gap: 7px; }
@@ -2231,6 +2234,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <symbol id="ic-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
     <!-- Category icons, thin line style -->
+    <symbol id="ic-whistle" viewBox="0 0 24 24"><circle cx="9" cy="14" r="5.5"/><path d="M12.5 9.7 21 6.5V10l-5.6 2"/><path d="M4 5l2 2M8 3v2.5"/></symbol>
     <symbol id="ic-futsal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 8l3.4 2.5-1.3 4h-4.2l-1.3-4Z"/><path d="M12 8V2.5M15.4 10.5l5-1.7M14.1 14.5l3 4.4M9.9 14.5l-3 4.4M8.6 10.5l-5-1.7"/></symbol>
     <symbol id="ic-basketball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5v19"/><path d="M5.3 5.3a10 10 0 0 1 0 13.4M18.7 5.3a10 10 0 0 0 0 13.4"/></symbol>
     <symbol id="ic-volleyball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5c0 5 2 8 6 10.5M12 12c-4.3 2.5-8 2.3-9.3 1.4M12 12c4.3 2.5 5.5 6 5.2 7.4"/></symbol>
@@ -2651,7 +2655,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.27</span>
+    <span class="site-ver">Version 2.8.28</span>
   </div>
 </footer>
 
@@ -3263,6 +3267,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <div>
         <h2 id="mf-title">Match</h2>
         <p class="sheet-sub" id="mf-sub"></p>
+        <span id="mf-ref"></span>
       </div>
       <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
     </div>
@@ -3739,6 +3744,14 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     return best;
   }
   function pad2(n) { return String(n).padStart(2, '0'); }
+  // Opens referee.noonuprc.com with this match loaded (admins and managers only)
+  function refLink(t, m, cls) {
+    var a = el('a', cls); a.href = 'https://referee.noonuprc.com/?t=' + encodeURIComponent(t.id) + '&m=' + encodeURIComponent(m.id);
+    a.target = '_blank'; a.rel = 'noopener'; a.setAttribute('data-admin', '');
+    a.appendChild(icon('ic-whistle')); a.appendChild(document.createTextNode('Referee panel'));
+    a.addEventListener('click', function (e) { e.stopPropagation(); });
+    return a;
+  }
   function fillNextKick(box, t) {
     var nk = nextKick(t);
     box.textContent = '';
@@ -3852,6 +3865,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       kb.setAttribute('data-admin', ''); kb.dataset.kickoff = t.id + '|' + nk.m.id;
       box.appendChild(kb);
     }
+    // Admin: run this match from the referee panel
+    if (h && a) box.appendChild(refLink(t, nk.m, 'btn btn-sm btn-ghost nk-ref'));
     if (!live && !waiting && !firstUp) {
       var clock = el('div', 'nk-clock');
       clock.setAttribute('aria-label', 'Starts in');
@@ -8141,6 +8156,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     matchModal.returnFocus = trigger || null;
     document.getElementById('mf-title').textContent = m ? 'Match' : 'Add match';
     document.getElementById('mf-sub').textContent = m ? m.stage : '';
+    var mref = document.getElementById('mf-ref'); mref.textContent = '';
+    if (m && m.home && m.away && !played(m)) mref.appendChild(refLink(t, m, 'btn btn-sm btn-ghost mf-ref'));
     mf.err.hidden = true;
     [mf.home, mf.away].forEach(function (s) {
       s.textContent = '';
