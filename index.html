@@ -2112,6 +2112,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .lb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .lb-list li { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-raised); }
 .lb-list li.is-me { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 10%, var(--bg-raised)); }
+.lb-step.lb-tap, .lb-list li.lb-tap, .lb-you.lb-tap { cursor: pointer; transition: transform .14s ease, border-color .15s ease, background .15s ease; }
+.lb-step.lb-tap:hover { transform: translateY(-2px); }
+.lb-list li.lb-tap:hover, .lb-you.lb-tap:hover { border-color: var(--teal); }
+.lb-step.lb-tap:focus-visible, .lb-list li.lb-tap:focus-visible, .lb-you.lb-tap:focus-visible { outline: 2px solid var(--teal-ring); outline-offset: 2px; }
+.lb-prof-sec { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line-soft, var(--line)); }
+.lb-prof-sec:first-child { padding-top: 0; border-top: 0; }
+.lb-prof-th { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.lb-prof-th b { font: 800 18px/1.1 var(--font-display); text-transform: uppercase; }
+.lb-prof-th span { font: 800 16px var(--font-display); color: var(--teal); }
 .lb-rank { width: 22px; flex: none; text-align: center; font: 800 18px var(--font-display); color: var(--fg-muted); }
 .lb-tx { display: grid; min-width: 0; flex: 1; }
 .lb-tx b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -3160,6 +3169,22 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       <button class="btn" type="submit" id="au-submit">Sign in</button>
     </div>
   </form>
+</div>
+
+<div class="modal" id="lb-prof-modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="sheet pp-sheet" role="dialog" aria-modal="true" aria-labelledby="lbp-name">
+    <div class="pp-hero" id="lbp-hero" style="--tc:var(--teal)">
+      <button class="sheet-close" type="button" data-close aria-label="Close"><svg class="i"><use href="#ic-close"/></svg></button>
+      <span id="lbp-av"></span>
+      <h2 id="lbp-name"></h2>
+      <p class="pp-club" id="lbp-sub"></p>
+    </div>
+    <div class="sheet-body">
+      <div class="m-stats pp-stats" id="lbp-stats"></div>
+      <div id="lbp-body" style="display:grid;gap:14px;margin-top:12px;"></div>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="pp-modal" hidden>
@@ -9037,6 +9062,86 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var a = el('span', 'lb-av' + (cls ? ' ' + cls : ''), (rw.name || '?').trim().charAt(0).toUpperCase());
       return memberPhoto(a, rw.mid || byName[rw.key] || null);
     }
+    function openPredictorProfile(rw, onlyT, trigger) {
+      var modal = document.getElementById('lb-prof-modal');
+      modal.returnFocus = trigger || null;
+      var av = el('span', 'lb-av' + (rw.rank === 1 && rw.pts ? '' : ''), (rw.name || '?').trim().charAt(0).toUpperCase());
+      av.style.width = '76px'; av.style.height = '76px'; av.style.fontSize = '32px';
+      memberPhoto(av, rw.mid || byName[rw.key] || null);
+      av.id = 'lbp-av';
+      document.getElementById('lbp-av').replaceWith(av);
+      document.getElementById('lbp-name').textContent = rw.name + (rw.key === me ? ' (You)' : '');
+      document.getElementById('lbp-sub').textContent = 'Rank #' + rw.rank + ' of ' + rows.length + (onlyT ? ' · ' + onlyT.name : ' · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments'));
+
+      var bonusTotal = 0;
+      var tourBlocks = [];
+      var srcTours = onlyT ? [onlyT] : tournaments.filter(function (t) { return visibleTo(t) && !typeOf(t.category).quiz; })
+        .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+
+      srcTours.forEach(function (t) {
+        var byId = {};
+        (t.matches || []).forEach(function (m) { byId[m.id] = m; });
+        var picks = [];
+        var tPts = 0;
+        (t.predictions || []).forEach(function (p) {
+          if (!p.name || p.name.trim().toLowerCase() !== rw.key) return;
+          var m = byId[p.match]; if (!m) return;
+          var pts = predPoints(p, m);
+          if (pts != null) tPts += pts;
+          picks.push({ p: p, m: m, pts: pts });
+        });
+        var b = (t.bonus || []).filter(function (x) { return x.name && x.name.trim().toLowerCase() === rw.key; })[0] || null;
+        var bPts = b ? bonusScore(t, b).pts : 0;
+        bonusTotal += bPts;
+        tPts += bPts;
+        if (!picks.length && !b) return;
+        var details = howEarned(t, { picks: picks, b: b });
+        tourBlocks.push({ t: t, pts: tPts, details: details });
+      });
+
+      var statsEl = document.getElementById('lbp-stats');
+      statsEl.textContent = '';
+      [[rw.pts, 'Total pts'], [rw.exact, 'Exact (+3)'], [rw.right, 'Right (+1)'], [bonusTotal, 'Bonus pts']].forEach(function (x) {
+        var d = el('div');
+        d.appendChild(el('strong', null, String(x[0])));
+        d.appendChild(el('small', null, x[1]));
+        statsEl.appendChild(d);
+      });
+
+      var bodyEl = document.getElementById('lbp-body');
+      bodyEl.textContent = '';
+      var shownAny = false;
+      tourBlocks.forEach(function (blk) {
+        if (!blk.details) return;
+        shownAny = true;
+        var sec = el('div', 'lb-prof-sec');
+        var th = el('div', 'lb-prof-th');
+        th.appendChild(el('b', null, blk.t.name || 'Tournament'));
+        th.appendChild(el('span', null, '+' + blk.pts + (blk.pts === 1 ? ' pt' : ' pts')));
+        sec.appendChild(th);
+        var wrap = el('div', 'pd-more');
+        wrap.style.margin = '0';
+        while (blk.details.firstChild) wrap.appendChild(blk.details.firstChild);
+        sec.appendChild(wrap);
+        bodyEl.appendChild(sec);
+      });
+      if (!shownAny) {
+        bodyEl.appendChild(el('p', 'pp-none', 'Match predictions appear here once matches kick off, so picks stay private beforehand.'));
+      }
+      modal.hidden = false;
+    }
+
+    function wireTap(node, rw) {
+      node.classList.add('lb-tap');
+      node.tabIndex = 0;
+      node.setAttribute('role', 'button');
+      node.setAttribute('aria-label', 'View how ' + rw.name + ' earned ' + rw.pts + ' points');
+      node.addEventListener('click', function () { openPredictorProfile(rw, pickT, node); });
+      node.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPredictorProfile(rw, pickT, node); }
+      });
+    }
+
     // Podium: 2nd, 1st, 3rd
     var pod = el('div', 'lb-podium' + (rows.length < 3 ? ' lb-n' + rows.length : ''));
     [1, 0, 2].forEach(function (i) {
@@ -9048,15 +9153,17 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       c.appendChild(textDir(el('b', 'lb-name', rw.name), rw.name));
       c.appendChild(el('span', 'lb-pts', rw.pts + ' pts'));
       var base = el('div', 'lb-base'); base.appendChild(el('span', null, String(rw.rank))); c.appendChild(base);
+      wireTap(c, rw);
       pod.appendChild(c);
     });
     root.appendChild(pod);
     var mine = rows.filter(function (rw) { return rw.key === me; })[0];
     if (mine) {
       var you = el('div', 'lb-you');
-      you.appendChild(el('span', 'pd-kicker', 'Your rank'));
+      you.appendChild(el('span', 'pd-kicker', 'Your rank · tap for breakdown'));
       you.appendChild(el('strong', null, '#' + mine.rank + ' of ' + rows.length));
       you.appendChild(el('small', null, mine.pts + ' points · ' + mine.exact + ' exact · ' + (pickT ? mine.right + ' right' : mine.tours + (mine.tours === 1 ? ' tournament' : ' tournaments'))));
+      wireTap(you, mine);
       root.appendChild(you);
     }
     var ul = el('ol', 'lb-list');
@@ -9070,6 +9177,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       tx.appendChild(el('small', null, rw.exact + ' exact · ' + rw.right + ' right' + (pickT ? '' : ' · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments'))));
       li.appendChild(tx);
       li.appendChild(el('strong', 'lb-p', String(rw.pts)));
+      var ch = svgIcon('ic-right'); ch.style.width = '16px'; ch.style.height = '16px'; ch.style.color = 'var(--fg-dim)'; li.appendChild(ch);
+      wireTap(li, rw);
       ul.appendChild(li);
     });
     if (ul.childNodes.length) root.appendChild(ul);
