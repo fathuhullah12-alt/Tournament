@@ -577,7 +577,7 @@ section.block { padding-block: 48px 8px; }
 .ts-head .ts-title { margin: 0; }
 .ts-share { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-raised); color: var(--fg); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .ts-share[hidden] { display: none; }
-.tab-share { display: flex; justify-content: flex-end; margin: 0 0 10px; }
+.tab-share { display: flex; justify-content: flex-end; margin: 14px 0 12px; }
 .ts-share .i { width: 16px; height: 16px; }
 .ts-state.ft { color: var(--fg-dim); }
 .ts-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; }
@@ -2729,7 +2729,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.35</span>
+    <span class="site-ver">Version 2.8.36</span>
   </div>
 </footer>
 
@@ -5041,10 +5041,26 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       cbody.appendChild(ctxt); cb.appendChild(cbody); list.appendChild(cb);
     }
     if (prize.player) tile('King of the Tournament', prize.player, 'aw-gold');
-    prize.scorers.forEach(function (name) {
-      var goals = (scorerRows(t).filter(function (x) { return sameName(x.player, name); })[0] || {}).goals;
-      tile(prize.scorers.length > 1 ? 'Joint top scorer' : 'Top scorer', name, 'aw-silver', goals ? goals + (goals === 1 ? ' goal' : ' goals') : '');
-    });
+    var goalsOf = function (name) { return (scorerRows(t).filter(function (x) { return sameName(x.player, name); })[0] || {}).goals; };
+    if (prize.scorers.length === 1) {
+      var g1 = goalsOf(prize.scorer);
+      tile('Top scorer', prize.scorer, 'aw-silver', g1 ? g1 + (g1 === 1 ? ' goal' : ' goals') : '');
+    } else if (prize.scorers.length > 1) {
+      var sb = el('div', 'aw-tile aw-five aw-scorers');
+      var gs = goalsOf(prize.scorers[0]);
+      sb.appendChild(el('small', 'aw-label', 'Joint top scorers' + (gs ? ' · ' + gs + (gs === 1 ? ' goal' : ' goals') + ' each' : '')));
+      var srow = el('div', 'aw-five-row');
+      prize.scorers.forEach(function (name) {
+        var w = who(name), c = el('div', 'aw-pl'), g = goalsOf(name);
+        if (w.team) c.style.setProperty('--tc', w.team.c1 || 'var(--teal)');
+        if (num(w)) c.appendChild(num(w));
+        c.appendChild(face(w));
+        c.appendChild(el('b', null, name));
+        c.appendChild(el('small', null, (w.team ? w.team.name : '') + (g && g !== gs ? ' · ' + g : '')));
+        srow.appendChild(c);
+      });
+      sb.appendChild(srow); list.appendChild(sb);
+    }
     var five = prize.best5.map(function (n, i) { return { n: n, i: i }; }).filter(function (x) { return x.n; });
     if (five.length) {
       var fb = el('div', 'aw-tile aw-five');
@@ -7942,7 +7958,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     var lb = el('div', 'pd-board');
     var lbh = el('div', 'pd-board-head'); lbh.appendChild(el('h3', null, 'Leaderboard')); lb.appendChild(lbh);
     if (rows.length) lbh.appendChild(boardShareBtn(rows, { kicker: 'PREDICTION LEADERBOARD', title: t.name || '', logo: t.logo, color: t.color,
-      sub: function (rw) { return rw.exact + ' exact · ' + rw.right + ' right' + (rw.bonus ? ' · +' + rw.bonus + ' bonus' : ''); } },
+      sub: function (rw) { return rw.exact + ' exact · ' + rw.right + ' right' + awTxt(rw); } },
       (t.name || 'tournament').replace(/[^\wހ-޿-]+/g, '-') + '-leaderboard.png', 'https://noonuprc.com/#t-' + t.id));
     if (!rows.length) lb.appendChild(el('p', 'pd-empty', 'No predictions yet. Pick a score below to get on the board.'));
     var top = rows.length ? rows[0].pts : 0;
@@ -7955,7 +7971,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var nm = el('b', null, r.name);
       if (r.key === me) nm.appendChild(el('em', null, 'You'));
       mid.appendChild(nm);
-      mid.appendChild(el('span', null, r.n + (r.n === 1 ? ' pick' : ' picks') + ' · ' + r.exact + ' exact · ' + r.right + ' right' + (r.bonus ? ' · +' + r.bonus + ' bonus' : '')));
+      mid.appendChild(el('span', null, r.n + (r.n === 1 ? ' pick' : ' picks') + ' · ' + r.exact + ' exact · ' + r.right + ' right' + awTxt(r)));
       var bar = el('i', 'pd-bar'), fill = el('i');
       fill.style.width = (top ? Math.round(r.pts / top * 100) : 0) + '%';
       bar.appendChild(fill); mid.appendChild(bar);
@@ -9075,6 +9091,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
   }
   var lbPick = '';
+  // Points from award picks (champion, top scorer, King, Best 5)
+  function awTxt(rw) { return rw && rw.bonus ? ' · +' + rw.bonus + ' awards' : ''; }
   function allTimePredictors(only) {
     var board = {};
     tournaments.forEach(function (t) {
@@ -9084,7 +9102,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       (t.matches || []).forEach(function (m) { byId[m.id] = m; });
       function row(name) {
         var k = name.trim().toLowerCase();
-        if (!board[k]) board[k] = { key: k, name: name.trim(), pts: 0, exact: 0, right: 0, n: 0, tours: 0 };
+        if (!board[k]) board[k] = { key: k, name: name.trim(), pts: 0, exact: 0, right: 0, n: 0, tours: 0, bonus: 0 };
         if (!seen[k]) { seen[k] = 1; board[k].tours++; }
         return board[k];
       }
@@ -9095,7 +9113,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         if (pts == null) return;
         rw.pts += pts; if (pts === 3) rw.exact++; if (pts) rw.right++;
       });
-      (t.bonus || []).forEach(function (b) { if (!b.name) return; var rb = row(b.name); rb.pts += bonusScore(t, b).pts; if (b.member && !rb.mid) rb.mid = b.member; });
+      (t.bonus || []).forEach(function (b) { if (!b.name) return; var rb = row(b.name); var bs = bonusScore(t, b).pts; rb.pts += bs; rb.bonus = (rb.bonus || 0) + bs; if (b.member && !rb.mid) rb.mid = b.member; });
     });
     var rows = Object.keys(board).map(function (k) { return board[k]; })
       .sort(function (a, b) { return b.pts - a.pts || b.exact - a.exact || a.name.localeCompare(b.name); });
@@ -9174,9 +9192,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     root.appendChild(bar);
     if (!rows.length) { root.appendChild(el('p', 'hf-empty', 'No predictions yet. Predict the scores of upcoming matches to get on the board.')); return; }
     bar.appendChild(pickT
-      ? boardShareBtn(rows, { kicker: 'PREDICTION LEADERBOARD', title: pickT.name || '', logo: pickT.logo, color: pickT.color, sub: function (rw) { return rw.exact + ' exact · ' + rw.right + ' right'; } },
+      ? boardShareBtn(rows, { kicker: 'PREDICTION LEADERBOARD', title: pickT.name || '', logo: pickT.logo, color: pickT.color, sub: function (rw) { return rw.exact + ' exact · ' + rw.right + ' right' + awTxt(rw); } },
           (pickT.name || 'tournament').replace(/[^\wހ-޿-]+/g, '-') + '-leaderboard.png', 'https://noonuprc.com/#t-' + pickT.id)
-      : boardShareBtn(rows, { kicker: 'TOP PREDICTORS', title: 'All tournaments', sub: function (rw) { return rw.exact + ' exact · ' + rw.right + ' right · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments'); } },
+      : boardShareBtn(rows, { kicker: 'TOP PREDICTORS', title: 'All tournaments', sub: function (rw) { return rw.exact + ' exact · ' + rw.right + ' right' + awTxt(rw) + ' · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments'); } },
           'top-predictors.png', 'https://noonuprc.com/#leaderboard'));
     // Member ids by name, for older predictions saved without one
     var byName = {};
@@ -9286,7 +9304,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       var you = el('div', 'lb-you');
       you.appendChild(el('span', 'pd-kicker', 'Your rank · tap for breakdown'));
       you.appendChild(el('strong', null, '#' + mine.rank + ' of ' + rows.length));
-      you.appendChild(el('small', null, mine.pts + ' points · ' + mine.exact + ' exact · ' + (pickT ? mine.right + ' right' : mine.tours + (mine.tours === 1 ? ' tournament' : ' tournaments'))));
+      you.appendChild(el('small', null, mine.pts + ' points · ' + mine.exact + ' exact · ' + (pickT ? mine.right + ' right' + awTxt(mine) : mine.tours + (mine.tours === 1 ? ' tournament' : ' tournaments'))));
       wireTap(you, mine);
       root.appendChild(you);
     }
@@ -9298,7 +9316,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       li.appendChild(avatar(rw, 'sm'));
       var tx = el('span', 'lb-tx');
       tx.appendChild(textDir(el('b', null, rw.name + (rw.key === me ? ' (You)' : '')), rw.name));
-      tx.appendChild(el('small', null, rw.exact + ' exact · ' + rw.right + ' right' + (pickT ? '' : ' · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments'))));
+      tx.appendChild(el('small', null, rw.exact + ' exact · ' + rw.right + ' right' + awTxt(rw) + (pickT ? '' : ' · ' + rw.tours + (rw.tours === 1 ? ' tournament' : ' tournaments'))));
       li.appendChild(tx);
       li.appendChild(el('strong', 'lb-p', String(rw.pts)));
       var ch = svgIcon('ic-right'); ch.style.width = '16px'; ch.style.height = '16px'; ch.style.color = 'var(--fg-dim)'; li.appendChild(ch);
