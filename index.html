@@ -2074,6 +2074,11 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .app-key svg.i { width: 17px; height: 17px; }
 .fb-badge { min-width: 20px; height: 20px; padding: 0 6px; margin-left: 6px; border-radius: 999px; background: var(--live); color: #fff; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .fb-badge[hidden] { display: none; }
+.pref-go .rs-badge { margin-left: auto; flex: none; }
+.auth-ok .au-call { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.auth-ok .au-call .btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.auth-ok .au-call .i { width: 15px; height: 15px; }
+.auth-ok .au-call .au-tel { background: var(--teal); color: #fff; border-color: transparent; }
 /* Bottom navigation bar on phones */
 .bnav { display: none; }
 .hf-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -2235,6 +2240,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
     <!-- Category icons, thin line style -->
     <symbol id="ic-whistle" viewBox="0 0 24 24"><circle cx="9" cy="14" r="5.5"/><path d="M12.5 9.7 21 6.5V10l-5.6 2"/><path d="M4 5l2 2M8 3v2.5"/></symbol>
+    <symbol id="ic-phone" viewBox="0 0 24 24"><path d="M5 3.5h3.2l1.6 4.2-2 1.3a11 11 0 0 0 5.2 5.2l1.3-2 4.2 1.6V17a2.5 2.5 0 0 1-2.7 2.5A15.5 15.5 0 0 1 2.5 6.2 2.5 2.5 0 0 1 5 3.5Z"/></symbol>
     <symbol id="ic-futsal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 8l3.4 2.5-1.3 4h-4.2l-1.3-4Z"/><path d="M12 8V2.5M15.4 10.5l5-1.7M14.1 14.5l3 4.4M9.9 14.5l-3 4.4M8.6 10.5l-5-1.7"/></symbol>
     <symbol id="ic-basketball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5v19"/><path d="M5.3 5.3a10 10 0 0 1 0 13.4M18.7 5.3a10 10 0 0 0 0 13.4"/></symbol>
     <symbol id="ic-volleyball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M12 2.5c0 5 2 8 6 10.5M12 12c-4.3 2.5-8 2.3-9.3 1.4M12 12c4.3 2.5 5.5 6 5.2 7.4"/></symbol>
@@ -2272,7 +2278,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </a>
     <nav class="nav" id="nav" aria-label="Main">
       <a href="#top" aria-current="page"><span class="nav-ic"><svg class="i"><use href="#ic-home"/></svg></span><span>Home</span></a>
-      <a href="#members" data-site><span class="nav-ic"><svg class="i"><use href="#ic-users"/></svg></span><span>Members</span></a>
+      <a href="#members" data-site><span class="nav-ic"><svg class="i"><use href="#ic-users"/></svg></span><span>Members</span><b class="fb-badge rs-badge" hidden></b></a>
       <a href="#feedback" data-site><span class="nav-ic"><svg class="i"><use href="#ic-chat"/></svg></span><span>Feedback</span><b class="fb-badge" id="fb-badge" hidden></b></a>
       <a href="#leaderboard" class="nav-lb"><span class="nav-ic"><svg class="i"><use href="#ic-rank"/></svg></span><span>Leaderboard</span></a>
       <a href="#hall"><span class="nav-ic"><svg class="i"><use href="#ic-trophy"/></svg></span><span>Hall of Fame</span></a>
@@ -2426,8 +2432,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         <h2>Club</h2>
         <a class="pref-row pref-go" href="#members">
           <div><strong>Members</strong><small>Add member IDs and set who is a manager or admin.</small></div>
+          <b class="fb-badge rs-badge" hidden></b>
           <svg class="i" aria-hidden="true"><use href="#ic-right"/></svg>
         </a>
+        <label class="pref-row field">
+          <div><strong>Club admin number</strong><small>Members who forget their password are asked to call or message this number.</small></div>
+          <input id="p-phone" type="tel" maxlength="20" placeholder="e.g. 9912521" inputmode="tel">
+        </label>
         <a class="pref-row pref-go" href="#feedback">
           <div><strong>Feedback</strong><small>Read what members send from the site.</small></div>
           <b class="fb-badge fb-badge-b" hidden></b>
@@ -2655,7 +2666,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.28</span>
+    <span class="site-ver">Version 2.8.29</span>
   </div>
 </footer>
 
@@ -8840,6 +8851,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       b.setAttribute('aria-pressed', b.dataset.themePick === themeChoice() ? 'true' : 'false');
     });
     document.getElementById('p-name').value = prefs.name || '';
+    document.getElementById('p-phone').value = prefs.phone || '';
     document.getElementById('p-type').value = prefs.type || 'Futsal';
     document.getElementById('p-teams').value = prefs.teams || 8;
     document.getElementById('p-logo-remove').hidden = !prefs.logo;
@@ -8857,6 +8869,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   });
   new MutationObserver(function () { if (!prefsSection.hidden) renderPrefs(); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
   document.getElementById('p-name').addEventListener('input', function (e) { prefs.name = e.target.value.trim(); savePrefs(); applyBrand(); });
+  document.getElementById('p-phone').addEventListener('input', function (e) { prefs.phone = e.target.value.replace(/[^0-9+ -]/g, '').trim(); savePrefs(); });
   document.getElementById('p-type').addEventListener('change', function (e) { prefs.type = e.target.value; savePrefs(); toast('Saved'); });
   document.getElementById('p-teams').addEventListener('change', function (e) {
     var v = parseInt(e.target.value, 10);
@@ -8925,7 +8938,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       if (a.getAttribute('href') === '#preferences') {
         c.querySelector('use').setAttribute('href', '#ic-profile');
         c.querySelector('span:not(.nav-ic)').textContent = 'Profile';
-        var pb = document.createElement('b'); pb.className = 'fb-badge fb-badge-b'; pb.hidden = true; c.appendChild(pb);
+        var pb = document.createElement('b'); pb.className = 'fb-badge pf-sum'; pb.hidden = true; c.appendChild(pb);
       }
       if (b) { b.removeAttribute('id'); b.classList.add('fb-badge-b'); }
       bn.appendChild(c);
@@ -9539,7 +9552,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (!cloud || readOnly) return;
     clearTimeout(siteTimer);
     siteTimer = setTimeout(function () {
-      var body = { name: prefs.name || '', logo: prefs.logo || null };
+      var body = { name: prefs.name || '', logo: prefs.logo || null, phone: prefs.phone || '' };
       var json = JSON.stringify(body);
       if (json === siteSynced) return;
       cloud.doc('site/settings').set(body).then(function () { siteSynced = json; }, cloudError);
@@ -9551,9 +9564,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       return;
     }
     var d = snap.data();
-    siteSynced = JSON.stringify({ name: d.name || '', logo: d.logo || null });
+    siteSynced = JSON.stringify({ name: d.name || '', logo: d.logo || null, phone: d.phone || '' });
     if (siteTimer && !snap.metadata.hasPendingWrites) return;
-    prefs.name = d.name || ''; prefs.logo = d.logo || null;
+    prefs.name = d.name || ''; prefs.logo = d.logo || null; prefs.phone = d.phone || '';
     if (!prefs.logo) delete prefs.logo;
     try { localStorage.setItem('prefs', JSON.stringify(prefs)); } catch (e) {}
     applyBrand();
@@ -9689,7 +9702,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (m.reset) { syncIdMatch(); ok.textContent = 'Your password is already reset. Type a new password and sign in.'; ok.hidden = false; return; }
     m.resetAsked = true;
     if (FB_MODE) fbAskReset(m); else writeMember(m);
-    ok.textContent = 'Request sent. An admin will reset your password. Then come back, type your ID and a new password, and sign in.';
+    ok.textContent = 'Request sent. Contact the club admin to reset your password. Then come back, type your ID and a new password, and sign in.';
+    var ph = (prefs.phone || '').trim();
+    if (ph) {
+      var cb = el('span', 'au-call');
+      var tel = el('a', 'btn btn-sm au-tel', ''); tel.href = 'tel:' + ph.replace(/[^0-9+]/g, ''); tel.appendChild(icon('ic-phone')); tel.appendChild(document.createTextNode('Call ' + ph));
+      var wa = el('a', 'btn btn-sm btn-ghost', ''); wa.href = 'https://wa.me/' + (ph.replace(/[^0-9]/g, '').length <= 7 ? '960' : '') + ph.replace(/[^0-9]/g, ''); wa.target = '_blank'; wa.rel = 'noopener';
+      wa.appendChild(icon('ic-whatsapp')); wa.appendChild(document.createTextNode('WhatsApp'));
+      cb.appendChild(tel); cb.appendChild(wa); ok.appendChild(cb);
+    }
     ok.hidden = false;
   });
   // On Create account, the name on file appears as soon as the ID matches
@@ -10538,11 +10559,18 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   var fbModal = document.getElementById('fb-modal');
   if (!FB_MODE) { try { feedback = JSON.parse(localStorage.getItem('feedback.v1')) || []; } catch (e) { feedback = []; } }
   function saveLocalFeedback() { try { localStorage.setItem('feedback.v1', JSON.stringify(feedback)); } catch (e) {} }
+  var rsSeen = -1;
   function updateFbBadge() {
     var n = isSiteAdmin() && feedback ? feedback.filter(function (f) { return !f.read; }).length : 0;
+    var rs = isSiteAdmin() ? members.filter(function (m) { return m.resetAsked; }).length : 0;
     var b = document.getElementById('fb-badge');
     b.textContent = n; b.hidden = !n;
     document.querySelectorAll('.fb-badge-b').forEach(function (x) { x.textContent = n; x.hidden = !n; });
+    document.querySelectorAll('.rs-badge').forEach(function (x) { x.textContent = rs; x.hidden = !rs; x.title = rs + (rs === 1 ? ' wants a new password' : ' want new passwords'); });
+    document.querySelectorAll('.pf-sum').forEach(function (x) { x.textContent = n + rs; x.hidden = !(n + rs); });
+    // A new password request pops up once for admins
+    if (rs > rsSeen && rsSeen >= 0) toast(rs === 1 ? 'A member wants a new password. Open Members to reset it.' : rs + ' members want new passwords. Open Members to reset them.');
+    if (membersLoaded || !FB_MODE) rsSeen = rs;
   }
   function paintStars() {
     Array.prototype.forEach.call(document.querySelectorAll('#fb-stars [data-star]'), function (b) {
