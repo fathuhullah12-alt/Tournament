@@ -2151,6 +2151,22 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .club-soon .logo-mark img { border-radius: 50%; }
 .club-soon b { font: 800 28px/1 var(--font-display); text-transform: uppercase; }
 .club-soon p { margin: 0; max-width: 32ch; color: var(--fg-muted); }
+.club-grid { display: grid; gap: 16px; }
+.club-hero { display: grid; gap: 14px; padding: 24px 20px; border: 1px solid var(--line); border-radius: 22px; background: var(--bg-raised); text-align: center; justify-items: center; }
+.club-hero .logo-mark { width: 88px; height: 88px; border-radius: 50%; }
+.club-hero .logo-mark img { border-radius: 50%; }
+.club-hero h2 { margin: 0; font: 800 30px/1.05 var(--font-display); text-transform: uppercase; letter-spacing: .02em; }
+.club-hero .club-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px; background: color-mix(in srgb, var(--teal) 14%, transparent); border: 1px solid color-mix(in srgb, var(--teal) 38%, var(--line)); color: var(--teal); font: 700 11.5px/1.2 var(--font-body); letter-spacing: .06em; text-transform: uppercase; }
+.club-hero p { margin: 0; max-width: 60ch; color: var(--fg-muted); font-size: 14.5px; line-height: 1.6; }
+.club-pillars { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; }
+.club-pillars span { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); font-size: 12.5px; font-weight: 600; color: var(--fg); }
+.club-exco { display: grid; gap: 12px; padding: 20px; border: 1px solid var(--line); border-radius: 22px; background: var(--bg-raised); }
+.club-exco-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.club-exco-head h3 { margin: 0; font: 800 24px/1.05 var(--font-display); text-transform: uppercase; }
+.club-exco-date { font: 700 11.5px/1.2 var(--font-body); letter-spacing: .07em; text-transform: uppercase; color: var(--teal); }
+.club-exco-photo { margin: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--bg); }
+.club-exco-photo img { display: block; width: 100%; height: auto; object-fit: cover; }
+.club-exco p { margin: 0; color: var(--fg-muted); font-size: 14px; line-height: 1.55; }
 @media (max-width: 820px) {
   .bnav { display: flex; position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; padding: 6px max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-bottom, 0px));
     border-radius: 22px 22px 0 0; border: 1px solid var(--line); border-bottom: 0; background: color-mix(in srgb, var(--bg-raised) 88%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
@@ -2413,10 +2429,29 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     <div class="wrap">
       <a class="back" href="#tournaments"><svg class="i"><use href="#ic-left"/></svg>All tournaments</a>
       <h1 class="detail-title">Club</h1>
-      <div class="club-soon">
-        <span class="logo-mark" data-logo>LOGO</span>
-        <b>Coming soon</b>
-        <p>Everything about the club will be here: news, members, events and more.</p>
+      <div class="club-grid">
+        <article class="club-hero">
+          <span class="logo-mark" data-logo>LOGO</span>
+          <span class="club-pill">Maldives Police Service · Noonu Atoll</span>
+          <h2>Noonu Police Recreation Club</h2>
+          <p>Noonu Police Recreation Club (NPRC) is the official sports and recreation body of the Maldives Police Service in Noonu Atoll. Established to promote camaraderie, physical fitness, teamwork, and sportsmanship, the club organizes competitive tournaments, futsal and athletics events, and recreational activities that unite officers and strengthen bonds across the Noonu Atoll community.</p>
+          <div class="club-pillars">
+            <span>Sports &amp; Tournaments</span>
+            <span>Teamwork &amp; Welfare</span>
+            <span>Community Engagement</span>
+          </div>
+        </article>
+
+        <article class="club-exco">
+          <div class="club-exco-head">
+            <h3>First Elected Executive Committee</h3>
+            <span class="club-exco-date">Elected · 24 March 2024</span>
+          </div>
+          <figure class="club-exco-photo">
+            <img src="icons/exco-2024.jpg" alt="First elected Executive Committee members of Noonu Police Recreation Club — 24 March 2024" loading="lazy">
+          </figure>
+          <p>The inaugural elected Executive Committee (ExCo) of the Noonu Police Recreation Club, elected on 24th March 2024 — marking the beginning of a new chapter of organized sports, recreation, and club leadership in Noonu Atoll.</p>
+        </article>
       </div>
     </div>
   </section>
