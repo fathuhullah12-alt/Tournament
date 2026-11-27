@@ -2666,7 +2666,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.29</span>
+    <span class="site-ver">Version 2.8.30</span>
   </div>
 </footer>
 
@@ -3915,16 +3915,27 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }, true);
   // Live goal and Full time buttons on the playing match
   // Match clock: time in the current half, set when Kick off is tapped
+  function rcSec(m) { return m.rc ? Math.max(0, m.rc.run && m.rc.at ? (Date.now() - m.rc.at) / 1000 : (m.rc.sec || 0)) : null; }
   function liveMinute(m) {
+    if (m.rc && m.half !== 'ht') return (/^2nd/.test(m.rc.p) ? (m.rc.hm || 20) : /^Extra/.test(m.rc.p) ? (m.rc.hm || 20) * 2 + (/2$/.test(m.rc.p) ? 5 : 0) : 0) + Math.floor(rcSec(m) / 60) + 1;
     if (!m.kickAt) return null;
     var first = m.htAt ? Math.floor((m.htAt - m.kickAt) / 60000) : 0;
     if (m.half === 'ht') return Math.max(1, first);
     if (m.half === '2' && m.h2At) return first + Math.floor((Date.now() - m.h2At) / 60000) + 1;
     return Math.floor((Date.now() - m.kickAt) / 60000) + 1;
   }
+  // Half-time break: time left from the referee panel, or time since half time
+  function htClock(m) {
+    var mmss = function (sec) { sec = Math.max(0, Math.floor(sec)); return pad2(Math.floor(sec / 60)) + ':' + pad2(sec % 60); };
+    if (m.htEnd) { var left = (m.htEnd - Date.now()) / 1000; return left > 0 ? '2nd half in ' + mmss(left) : '2nd half starting'; }
+    if (m.htLeft != null) return '2nd half in ' + mmss(m.htLeft);
+    if (m.htAt) return 'Break · ' + mmss((Date.now() - m.htAt) / 1000);
+    return 'Half time';
+  }
   function liveClock(m) {
-    if (!m.kickAt) return '';
-    if (m.half === 'ht') return 'Half time';
+    if (!m.kickAt && m.half !== 'ht') return '';
+    if (m.half === 'ht') return htClock(m);
+    if (m.rc) { var rs = Math.floor(rcSec(m)); return m.rc.p.replace('Half', 'half') + ' · ' + pad2(Math.floor(rs / 60)) + ':' + pad2(rs % 60) + (m.rc.run ? '' : ' · paused'); }
     var from = m.half === '2' && m.h2At ? m.h2At : m.kickAt, sec = Math.max(0, Math.floor((Date.now() - from) / 1000));
     return (m.half === '2' ? '2nd half · ' : '1st half · ') + pad2(Math.floor(sec / 60)) + ':' + pad2(sec % 60);
   }
@@ -4079,8 +4090,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   function visibleTo(t) { return !t.hidden || isAdmin(); }
   // Live label on the Today strip: minute of play, or HT
   function tsLive(m) {
+    if (m.half === 'ht') { var hc = htClock(m); return /in /.test(hc) ? 'HT · ' + hc.split('in ')[1] : 'Half time'; }
     if (!m.kickAt) return '● Live';
-    if (m.half === 'ht') return 'Half time';
     var mn = liveMinute(m);
     return '● ' + (m.half === '2' ? '2nd · ' : '1st · ') + mn + '\'';
   }
