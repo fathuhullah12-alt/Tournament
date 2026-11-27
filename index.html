@@ -7540,14 +7540,15 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   // Rows left open on the prediction board stay open when it redraws
   var pdOpen = {};
-  // How one person earned their points: tournament picks once awarded, then each match that has kicked off
-  function howEarned(t, r) {
+  // How one person earned their points: for other users, only completed matches and decided tournament awards
+  function howEarned(t, r, isSelf) {
     var box = el('li', 'pd-more'), any = false;
-    if (r.b && bonusLocked(t)) {
+    if (r.b && (isSelf || bonusLocked(t) || statusOf(t) === 'completed' || championOf(t) || prizesOf(t).player || prizesOf(t).scorer || prizesOf(t).best5.some(Boolean))) {
       var res = bonusScore(t, r.b), sec = el('div', 'pm-sec');
       sec.appendChild(el('h4', null, 'Tournament picks'));
       res.items.forEach(function (it) {
         if (!it.pick) return;
+        if (!isSelf && !it.done) return;
         var st = !it.done ? 'wait' : it.pts ? 'won' : 'lost';
         var row = el('div', 'pm-row pm-' + st);
         var tx = el('div', 'pm-tx'); tx.appendChild(el('b', null, it.label)); tx.appendChild(textDir(el('span', null, it.pick), it.pick));
@@ -7558,8 +7559,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       });
       if (sec.childNodes.length > 1) box.appendChild(sec);
     }
-    // Only matches that have kicked off, so nobody can copy a pick
-    var seen = r.picks.filter(function (x) { return played(x.m) || hasStarted(x.m); })
+    // For other users, only show predictions once the match is marked completed (played)
+    var seen = r.picks.filter(function (x) { return isSelf ? true : played(x.m); })
       .sort(function (a, b) { return (b.m.date || '').localeCompare(a.m.date || ''); });
     if (seen.length) {
       var sec2 = el('div', 'pm-sec');
@@ -7570,9 +7571,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         var row = el('div', 'pm-row pm-' + st);
         var tx = el('div', 'pm-tx');
         tx.appendChild(el('b', null, (h ? h.name : 'Home') + ' v ' + (a ? a.name : 'Away')));
-        tx.appendChild(el('span', null, 'Picked ' + x.p.hs + '–' + x.p.as + (done ? ' · Final ' + x.m.hs + '–' + x.m.as : ' · Playing now')));
+        tx.appendChild(el('span', null, 'Picked ' + x.p.hs + '–' + x.p.as + (done ? ' · Final ' + x.m.hs + '–' + x.m.as : hasStarted(x.m) ? ' · Playing now' : ' · Upcoming')));
         row.appendChild(tx);
-        row.appendChild(el('span', 'pm-pts', !done ? 'Live' : '+' + x.pts));
+        row.appendChild(el('span', 'pm-pts', !done ? (hasStarted(x.m) ? 'Live' : 'Pending') : '+' + x.pts));
         sec2.appendChild(row); any = true;
       });
       box.appendChild(sec2);
@@ -7893,7 +7894,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       li.appendChild(mid);
       var pts = el('span', 'pd-pts'); pts.appendChild(el('strong', null, String(r.pts))); pts.appendChild(el('small', null, 'pts'));
       li.appendChild(pts);
-      var more = howEarned(t, r);
+      var more = howEarned(t, r, r.key === me);
       if (more) {
         var openKey = t.id + '|' + r.key;
         li.classList.add('pd-tap'); li.tabIndex = 0; li.setAttribute('role', 'button');
@@ -9150,7 +9151,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         bonusTotal += bPts;
         tPts += bPts;
         if (!picks.length && !b) return;
-        var details = howEarned(t, { picks: picks, b: b });
+        var details = howEarned(t, { picks: picks, b: b }, rw.key === me);
         tourBlocks.push({ t: t, pts: tPts, details: details });
       });
 
@@ -9181,7 +9182,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         bodyEl.appendChild(sec);
       });
       if (!shownAny) {
-        bodyEl.appendChild(el('p', 'pp-none', 'Match predictions appear here once matches kick off, so picks stay private beforehand.'));
+        bodyEl.appendChild(el('p', 'pp-none', 'Predictions appear once matches are marked completed, and tournament picks appear once awards are decided.'));
       }
       modal.hidden = false;
     }
