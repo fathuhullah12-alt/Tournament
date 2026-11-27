@@ -2227,9 +2227,13 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
 .fb-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .crafted { display: inline-flex; align-items: center; gap: 7px; }
 .crafted b { color: var(--amber-fg); font-weight: 600; }
-.a-scorers { display: grid; gap: 8px; }
-.a-scorers > label { display: contents; }
-.a-more { justify-self: start; background: none; border: 0; padding: 4px 0; color: var(--teal, #3d8a89); font: inherit; font-weight: 600; cursor: pointer; }
+.a-scorers { display: grid; gap: 6px; }
+.a-chipbox { display: grid; gap: 8px; }
+.a-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.a-chips:empty { display: none; }
+.a-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 6px 6px 12px; border-radius: 999px; background: color-mix(in srgb, var(--teal, #3d8a89) 14%, transparent); font-size: 15px; }
+.a-chip-x { width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(0,0,0,.08); color: inherit; font: inherit; line-height: 1; cursor: pointer; }
+.a-hint { color: var(--muted, #6b7280); font-size: 12.5px; }
 .site-ver { font-size: 12px; letter-spacing: .04em; opacity: .8; }
 /* The heart beats, rings and throws a few sparks, on a slow loop */
 .heart { position: relative; display: inline-grid; place-items: center; width: 18px; height: 18px; }
@@ -2725,7 +2729,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.34</span>
+    <span class="site-ver">Version 2.8.35</span>
   </div>
 </footer>
 
@@ -3505,11 +3509,9 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </div>
     <div class="sheet-body">
       <label class="field"><span>King of the Tournament</span><input id="a-player" type="text" maxlength="40" placeholder="Player name"></label>
-      <div class="field a-scorers"><span>Top scorer</span><input id="a-scorer" aria-label="Top scorer" type="text" maxlength="40" placeholder="Player name">
-        <input data-scorer2 id="a-scorer-2" type="text" maxlength="40" placeholder="Joint top scorer 2" aria-label="Joint top scorer 2" hidden>
-        <input data-scorer2 id="a-scorer-3" type="text" maxlength="40" placeholder="Joint top scorer 3" aria-label="Joint top scorer 3" hidden>
-        <input data-scorer2 id="a-scorer-4" type="text" maxlength="40" placeholder="Joint top scorer 4" aria-label="Joint top scorer 4" hidden>
-        <button type="button" class="a-more" id="a-scorer-more">+ Add joint top scorer</button></div>
+      <div class="field a-scorers"><span>Top scorer</span>
+        <div class="a-chipbox"><div class="a-chips" id="a-chips"></div><input id="a-scorer" aria-label="Top scorer" type="text" maxlength="40" placeholder="Player name"></div>
+        <small class="a-hint">Same goals? Pick every joint top scorer here.</small></div>
       <fieldset class="field five">
         <legend>Best 5</legend>
         <input data-best5 id="a-five-1" type="text" maxlength="40" placeholder="Goalkeeper" aria-label="Best 5, goalkeeper">
@@ -4672,16 +4674,20 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     manager: document.getElementById('a-manager')
   };
   var aFive = Array.prototype.slice.call(document.querySelectorAll('[data-best5]'));
-  var aScorers = [document.getElementById('a-scorer')].concat(Array.prototype.slice.call(document.querySelectorAll('[data-scorer2]')));
-  var aMore = document.getElementById('a-scorer-more');
-  function showScorers(n) {
-    aScorers.forEach(function (i, k) { if (k) i.hidden = k >= n; });
-    aMore.hidden = n >= aScorers.length;
+  var aScorerList = [], aScIn = document.getElementById('a-scorer'), aChips = document.getElementById('a-chips');
+  function drawScorers() {
+    aChips.textContent = '';
+    aScorerList.forEach(function (n, k) {
+      var c = el('span', 'a-chip'); c.appendChild(el('b', null, n));
+      var x = el('button', 'a-chip-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Remove ' + n);
+      x.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      x.addEventListener('click', function () { aScorerList.splice(k, 1); drawScorers(); });
+      c.appendChild(x); aChips.appendChild(c);
+    });
+    aScIn.placeholder = aScorerList.length ? 'Add a joint top scorer' : 'Search or pick a player';
   }
-  aMore.addEventListener('click', function () {
-    var n = aScorers.filter(function (i) { return !i.hidden; }).length + 1;
-    showScorers(n); aScorers[n - 1].focus();
-  });
+  aScIn._chosen = function () { return aScorerList; };
+  aScIn._onPick = function (n) { if (!aScorerList.some(function (x) { return sameName(x, n); })) aScorerList.push(n); aScIn.value = ''; drawScorers(); };
   var aPickClose = null;
   function prizesOf(t) {
     var p = t.prizes || {};
@@ -4703,7 +4709,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     awardsModal.returnFocus = trigger || null;
     var p = prizesOf(t);
     document.getElementById('a-name').textContent = t.name;
-    aFields.player.value = p.player; aScorers.forEach(function (i, k) { i.value = p.scorers[k] || ''; }); showScorers(Math.max(1, p.scorers.length)); aFields.coach.value = p.coach; aFields.manager.value = p.manager;
+    aFields.player.value = p.player; aScorerList = p.scorers.slice(); aScIn.value = ''; drawScorers(); aFields.coach.value = p.coach; aFields.manager.value = p.manager;
     aFive.forEach(function (input, i) { input.value = p.best5[i]; input.classList.remove('bp-dup'); });
     document.getElementById('a-err').hidden = true;
     if (aPickClose) aPickClose();
@@ -4723,7 +4729,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (dup) { aErr.textContent = dup + ' is in the Best 5 twice. Pick five different players.'; aErr.hidden = false; return; }
     aErr.hidden = true;
     var scs = [];
-    aScorers.forEach(function (i) { var n = i.value.trim(); if (n && !scs.some(function (x) { return sameName(x, n); })) scs.push(n); });
+    aScorerList.concat([aScIn.value]).forEach(function (n) { n = (n || '').trim(); if (n && !scs.some(function (x) { return sameName(x, n); })) scs.push(n); });
     aTarget.prizes = {
       player: aFields.player.value.trim(),
       scorer: scs[0] || '',
@@ -7728,6 +7734,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
       // Top scorer box: most goals first, with each player's goal count
       if (t && scorerInput && (scorerInput === input || (Array.isArray(scorerInput) && scorerInput.indexOf(input) >= 0))) {
         scorerRows(t).forEach(function (r) {
+          if ((t.squads || []).some(function (sq) { return sameName(sq.name, r.player); })) return;
           var hit = out.filter(function (p) { return p.team.id === r.team.id && sameName(p.name, r.player); })[0];
           if (hit) hit.goals = r.goals; else out.push({ name: r.player, number: '', team: r.team, goals: r.goals });
         });
@@ -7743,7 +7750,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     }
     function render(input, showAll) {
       var list = input.parentNode.querySelector('.pp-list'), q = showAll ? '' : input.value.trim().toLowerCase();
-      var all = players(input), hits = all.filter(function (p) { return !q || p.name.toLowerCase().indexOf(q) !== -1 || p.team.name.toLowerCase().indexOf(q) !== -1; });
+      var picked = input._chosen ? input._chosen() : [];
+      var all = players(input), hits = all.filter(function (p) { return !picked.some(function (n) { return sameName(n, p.name); }); }).filter(function (p) { return !q || p.name.toLowerCase().indexOf(q) !== -1 || p.team.name.toLowerCase().indexOf(q) !== -1; });
       list.textContent = '';
       if (!all.length) { list.appendChild(el('li', 'pp-empty', input.dataset.officials ? 'No ' + input.dataset.officials + 's added to the teams yet. Type a name.' : 'No players added to the teams yet. Type a name.')); }
       else if (!hits.length) { list.appendChild(el('li', 'pp-empty', 'No player matches "' + input.value.trim() + '"')); }
@@ -7759,7 +7767,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
         else if (p.goals) b.appendChild(el('em', 'pp-goals', '⚽ ' + p.goals + (p.goals === 1 ? ' goal' : ' goals')));
         else if (p.number !== '' && p.number != null) b.appendChild(el('em', null, '#' + p.number));
         b.addEventListener('mousedown', function (e) { e.preventDefault(); });
-        b.addEventListener('click', function () { input.value = p.name; input.classList.remove('bp-dup'); syncClear(input); close(); });
+        b.addEventListener('click', function () { if (input._onPick) { input._onPick(p.name); syncClear(input); close(); return; } input.value = p.name; input.classList.remove('bp-dup'); syncClear(input); close(); });
         li.appendChild(b); list.appendChild(li);
       });
       list.hidden = false;
@@ -7796,8 +7804,8 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
   }
   var ppClose = playerPicker([document.getElementById('bp-scorer'), document.getElementById('bp-player')].concat(bp5), bp5,
     document.getElementById('bonus-form'), function () { return bonusTarget; }, 'In your Best 5');
-  aPickClose = playerPicker([aFields.player].concat(aScorers, aFive, [aFields.coach, aFields.manager]), aFive,
-    document.getElementById('awards-form'), function () { return aTarget; }, 'Already in Best 5', aScorers);
+  aPickClose = playerPicker([aFields.player, aScIn].concat(aFive, [aFields.coach, aFields.manager]), aFive,
+    document.getElementById('awards-form'), function () { return aTarget; }, 'Already in Best 5', aScIn);
   function fillBonus() {
     var name = document.getElementById('bp-name').value.trim().toLowerCase();
     var b = (bonusTarget.bonus || []).filter(function (x) { return x.name.toLowerCase() === name; })[0] || {};
