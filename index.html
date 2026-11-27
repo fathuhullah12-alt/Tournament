@@ -2436,7 +2436,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
           <svg class="i" aria-hidden="true"><use href="#ic-right"/></svg>
         </a>
         <label class="pref-row field">
-          <div><strong>Club admin number</strong><small>Members who forget their password are asked to call or message this number.</small></div>
+          <div><strong>Admin number</strong><small>Members who forget their password are asked to call or message this number.</small></div>
           <input id="p-phone" type="tel" maxlength="20" placeholder="e.g. 9912521" inputmode="tel">
         </label>
         <a class="pref-row pref-go" href="#feedback">
@@ -2666,7 +2666,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     </span>
     <span>© 2026 <span data-brand>Brandname</span>. All rights reserved.</span>
     <span class="crafted">Crafted with <span class="heart" aria-label="love" role="img"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C1 8.6 3 5 6.6 5c2.1 0 3.4 1.2 4.4 2.6h2C14 6.2 15.3 5 17.4 5 21 5 23 8.6 21.6 11.8 19.5 16.4 12 21 12 21Z"/></svg><i></i></span> by <b>F A</b></span>
-    <span class="site-ver">Version 2.8.31</span>
+    <span class="site-ver">Version 2.8.32</span>
   </div>
 </footer>
 
@@ -9713,7 +9713,7 @@ footer { margin-top: 72px; border-top: 1px solid var(--line-soft, var(--line)); 
     if (m.reset) { syncIdMatch(); ok.textContent = 'Your password is already reset. Type a new password and sign in.'; ok.hidden = false; return; }
     m.resetAsked = true;
     if (FB_MODE) fbAskReset(m); else writeMember(m);
-    ok.textContent = 'Request sent. Contact the club admin to reset your password. Then come back, type your ID and a new password, and sign in.';
+    ok.textContent = 'Request sent. Contact the admin to reset your password. Then come back, type your ID and a new password, and sign in.';
     var ph = (prefs.phone || '').trim();
     if (ph) {
       var cb = el('span', 'au-call');
